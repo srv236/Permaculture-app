@@ -7,7 +7,7 @@ export const ProduceCard = ({ produce }: { produce: Produce }) => {
     <Card className="overflow-hidden border-none shadow-sm bg-slate-50/50">
       <div className="aspect-video relative overflow-hidden">
         <img 
-          src={produce.image} 
+          src={produce.image_url || "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"} 
           alt={produce.name}
           className="object-cover w-full h-full transition-transform hover:scale-105 duration-300"
         />

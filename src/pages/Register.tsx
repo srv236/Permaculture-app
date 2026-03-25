@@ -5,16 +5,61 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { GraduationCap, AlertCircle } from "lucide-react";
-import { showSuccess } from "@/utils/toast";
+import { GraduationCap, AlertCircle, Loader2 } from "lucide-react";
+import { showSuccess, showError } from "@/utils/toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [hasCompletedCourse, setHasCompletedCourse] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    farmName: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasCompletedCourse) return;
-    showSuccess("Registration submitted! Our department will verify your credentials.");
+
+    setLoading(true);
+    try {
+      // 1. Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // 2. Create the profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            name: formData.name,
+            farm_name: formData.farmName,
+            email: formData.email,
+            phone: formData.phone,
+            has_completed_course: true,
+          });
+
+        if (profileError) throw profileError;
+
+        showSuccess("Registration successful! You can now list your produce.");
+        navigate("/");
+      }
+    } catch (error: any) {
+      showError(error.message || "An error occurred during registration.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,20 +92,57 @@ const Register = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" required />
+                    <Input 
+                      id="name" 
+                      placeholder="John Doe" 
+                      required 
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="farm">Farm Name</Label>
-                    <Input id="farm" placeholder="Sunlight Acres" required />
+                    <Input 
+                      id="farm" 
+                      placeholder="Sunlight Acres" 
+                      required 
+                      value={formData.farmName}
+                      onChange={(e) => setFormData({...formData, farmName: e.target.value})}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" required />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="john@example.com" 
+                    required 
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    required 
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" required />
+                  <Input 
+                    id="phone" 
+                    type="tel" 
+                    placeholder="+1 (555) 000-0000" 
+                    required 
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  />
                 </div>
               </div>
 
@@ -86,9 +168,9 @@ const Register = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg"
-                disabled={!hasCompletedCourse}
+                disabled={!hasCompletedCourse || loading}
               >
-                Submit Registration
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Registration"}
               </Button>
             </form>
           </CardContent>

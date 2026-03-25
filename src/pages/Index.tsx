@@ -1,19 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { MOCK_PRODUCERS } from "@/data/mockData";
 import { ProducerCard } from "@/components/ProducerCard";
 import { Input } from "@/components/ui/input";
-import { Search, Sprout } from "lucide-react";
+import { Search, Sprout, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Producer } from "@/types/farm";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [producers, setProducers] = useState<Producer[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducers = MOCK_PRODUCERS.filter(producer => {
+  useEffect(() => {
+    const fetchProducers = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          *,
+          produce (*)
+        `);
+
+      if (error) {
+        console.error("Error fetching producers:", error);
+      } else {
+        setProducers(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchProducers();
+  }, []);
+
+  const filteredProducers = producers.filter(producer => {
     const matchesProducer = producer.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           producer.farmName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesProduce = producer.produce.some(p => 
+                           producer.farm_name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesProduce = producer.produce?.some(p => 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      p.variety.toLowerCase().includes(searchQuery.toLowerCase())
+      p.variety?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     return matchesProducer || matchesProduce;
   });
@@ -22,7 +46,6 @@ const Index = () => {
     <div className="min-h-screen bg-slate-50">
       <Navbar />
       
-      {/* Hero Section */}
       <header className="bg-emerald-900 text-white py-16 px-4">
         <div className="container mx-auto text-center max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Fresh from the Forest</h1>
@@ -49,12 +72,18 @@ const Index = () => {
             <Sprout className="text-emerald-600" />
             {searchQuery ? `Results for "${searchQuery}"` : "Featured Producers"}
           </h2>
-          <p className="text-sm text-slate-500 font-medium">
-            {filteredProducers.length} producers found
-          </p>
+          {!loading && (
+            <p className="text-sm text-slate-500 font-medium">
+              {filteredProducers.length} producers found
+            </p>
+          )}
         </div>
 
-        {filteredProducers.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
+          </div>
+        ) : filteredProducers.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {filteredProducers.map(producer => (
               <ProducerCard key={producer.id} producer={producer} />
