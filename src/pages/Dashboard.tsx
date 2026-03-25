@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { Producer, Produce } from "@/types/farm";
+import { Producer } from "@/types/farm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit2, Loader2, LayoutDashboard } from "lucide-react";
+import { Trash2, Loader2, LayoutDashboard } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
+import { AddProduceDialog } from "@/components/AddProduceDialog";
+import { EditProfileDialog } from "@/components/EditProfileDialog";
 
 const Dashboard = () => {
   const { user, loading: sessionLoading } = useSession();
@@ -83,10 +85,9 @@ const Dashboard = () => {
             </h1>
             <p className="text-slate-500">Manage your farm: <span className="font-semibold text-emerald-700">{profile?.farm_name}</span></p>
           </div>
-          <Button className="bg-emerald-600 hover:bg-emerald-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Produce
-          </Button>
+          {profile && (
+            <AddProduceDialog producerId={profile.id} onSuccess={fetchProfile} />
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -96,6 +97,17 @@ const Dashboard = () => {
               <CardTitle className="text-lg">Farm Profile</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-emerald-100 bg-slate-100">
+                  {profile?.picture_url ? (
+                    <img src={profile.picture_url} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                      <LayoutDashboard className="w-8 h-8" />
+                    </div>
+                  )}
+                </div>
+              </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase">Producer Name</label>
                 <p className="text-slate-700">{profile?.name}</p>
@@ -115,10 +127,9 @@ const Dashboard = () => {
                   ))}
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="w-full mt-4">
-                <Edit2 className="w-3 h-3 mr-2" />
-                Edit Profile
-              </Button>
+              {profile && (
+                <EditProfileDialog profile={profile} onSuccess={fetchProfile} />
+              )}
             </CardContent>
           </Card>
 
@@ -164,7 +175,9 @@ const Dashboard = () => {
             ) : (
               <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-slate-200">
                 <p className="text-slate-400">You haven't listed any produce yet.</p>
-                <Button variant="link" className="text-emerald-600">Add your first item</Button>
+                <Button variant="link" className="text-emerald-600" onClick={() => document.querySelector('button[aria-haspopup="dialog"]')?.dispatchEvent(new MouseEvent('click', {bubbles: true}))}>
+                  Add your first item
+                </Button>
               </div>
             )}
           </div>
