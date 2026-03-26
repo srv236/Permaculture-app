@@ -9,13 +9,14 @@ import { Plus, Loader2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
+import { useSession } from "./SessionProvider";
 
 interface AddProduceDialogProps {
-  producerId: string;
   onSuccess: () => void;
 }
 
-export const AddProduceDialog = ({ producerId, onSuccess }: AddProduceDialogProps) => {
+export const AddProduceDialog = ({ onSuccess }: AddProduceDialogProps) => {
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -28,6 +29,11 @@ export const AddProduceDialog = ({ producerId, onSuccess }: AddProduceDialogProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      showError("You must be logged in to add produce.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -39,7 +45,7 @@ export const AddProduceDialog = ({ producerId, onSuccess }: AddProduceDialogProp
       const { error } = await supabase
         .from('produce')
         .insert({
-          producer_id: producerId,
+          producer_id: user.id,
           name: formData.name,
           variety: formData.variety,
           price: formData.price,

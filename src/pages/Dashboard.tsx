@@ -12,6 +12,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
 import { AddProduceDialog } from "@/components/AddProduceDialog";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
+import { SecureImage } from "@/components/SecureImage";
 
 const Dashboard = () => {
   const { user, loading: sessionLoading } = useSession();
@@ -85,9 +86,7 @@ const Dashboard = () => {
             </h1>
             <p className="text-slate-500">Manage your farm: <span className="font-semibold text-emerald-700">{profile?.farm_name}</span></p>
           </div>
-          {profile && (
-            <AddProduceDialog producerId={profile.id} onSuccess={fetchProfile} />
-          )}
+          <AddProduceDialog onSuccess={fetchProfile} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -99,13 +98,12 @@ const Dashboard = () => {
             <CardContent className="space-y-4">
               <div className="flex justify-center mb-4">
                 <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-emerald-100 bg-slate-100">
-                  {profile?.picture_url ? (
-                    <img src={profile.picture_url} alt={profile.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <LayoutDashboard className="w-8 h-8" />
-                    </div>
-                  )}
+                  <SecureImage 
+                    path={profile?.picture_url}
+                    bucket="profile_pictures"
+                    alt={profile?.name || "Profile"}
+                    className="w-full h-full"
+                  />
                 </div>
               </div>
               <div>
@@ -141,10 +139,12 @@ const Dashboard = () => {
                 {profile.produce.map((item) => (
                   <Card key={item.id} className="overflow-hidden border-slate-200">
                     <div className="aspect-video relative">
-                      <img 
-                        src={item.image_url || "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"} 
+                      <SecureImage 
+                        path={item.image_url}
+                        bucket="produce_images"
                         alt={item.name}
-                        className="object-cover w-full h-full"
+                        className="w-full h-full"
+                        fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
                       />
                       <div className="absolute top-2 right-2 flex gap-1">
                         <Button 
