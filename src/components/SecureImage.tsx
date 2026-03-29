@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface SecureImageProps {
   path?: string;
-  bucket: "produce_images" | "profile_pictures";
+  bucket: "produce_images" | "profile_pictures" | "assets";
   alt: string;
   className?: string;
   fallback?: string;
