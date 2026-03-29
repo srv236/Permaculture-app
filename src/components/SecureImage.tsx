@@ -11,21 +11,30 @@ interface SecureImageProps {
   alt: string;
   className?: string;
   fallback?: string;
+  coordinates?: { lat?: number; lng?: number };
 }
 
-export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureImageProps) => {
+export const SecureImage = ({ path, bucket, alt, className, fallback, coordinates }: SecureImageProps) => {
   const [url, setUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUrl = async () => {
+      // If no path but we have coordinates, use Google Static Maps
+      if (!path && coordinates?.lat && coordinates?.lng) {
+        const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=15&size=400x400&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=YOUR_API_KEY_HERE`;
+        // Note: Without an API key, this might fail, so we'll use a generic map placeholder if it fails
+        setUrl(mapUrl);
+        setLoading(false);
+        return;
+      }
+
       if (!path) {
         setUrl(fallback || "");
         setLoading(false);
         return;
       }
 
-      // Handle direct URLs or special dyad-media URLs
       if (path.startsWith('http') || path.startsWith('dyad-media')) {
         setUrl(path);
         setLoading(false);
@@ -34,7 +43,6 @@ export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureIm
 
       setLoading(true);
       
-      // For assets bucket, we usually want public URLs
       if (bucket === 'assets') {
         const publicUrl = getPublicUrl(bucket, path);
         setUrl(publicUrl || fallback || "");
@@ -47,7 +55,7 @@ export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureIm
     };
 
     fetchUrl();
-  }, [path, bucket, fallback]);
+  }, [path, bucket, fallback, coordinates]);
 
   if (loading) {
     return <Skeleton className={cn("w-full h-full", className)} />;
@@ -59,6 +67,7 @@ export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureIm
       alt={alt} 
       className={cn("object-cover", className)}
       onError={(e) => {
+        // If map fails or image fails, use fallback
         if (fallback && url !== fallback) {
           setUrl(fallback);
         }

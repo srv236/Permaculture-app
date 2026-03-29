@@ -15,6 +15,10 @@ export interface Producer {
   phone: string;
   email: string;
   farm_name: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
   locations: string[];
   picture_url?: string;
   is_verified: boolean;
