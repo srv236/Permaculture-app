@@ -23,7 +23,7 @@ export const Navbar = () => {
             />
           </div>
           <span className="font-bold text-xl tracking-tight text-emerald-900 hidden sm:inline-block">
-            Permaculture<span className="text-emerald-600">Market</span>
+            AoL<span className="text-emerald-600">Permaculture</span>
           </span>
         </Link>
         
