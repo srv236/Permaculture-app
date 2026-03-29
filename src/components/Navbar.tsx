@@ -1,6 +1,6 @@
 "use client";
 
-import { Leaf, PlusCircle, LayoutDashboard, LogOut, LogIn } from "lucide-react";
+import { PlusCircle, LayoutDashboard, LogOut, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useSession } from "./SessionProvider";
@@ -11,9 +11,17 @@ export const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="bg-emerald-600 p-1.5 rounded-lg">
-            <Leaf className="w-6 h-6 text-white" />
+        <Link to="/" className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald-100 shadow-sm bg-emerald-50">
+            <img 
+              src="/pasted-image-2026-03-29T10-02-27-899Z.png" 
+              alt="The Art of Living Permaculture" 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback if image is not found in public folder
+                e.currentTarget.src = "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=100";
+              }}
+            />
           </div>
           <span className="font-bold text-xl tracking-tight text-emerald-900 hidden sm:inline-block">
             Permaculture<span className="text-emerald-600">Market</span>
