@@ -20,6 +20,11 @@ export const ProduceCard = ({ produce }: { produce: Produce }) => {
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground italic mb-1">{produce.variety}</p>
+        {produce.description && (
+          <p className="text-[11px] text-slate-600 line-clamp-2 mb-2 leading-tight">
+            {produce.description}
+          </p>
+        )}
         <p className="text-[10px] font-medium text-emerald-600">{produce.quantity}</p>
       </CardContent>
     </Card>

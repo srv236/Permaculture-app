@@ -1,7 +1,7 @@
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { MapPin, User } from "lucide-react";
+import { MapPin, User, CheckCircle2 } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
 import { ContactButtons } from "./ContactButtons";
 
@@ -15,7 +15,12 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
             <AvatarFallback><User /></AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-emerald-900">{producer.farm_name}</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-xl font-bold text-emerald-900">{producer.farm_name}</h3>
+              {producer.is_verified && (
+                <CheckCircle2 className="w-5 h-5 text-blue-500 fill-blue-50" />
+              )}
+            </div>
             <p className="text-sm font-medium text-emerald-700">{producer.name}</p>
             <div className="flex flex-wrap gap-2 mt-2">
               {producer.locations?.map((loc, i) => (

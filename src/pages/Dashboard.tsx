@@ -7,12 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Producer } from "@/types/farm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, LayoutDashboard } from "lucide-react";
+import { Trash2, Loader2, LayoutDashboard, CheckCircle2, Clock } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
 import { AddProduceDialog } from "@/components/AddProduceDialog";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { SecureImage } from "@/components/SecureImage";
+import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const { user, loading: sessionLoading } = useSession();
@@ -80,10 +81,23 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-emerald-900 flex items-center gap-2">
-              <LayoutDashboard className="w-8 h-8" />
-              Producer Dashboard
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-emerald-900 flex items-center gap-2">
+                <LayoutDashboard className="w-8 h-8" />
+                Producer Dashboard
+              </h1>
+              {profile?.is_verified ? (
+                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Verified
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Verification Pending
+                </Badge>
+              )}
+            </div>
             <p className="text-slate-500">Manage your farm: <span className="font-semibold text-emerald-700">{profile?.farm_name}</span></p>
           </div>
           <AddProduceDialog onSuccess={fetchProfile} />
@@ -106,9 +120,20 @@ const Dashboard = () => {
                   />
                 </div>
               </div>
+              
+              {!profile?.is_verified && (
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-800 mb-4">
+                  <p className="font-bold mb-1">Verification Pending</p>
+                  <p>Our team is reviewing your credentials. Once verified, a blue checkmark will appear on your profile.</p>
+                </div>
+              )}
+
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase">Producer Name</label>
-                <p className="text-slate-700">{profile?.name}</p>
+                <p className="text-slate-700 flex items-center gap-1">
+                  {profile?.name}
+                  {profile?.is_verified && <CheckCircle2 className="w-4 h-4 text-blue-500" />}
+                </p>
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase">Contact Info</label>
@@ -158,7 +183,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start mb-2">
                         <div>
                           <h4 className="font-bold text-emerald-900">{item.name}</h4>
                           <p className="text-xs text-slate-500 italic">{item.variety}</p>
@@ -168,6 +193,11 @@ const Dashboard = () => {
                           <p className="text-[10px] text-slate-400">{item.quantity}</p>
                         </div>
                       </div>
+                      {item.description && (
+                        <p className="text-xs text-slate-600 line-clamp-2 border-t pt-2 mt-2">
+                          {item.description}
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 ))}

@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus, Loader2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
@@ -23,6 +24,7 @@ export const AddProduceDialog = ({ onSuccess }: AddProduceDialogProps) => {
   const [formData, setFormData] = useState({
     name: "",
     variety: "",
+    description: "",
     price: "",
     quantity: "",
   });
@@ -48,6 +50,7 @@ export const AddProduceDialog = ({ onSuccess }: AddProduceDialogProps) => {
           producer_id: user.id,
           name: formData.name,
           variety: formData.variety,
+          description: formData.description,
           price: formData.price,
           quantity: formData.quantity,
           image_url: imageUrl,
@@ -57,7 +60,7 @@ export const AddProduceDialog = ({ onSuccess }: AddProduceDialogProps) => {
 
       showSuccess("Produce added successfully!");
       setOpen(false);
-      setFormData({ name: "", variety: "", price: "", quantity: "" });
+      setFormData({ name: "", variety: "", description: "", price: "", quantity: "" });
       setImageFile(null);
       onSuccess();
     } catch (error: any) {
@@ -97,6 +100,16 @@ export const AddProduceDialog = ({ onSuccess }: AddProduceDialogProps) => {
               placeholder="e.g. Heirloom Cherokee Purple" 
               value={formData.variety}
               onChange={(e) => setFormData({...formData, variety: e.target.value})}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea 
+              id="description" 
+              placeholder="Tell us more about how it was grown..." 
+              className="resize-none"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
