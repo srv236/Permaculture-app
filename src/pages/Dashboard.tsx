@@ -12,13 +12,15 @@ import {
   Trash2, 
   User, 
   CheckCircle2,
-  Loader2
+  Loader2,
+  Building2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Producer, Produce } from "@/types/farm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProduceForm } from "@/components/ProduceForm";
+import { ProfileForm } from "@/components/ProfileForm";
 import { showSuccess, showError } from "@/utils/toast";
 
 const Dashboard = () => {
@@ -27,6 +29,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Producer | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [editingProduce, setEditingProduce] = useState<Produce | null>(null);
 
   const fetchProfile = async () => {
@@ -72,6 +75,13 @@ const Dashboard = () => {
     }
   };
 
+  const calculateCompletion = () => {
+    if (!profile) return 0;
+    const fields = ['name', 'farm_name', 'phone', 'email', 'locations'];
+    const completed = fields.filter(f => !!(profile as any)[f]).length;
+    return Math.round((completed / fields.length) * 100);
+  };
+
   if (sessionLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -111,7 +121,11 @@ const Dashboard = () => {
                 />
               </DialogContent>
             </Dialog>
-            <Button variant="outline" className="rounded-2xl border-slate-200">
+            <Button 
+              variant="outline" 
+              className="rounded-2xl border-slate-200"
+              onClick={() => setIsProfileDialogOpen(true)}
+            >
               <Settings className="w-4 h-4 mr-2" />
               Farm Settings
             </Button>
@@ -179,12 +193,16 @@ const Dashboard = () => {
           <div className="space-y-8">
             <section className="bg-emerald-900 text-white p-8 rounded-[2rem] shadow-lg">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-800 flex items-center justify-center border border-emerald-700">
-                  <User className="w-8 h-8 text-emerald-400" />
+                <div className="w-16 h-16 rounded-2xl bg-emerald-800 flex items-center justify-center border border-emerald-700 overflow-hidden">
+                  {profile?.picture_url ? (
+                    <img src={profile.picture_url} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-8 h-8 text-emerald-400" />
+                  )}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold">{profile?.farm_name || "Your Farm"}</h3>
-                  <p className="text-emerald-300 text-sm">{profile?.name}</p>
+                  <p className="text-emerald-300 text-sm">{profile?.name || "Set your name"}</p>
                 </div>
               </div>
               
@@ -203,15 +221,18 @@ const Dashboard = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs font-medium uppercase tracking-wider text-emerald-400">
                     <span>Profile Completion</span>
-                    <span>{profile?.farm_name ? '60%' : '20%'}</span>
+                    <span>{calculateCompletion()}%</span>
                   </div>
                   <div className="h-2 bg-emerald-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-400" style={{ width: profile?.farm_name ? '60%' : '20%' }} />
+                    <div className="h-full bg-emerald-400 transition-all duration-500" style={{ width: `${calculateCompletion()}%` }} />
                   </div>
                 </div>
               </div>
               
-              <Button className="w-full bg-white text-emerald-900 hover:bg-emerald-50 rounded-2xl font-bold">
+              <Button 
+                className="w-full bg-white text-emerald-900 hover:bg-emerald-50 rounded-2xl font-bold"
+                onClick={() => setIsProfileDialogOpen(true)}
+              >
                 Edit Farm Profile
               </Button>
             </section>
@@ -248,6 +269,25 @@ const Dashboard = () => {
                 fetchProfile();
               }}
               onCancel={() => setEditingProduce(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] rounded-[2rem]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Edit Farm Profile</DialogTitle>
+          </DialogHeader>
+          {profile && (
+            <ProfileForm 
+              initialData={profile}
+              onSuccess={() => {
+                setIsProfileDialogOpen(false);
+                fetchProfile();
+              }}
+              onCancel={() => setIsProfileDialogOpen(false)}
             />
           )}
         </DialogContent>
