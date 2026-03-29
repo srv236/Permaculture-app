@@ -11,11 +11,14 @@ import {
   Droplets, 
   Sun, 
   Users,
-  Instagram
+  Instagram,
+  ExternalLink
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const LOGO_URL = "https://ugc.production.linktr.ee/2709b2db-5589-432c-92ea-5fdce99252ca_aolpclogo.jpeg?io=true&size=avatar-v3_0";
+const LINKTREE_URL = "https://linktr.ee/aolpermaculture";
+const ASHRAM_COURSES_URL = "https://bangaloreashram.org/permaculture/#courses";
 
 const Index = () => {
   return (
@@ -126,27 +129,50 @@ const Index = () => {
                 a beginner to a confident practitioner of sustainable living.
               </p>
               
-              <div className="space-y-6">
-                <div className="flex gap-4 p-6 rounded-2xl bg-emerald-50 border border-emerald-100">
+              <div className="space-y-6 mb-8">
+                <a 
+                  href={LINKTREE_URL} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex gap-4 p-6 rounded-2xl bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors group"
+                >
                   <div className="bg-white p-3 rounded-xl shadow-sm h-fit">
                     <BookOpen className="w-6 h-6 text-emerald-600" />
                   </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-emerald-900 mb-1">Basic Course</h4>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="text-xl font-bold text-emerald-900">Basic Course</h4>
+                      <ExternalLink className="w-4 h-4 text-emerald-400 group-hover:text-emerald-600 transition-colors" />
+                    </div>
                     <p className="text-emerald-800/70">An introduction to the ethics, principles, and basic techniques of permaculture design.</p>
                   </div>
-                </div>
+                </a>
                 
-                <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100">
+                <a 
+                  href={LINKTREE_URL} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-colors group"
+                >
                   <div className="bg-white p-3 rounded-xl shadow-sm h-fit">
                     <Sprout className="w-6 h-6 text-slate-600" />
                   </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-slate-900 mb-1">Advanced Course</h4>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="text-xl font-bold text-slate-900">Advanced Course</h4>
+                      <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    </div>
                     <p className="text-slate-600">Deep dive into complex system design, water management, and professional implementation.</p>
                   </div>
-                </div>
+                </a>
               </div>
+
+              <a href={ASHRAM_COURSES_URL} target="_blank" rel="noopener noreferrer">
+                <Button variant="link" className="text-emerald-600 font-bold p-0 h-auto text-lg hover:text-emerald-700">
+                  View all upcoming courses at the Ashram
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </a>
             </div>
             
             <div className="flex-1 bg-emerald-900 rounded-[3rem] p-12 text-white relative overflow-hidden">
@@ -160,9 +186,16 @@ const Index = () => {
                 <MapPin className="text-emerald-400" />
                 <span>Art of Living International Center, Bangalore</span>
               </div>
-              <Button className="w-full bg-white text-emerald-900 hover:bg-emerald-50 h-14 text-lg font-bold rounded-2xl relative z-10">
-                Get Directions
-              </Button>
+              <a 
+                href="https://maps.app.goo.gl/vXvXvXvXvXvXvXvX" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block relative z-10"
+              >
+                <Button className="w-full bg-white text-emerald-900 hover:bg-emerald-50 h-14 text-lg font-bold rounded-2xl">
+                  Get Directions
+                </Button>
+              </a>
             </div>
           </div>
         </div>
