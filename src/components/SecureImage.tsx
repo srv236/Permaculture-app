@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSignedUrl } from "@/utils/upload";
+import { getSignedUrl, getPublicUrl } from "@/utils/upload";
 import { Skeleton } from "./ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -25,15 +25,24 @@ export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureIm
         return;
       }
 
-      if (path.startsWith('http')) {
+      // Handle direct URLs or special dyad-media URLs
+      if (path.startsWith('http') || path.startsWith('dyad-media')) {
         setUrl(path);
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      const signedUrl = await getSignedUrl(bucket, path);
-      setUrl(signedUrl || fallback || "");
+      
+      // For assets bucket, we usually want public URLs
+      if (bucket === 'assets') {
+        const publicUrl = getPublicUrl(bucket, path);
+        setUrl(publicUrl || fallback || "");
+      } else {
+        const signedUrl = await getSignedUrl(bucket, path);
+        setUrl(signedUrl || fallback || "");
+      }
+      
       setLoading(false);
     };
 
@@ -48,7 +57,12 @@ export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureIm
     <img 
       src={url || fallback} 
       alt={alt} 
-      className={cn("object-cover", className)} 
+      className={cn("object-cover", className)}
+      onError={(e) => {
+        if (fallback && url !== fallback) {
+          setUrl(fallback);
+        }
+      }}
     />
   );
 };

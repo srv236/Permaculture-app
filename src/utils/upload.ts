@@ -13,26 +13,33 @@ export const uploadImage = async (file: File, bucket: string) => {
     throw uploadError;
   }
 
-  // Return the path so SecureImage can handle generating the correct URL
   return filePath;
+};
+
+export const getPublicUrl = (bucket: string, path: string) => {
+  if (!path) return "";
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
 };
 
 export const getSignedUrl = async (bucket: string, path: string) => {
   if (!path) return "";
   
-  // If it's already a full URL (like a mock image), return it as is
-  if (path.startsWith('http')) return path;
+  if (path.startsWith('http') || path.startsWith('dyad-media')) return path;
 
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .createSignedUrl(path, 3600); // URL valid for 1 hour
+  try {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, 3600);
 
-  if (error) {
-    console.error("Error generating signed URL:", error);
-    // Fallback to public URL if signed URL fails (in case bucket is public)
-    const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(path);
-    return publicData.publicUrl;
+    if (error) {
+      // Fallback to public URL if signed URL fails
+      return getPublicUrl(bucket, path);
+    }
+
+    return data.signedUrl;
+  } catch (err) {
+    console.error("Error in getSignedUrl:", err);
+    return getPublicUrl(bucket, path);
   }
-
-  return data.signedUrl;
 };

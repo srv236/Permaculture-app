@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusCircle, LayoutDashboard, LogOut, LogIn, Sprout } from "lucide-react";
+import { PlusCircle, LayoutDashboard, LogOut, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useSession } from "./SessionProvider";
@@ -19,7 +19,7 @@ export const Navbar = () => {
               bucket="assets"
               alt="The Art of Living Permaculture"
               className="w-full h-full"
-              fallback="https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=100"
+              fallback="dyad-media://media/Permaculture/.dyad/media/c95bccb482d5f31a70f51015e7d8132f.png"
             />
           </div>
           <span className="font-bold text-xl tracking-tight text-emerald-900 hidden sm:inline-block">
