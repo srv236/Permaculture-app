@@ -1,9 +1,11 @@
 "use client";
 
-import { Leaf, PlusCircle, LayoutDashboard, LogOut, LogIn } from "lucide-react";
+import { PlusCircle, LayoutDashboard, LogOut, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useSession } from "./SessionProvider";
+
+const LOGO_URL = "https://ugc.production.linktr.ee/2709b2db-5589-432c-92ea-5fdce99252ca_aolpclogo.jpeg?io=true&size=avatar-v3_0";
 
 export const Navbar = () => {
   const { user, signOut } = useSession();
@@ -11,9 +13,13 @@ export const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="bg-emerald-600 p-1.5 rounded-lg">
-            <Leaf className="w-6 h-6 text-white" />
+        <Link to="/" className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-emerald-100 shadow-sm">
+            <img 
+              src={LOGO_URL} 
+              alt="AOLPC Logo" 
+              className="w-full h-full object-cover"
+            />
           </div>
           <span className="font-bold text-xl tracking-tight text-emerald-900 hidden sm:inline-block">
             Permaculture<span className="text-emerald-600">Market</span>
