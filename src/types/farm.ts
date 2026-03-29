@@ -2,11 +2,10 @@ export interface Produce {
   id: string;
   producer_id: string;
   name: string;
-  variety?: string;
+  variety: string;
   price: string;
   quantity: string;
-  image_url?: string;
-  created_at?: string;
+  image_url: string;
 }
 
 export interface Producer {
@@ -15,9 +14,7 @@ export interface Producer {
   phone: string;
   email: string;
   farm_name: string;
-  locations?: string[];
+  locations: string[];
   picture_url?: string;
-  has_completed_course?: boolean;
-  updated_at?: string;
-  produce?: Produce[];
+  produce: Produce[];
 }

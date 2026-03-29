@@ -1,356 +1,106 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
-import { 
-  Sprout, 
-  BookOpen, 
-  MapPin, 
-  ArrowRight, 
-  Leaf, 
-  Droplets, 
-  Sun, 
-  Users,
-  Instagram,
-  ExternalLink,
-  ClipboardCheck,
-  ShoppingBag,
-  ShieldCheck,
-  Truck
-} from "lucide-react";
-import { Link } from "react-router-dom";
+import { ProducerCard } from "@/components/ProducerCard";
+import { Input } from "@/components/ui/input";
+import { Search, Sprout, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Producer } from "@/types/farm";
-import { ProducerCard } from "@/components/ProducerCard";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const LOGO_URL = "https://ugc.production.linktr.ee/2709b2db-5589-432c-92ea-5fdce99252ca_aolpclogo.jpeg?io=true&size=avatar-v3_0";
-const LINKTREE_URL = "https://linktr.ee/aolpermaculture";
-const ASHRAM_COURSES_URL = "https://bangaloreashram.org/permaculture/#courses";
-const INTEREST_FORM_URL = "https://linktr.ee/aolpermaculture"; 
 
 const Index = () => {
-  const [featuredProducers, setFeaturedProducers] = useState<Producer[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [producers, setProducers] = useState<Producer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*, produce(*)')
-          .limit(2);
-        if (error) throw error;
-        setFeaturedProducers(data || []);
-      } catch (error) {
-        console.error("Error fetching featured producers:", error);
-      } finally {
-        setLoading(false);
+    const fetchProducers = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          *,
+          produce (*)
+        `);
+
+      if (error) {
+        console.error("Error fetching producers:", error);
+      } else {
+        setProducers(data || []);
       }
+      setLoading(false);
     };
-    fetchFeatured();
+
+    fetchProducers();
   }, []);
 
+  const filteredProducers = producers.filter(producer => {
+    const matchesProducer = producer.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           producer.farm_name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesProduce = producer.produce?.some(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      p.variety?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    return matchesProducer || matchesProduce;
+  });
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-emerald-50/50 -z-10" />
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium mb-6">
-                <Sprout className="w-4 h-4" />
-                Art of Living Permaculture
-              </div>
-              <h1 className="text-5xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight">
-                Regenerating Earth, <br />
-                <span className="text-emerald-600">Nourishing Lives</span>
-              </h1>
-              <p className="text-xl text-slate-600 mb-8 max-w-2xl">
-                A 5-acre model farm at the Art of Living International Center, Bangalore, 
-                demonstrating how we can live in harmony with nature while producing 
-                abundant, nutrient-dense food.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/market">
-                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-14 px-8 text-lg rounded-full">
-                    Explore the Market
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                <a href="#courses">
-                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-                    Our Courses
-                  </Button>
-                </a>
-              </div>
-            </div>
-            <div className="flex-1 relative">
-              <div className="relative w-72 h-72 md:w-96 md:h-96 mx-auto">
-                <div className="absolute inset-0 bg-emerald-200 rounded-full blur-3xl opacity-30 animate-pulse" />
-                <img 
-                  src={LOGO_URL} 
-                  alt="AOLPC Logo" 
-                  className="relative z-10 w-full h-full object-cover rounded-full border-8 border-white shadow-2xl"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How the Market Works</h2>
-            <p className="text-slate-600 text-lg">
-              We connect you directly with permaculture practitioners who have trained with us.
-            </p>
-          </div>
+      <header className="bg-emerald-900 text-white py-16 px-4">
+        <div className="container mx-auto text-center max-w-3xl">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">Fresh from the Forest</h1>
+          <p className="text-emerald-100 text-lg mb-8">
+            Connect directly with certified permaculture producers in your area. 
+            Sustainable, local, and nutrient-dense produce.
+          </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              {
-                icon: <ShoppingBag className="w-10 h-10 text-emerald-600" />,
-                title: "1. Browse Produce",
-                desc: "Explore seasonal, chemical-free produce listed by our certified producers."
-              },
-              {
-                icon: <ShieldCheck className="w-10 h-10 text-emerald-600" />,
-                title: "2. Verified Quality",
-                desc: "Look for the 'Certified' badge to find producers who have completed our advanced training."
-              },
-              {
-                icon: <Truck className="w-10 h-10 text-emerald-600" />,
-                title: "3. Buy Direct",
-                desc: "Contact the producer directly to arrange payment and delivery. No middlemen involved."
-              }
-            ].map((step, i) => (
-              <div key={i} className="text-center group">
-                <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
-                  {step.icon}
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{step.title}</h3>
-                <p className="text-slate-600">{step.desc}</p>
-              </div>
-            ))}
+          <div className="relative max-w-xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
+            <Input 
+              className="pl-12 h-14 bg-white text-slate-900 rounded-full border-none shadow-lg text-lg"
+              placeholder="Search by produce (e.g. Kale) or farm name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
-      </section>
+      </header>
 
-      {/* Featured Producers */}
-      <section className="py-24 bg-slate-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div className="max-w-2xl">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Featured Producers</h2>
-              <p className="text-slate-600 text-lg">
-                Meet the farmers who are leading the regenerative movement in their communities.
-              </p>
-            </div>
-            <Link to="/market">
-              <Button variant="outline" className="rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-                View All Producers
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Skeleton className="h-80 rounded-[2rem]" />
-              <Skeleton className="h-80 rounded-[2rem]" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {featuredProducers.map((producer) => (
-                <ProducerCard key={producer.id} producer={producer} />
-              ))}
-            </div>
+      <main className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <Sprout className="text-emerald-600" />
+            {searchQuery ? `Results for "${searchQuery}"` : "Featured Producers"}
+          </h2>
+          {!loading && (
+            <p className="text-sm text-slate-500 font-medium">
+              {filteredProducers.length} producers found
+            </p>
           )}
         </div>
-      </section>
 
-      {/* Core Principles Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">The 5-Acre Model</h2>
-            <p className="text-slate-600 text-lg">
-              Our farm serves as a living laboratory for sustainable agriculture, 
-              focusing on four key pillars of ecological restoration.
-            </p>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: <Leaf className="w-8 h-8 text-emerald-600" />,
-                title: "Soil Health",
-                desc: "Building living soil through composting, mulching, and zero-chemical interventions."
-              },
-              {
-                icon: <Droplets className="w-8 h-8 text-blue-500" />,
-                title: "Water Conservation",
-                desc: "Harvesting every drop through swales, ponds, and efficient irrigation systems."
-              },
-              {
-                icon: <Sun className="w-8 h-8 text-amber-500" />,
-                title: "Biodiversity",
-                desc: "Creating a resilient ecosystem with multi-layered food forests and companion planting."
-              },
-              {
-                icon: <Users className="w-8 h-8 text-purple-500" />,
-                title: "Community",
-                desc: "Empowering farmers and urban dwellers with the skills to grow their own food."
-              }
-            ].map((item, i) => (
-              <div key={i} className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                <div className="mb-6 p-3 bg-slate-50 inline-block rounded-2xl">
-                  {item.icon}
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{item.desc}</p>
-              </div>
+        ) : filteredProducers.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {filteredProducers.map(producer => (
+              <ProducerCard key={producer.id} producer={producer} />
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Courses Section */}
-      <section id="courses" className="py-24 bg-slate-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-16 items-center">
-            <div className="flex-1">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Learn Permaculture</h2>
-              <p className="text-slate-600 text-lg mb-8">
-                We offer comprehensive training programs designed to take you from 
-                a beginner to a confident practitioner of sustainable living.
-              </p>
-              
-              <div className="space-y-6 mb-8">
-                <a 
-                  href={LINKTREE_URL} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex gap-4 p-6 rounded-2xl bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors group"
-                >
-                  <div className="bg-white p-3 rounded-xl shadow-sm h-fit">
-                    <BookOpen className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-xl font-bold text-emerald-900">Basic Course</h4>
-                      <ExternalLink className="w-4 h-4 text-emerald-400 group-hover:text-emerald-600 transition-colors" />
-                    </div>
-                    <p className="text-emerald-800/70">An introduction to the ethics, principles, and basic techniques of permaculture design.</p>
-                  </div>
-                </a>
-                
-                <a 
-                  href={LINKTREE_URL} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex gap-4 p-6 rounded-2xl bg-white border border-slate-100 hover:bg-slate-50 transition-colors group"
-                >
-                  <div className="bg-slate-50 p-3 rounded-xl shadow-sm h-fit">
-                    <Sprout className="w-6 h-6 text-slate-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-xl font-bold text-slate-900">Advanced Course</h4>
-                      <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
-                    </div>
-                    <p className="text-slate-600">Deep dive into complex system design, water management, and professional implementation.</p>
-                  </div>
-                </a>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <a href={ASHRAM_COURSES_URL} target="_blank" rel="noopener noreferrer">
-                  <Button variant="link" className="text-emerald-600 font-bold p-0 h-auto text-lg hover:text-emerald-700 flex items-center gap-2">
-                    Explore all courses & workshops at the Bangalore Ashram
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </a>
-                
-                <a href={INTEREST_FORM_URL} target="_blank" rel="noopener noreferrer" className="mt-4">
-                  <Button className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none rounded-2xl px-6 py-6 h-auto flex items-center gap-3 group">
-                    <ClipboardCheck className="w-6 h-6" />
-                    <div className="text-left">
-                      <div className="font-bold">Join the Interest List</div>
-                      <div className="text-xs opacity-80">Get notified about upcoming batches</div>
-                    </div>
-                    <ArrowRight className="ml-auto w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </a>
-              </div>
-            </div>
-            
-            <div className="flex-1 bg-emerald-900 rounded-[3rem] p-12 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-800 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
-              <h3 className="text-3xl font-bold mb-6 relative z-10">Visit the Farm</h3>
-              <p className="text-emerald-100 mb-8 relative z-10 leading-relaxed">
-                Experience the magic of permaculture firsthand. Our model farm is located 
-                within the serene Bangalore Ashram.
-              </p>
-              <div className="flex items-center gap-3 mb-8 relative z-10">
-                <MapPin className="text-emerald-400" />
-                <span>Art of Living International Center, Bangalore</span>
-              </div>
-              <a 
-                href="https://maps.app.goo.gl/vXvXvXvXvXvXvXvX" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block relative z-10"
-              >
-                <Button className="w-full bg-white text-emerald-900 hover:bg-emerald-50 h-14 text-lg font-bold rounded-2xl">
-                  Get Directions
-                </Button>
-              </a>
-            </div>
+        ) : (
+          <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200">
+            <p className="text-slate-400 text-lg">No producers or produce found matching your search.</p>
           </div>
-        </div>
-      </section>
+        )}
+      </main>
 
-      {/* Market CTA */}
-      <section className="py-24 bg-emerald-600">
+      <footer className="bg-white border-t py-12 mt-20">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">Support Local Producers</h2>
-          <p className="text-emerald-50 text-xl mb-12 max-w-2xl mx-auto">
-            Our graduates are growing amazing produce across the country. 
-            Buy directly from them and support the movement.
+          <p className="text-slate-500 text-sm">
+            © 2024 Permaculture Department Market. All producers are verified graduates of our basic and advanced courses.
           </p>
-          <Link to="/market">
-            <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 h-16 px-12 text-xl font-bold rounded-full shadow-xl">
-              Go to Market
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-slate-800 pb-12 mb-12">
-            <div className="flex items-center gap-3">
-              <img src={LOGO_URL} alt="Logo" className="w-10 h-10 rounded-full" />
-              <span className="text-white font-bold text-xl">AOL Permaculture</span>
-            </div>
-            <div className="flex gap-6">
-              <a href="https://www.instagram.com/aolpermaculture/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
-                <Instagram className="w-8 h-8" />
-              </a>
-            </div>
-          </div>
-          <div className="text-center text-sm">
-            <p>© 2024 Art of Living Permaculture Department. All rights reserved.</p>
-          </div>
         </div>
       </footer>
     </div>

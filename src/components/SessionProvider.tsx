@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Session, User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SessionContextType {
   session: Session | null;
@@ -11,9 +11,14 @@ interface SessionContextType {
   signOut: () => Promise<void>;
 }
 
-const SessionContext = createContext<SessionContextType | undefined>(undefined);
+const SessionContext = createContext<SessionContextType>({
+  session: null,
+  user: null,
+  loading: true,
+  signOut: async () => {},
+});
 
-export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,10 +52,4 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
-export const useSession = () => {
-  const context = useContext(SessionContext);
-  if (context === undefined) {
-    throw new Error("useSession must be used within a SessionProvider");
-  }
-  return context;
-};
+export const useSession = () => useContext(SessionContext);
