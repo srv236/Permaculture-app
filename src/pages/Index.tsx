@@ -12,13 +12,16 @@ import {
   Sun, 
   Users,
   Instagram,
-  ExternalLink
+  ExternalLink,
+  ClipboardCheck
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const LOGO_URL = "https://ugc.production.linktr.ee/2709b2db-5589-432c-92ea-5fdce99252ca_aolpclogo.jpeg?io=true&size=avatar-v3_0";
 const LINKTREE_URL = "https://linktr.ee/aolpermaculture";
 const ASHRAM_COURSES_URL = "https://bangaloreashram.org/permaculture/#courses";
+// Interest form is typically the first link in their Linktree
+const INTEREST_FORM_URL = "https://linktr.ee/aolpermaculture"; 
 
 const Index = () => {
   return (
@@ -167,12 +170,25 @@ const Index = () => {
                 </a>
               </div>
 
-              <a href={ASHRAM_COURSES_URL} target="_blank" rel="noopener noreferrer">
-                <Button variant="link" className="text-emerald-600 font-bold p-0 h-auto text-lg hover:text-emerald-700">
-                  View all upcoming courses at the Ashram
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </a>
+              <div className="flex flex-col gap-4">
+                <a href={ASHRAM_COURSES_URL} target="_blank" rel="noopener noreferrer">
+                  <Button variant="link" className="text-emerald-600 font-bold p-0 h-auto text-lg hover:text-emerald-700 flex items-center gap-2">
+                    Explore all courses & workshops at the Bangalore Ashram
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                </a>
+                
+                <a href={INTEREST_FORM_URL} target="_blank" rel="noopener noreferrer" className="mt-4">
+                  <Button className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none rounded-2xl px-6 py-6 h-auto flex items-center gap-3 group">
+                    <ClipboardCheck className="w-6 h-6" />
+                    <div className="text-left">
+                      <div className="font-bold">Join the Interest List</div>
+                      <div className="text-xs opacity-80">Get notified about upcoming batches</div>
+                    </div>
+                    <ArrowRight className="ml-auto w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </a>
+              </div>
             </div>
             
             <div className="flex-1 bg-emerald-900 rounded-[3rem] p-12 text-white relative overflow-hidden">
@@ -227,7 +243,7 @@ const Index = () => {
             </div>
             <div className="flex gap-6">
               <a href="https://www.instagram.com/aolpermaculture/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
-                <Instagram className="w-6 h-6" />
+                <Instagram className="w-8 h-8" />
               </a>
             </div>
           </div>
