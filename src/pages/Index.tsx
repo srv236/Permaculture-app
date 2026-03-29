@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
@@ -13,17 +14,44 @@ import {
   Users,
   Instagram,
   ExternalLink,
-  ClipboardCheck
+  ClipboardCheck,
+  ShoppingBag,
+  ShieldCheck,
+  Truck
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Producer } from "@/types/farm";
+import { ProducerCard } from "@/components/ProducerCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LOGO_URL = "https://ugc.production.linktr.ee/2709b2db-5589-432c-92ea-5fdce99252ca_aolpclogo.jpeg?io=true&size=avatar-v3_0";
 const LINKTREE_URL = "https://linktr.ee/aolpermaculture";
 const ASHRAM_COURSES_URL = "https://bangaloreashram.org/permaculture/#courses";
-// Interest form is typically the first link in their Linktree
 const INTEREST_FORM_URL = "https://linktr.ee/aolpermaculture"; 
 
 const Index = () => {
+  const [featuredProducers, setFeaturedProducers] = useState<Producer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*, produce(*)')
+          .limit(2);
+        if (error) throw error;
+        setFeaturedProducers(data || []);
+      } catch (error) {
+        console.error("Error fetching featured producers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeatured();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -75,8 +103,81 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Core Principles Section */}
+      {/* How it Works */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How the Market Works</h2>
+            <p className="text-slate-600 text-lg">
+              We connect you directly with permaculture practitioners who have trained with us.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {[
+              {
+                icon: <ShoppingBag className="w-10 h-10 text-emerald-600" />,
+                title: "1. Browse Produce",
+                desc: "Explore seasonal, chemical-free produce listed by our certified producers."
+              },
+              {
+                icon: <ShieldCheck className="w-10 h-10 text-emerald-600" />,
+                title: "2. Verified Quality",
+                desc: "Look for the 'Certified' badge to find producers who have completed our advanced training."
+              },
+              {
+                icon: <Truck className="w-10 h-10 text-emerald-600" />,
+                title: "3. Buy Direct",
+                desc: "Contact the producer directly to arrange payment and delivery. No middlemen involved."
+              }
+            ].map((step, i) => (
+              <div key={i} className="text-center group">
+                <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
+                  {step.icon}
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{step.title}</h3>
+                <p className="text-slate-600">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Producers */}
       <section className="py-24 bg-slate-50">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Featured Producers</h2>
+              <p className="text-slate-600 text-lg">
+                Meet the farmers who are leading the regenerative movement in their communities.
+              </p>
+            </div>
+            <Link to="/market">
+              <Button variant="outline" className="rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                View All Producers
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Skeleton className="h-80 rounded-[2rem]" />
+              <Skeleton className="h-80 rounded-[2rem]" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {featuredProducers.map((producer) => (
+                <ProducerCard key={producer.id} producer={producer} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Core Principles Section */}
+      <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">The 5-Acre Model</h2>
@@ -122,7 +223,7 @@ const Index = () => {
       </section>
 
       {/* Courses Section */}
-      <section id="courses" className="py-24">
+      <section id="courses" className="py-24 bg-slate-50">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-16 items-center">
             <div className="flex-1">
@@ -155,9 +256,9 @@ const Index = () => {
                   href={LINKTREE_URL} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-colors group"
+                  className="flex gap-4 p-6 rounded-2xl bg-white border border-slate-100 hover:bg-slate-50 transition-colors group"
                 >
-                  <div className="bg-white p-3 rounded-xl shadow-sm h-fit">
+                  <div className="bg-slate-50 p-3 rounded-xl shadow-sm h-fit">
                     <Sprout className="w-6 h-6 text-slate-600" />
                   </div>
                   <div className="flex-1">
