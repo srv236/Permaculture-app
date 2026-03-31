@@ -33,6 +33,14 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
     e.preventDefault();
     if (!user) return;
 
+    // Validation: At least one location field must be filled
+    const hasLocation = formData.address || (formData.latitude && formData.longitude) || formData.google_maps_url;
+    
+    if (!hasLocation) {
+      showError("Please provide at least one location: Address, Coordinates, or Google Maps link.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -107,60 +115,64 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                id="address" 
-                className="pl-10"
-                placeholder="123 Permaculture Way" 
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 border-t pt-4">
+            <p className="text-sm font-medium text-slate-500">Location (Provide at least one)</p>
+            
             <div className="space-y-2">
-              <Label htmlFor="latitude">Latitude</Label>
-              <Input 
-                id="latitude" 
-                type="number" 
-                step="any"
-                placeholder="-23.5505"
-                value={formData.latitude}
-                onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-              />
+              <Label htmlFor="address">Manual Address</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="address" 
+                  className="pl-10"
+                  placeholder="123 Permaculture Way" 
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                />
+              </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input 
+                  id="latitude" 
+                  type="number" 
+                  step="any"
+                  placeholder="-23.5505"
+                  value={formData.latitude}
+                  onChange={(e) => setFormData({...formData, latitude: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input 
+                  id="longitude" 
+                  type="number" 
+                  step="any"
+                  placeholder="-46.6333"
+                  value={formData.longitude}
+                  onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="longitude">Longitude</Label>
-              <Input 
-                id="longitude" 
-                type="number" 
-                step="any"
-                placeholder="-46.6333"
-                value={formData.longitude}
-                onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-              />
+              <Label htmlFor="maps_url">Google Maps Link</Label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="maps_url" 
+                  className="pl-10"
+                  placeholder="https://goo.gl/maps/..."
+                  value={formData.google_maps_url}
+                  onChange={(e) => setFormData({...formData, google_maps_url: e.target.value})}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="maps_url">Google Maps Link</Label>
-            <div className="relative">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                id="maps_url" 
-                className="pl-10"
-                placeholder="https://goo.gl/maps/..."
-                value={formData.google_maps_url}
-                onChange={(e) => setFormData({...formData, google_maps_url: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
+          <div className="space-y-2 border-t pt-4">
             <Label htmlFor="image">Farm Picture (Optional)</Label>
             <div className="flex items-center gap-4">
               <Input 
