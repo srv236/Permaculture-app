@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { Producer } from "@/types/farm";
+import { Farm, Producer } from "@/types/farm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, LayoutDashboard, CheckCircle2, Clock } from "lucide-react";
+import { Trash2, Loader2, LayoutDashboard, CheckCircle2, Clock, MapPin, Ruler } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
+import { AddFarmDialog } from "@/components/AddFarmDialog";
 import { AddProduceDialog } from "@/components/AddProduceDialog";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { SecureImage } from "@/components/SecureImage";
@@ -18,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 const Dashboard = () => {
   const { user, loading: sessionLoading } = useSession();
   const [profile, setProfile] = useState<Producer | null>(null);
+  const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -28,24 +30,47 @@ const Dashboard = () => {
     }
 
     if (user) {
-      fetchProfile();
+      fetchData();
     }
   }, [user, sessionLoading]);
 
-  const fetchProfile = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select(`*, produce (*)`)
-      .eq('id', user?.id)
-      .single();
+    try {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select(`*`)
+        .eq('id', user?.id)
+        .single();
+
+      const { data: farmsData } = await supabase
+        .from('farms')
+        .select(`*, produce (*)`)
+        .eq('user_id', user?.id);
+
+      setProfile(profileData);
+      setFarms(farmsData || []);
+    } catch (error) {
+      showError("Could not load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteFarm = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this farm and all its produce?")) return;
+
+    const { error } = await supabase
+      .from('farms')
+      .delete()
+      .eq('id', id);
 
     if (error) {
-      showError("Could not load profile.");
+      showError("Failed to delete farm.");
     } else {
-      setProfile(data);
+      showSuccess("Farm removed.");
+      fetchData();
     }
-    setLoading(false);
   };
 
   const handleDeleteProduce = async (id: string) => {
@@ -60,7 +85,7 @@ const Dashboard = () => {
       showError("Failed to delete produce.");
     } else {
       showSuccess("Produce removed.");
-      fetchProfile();
+      fetchData();
     }
   };
 
@@ -84,7 +109,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-emerald-900 flex items-center gap-2">
                 <LayoutDashboard className="w-8 h-8" />
-                Producer Dashboard
+                Dashboard
               </h1>
               {profile?.is_verified ? (
                 <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200 flex items-center gap-1">
@@ -98,16 +123,16 @@ const Dashboard = () => {
                 </Badge>
               )}
             </div>
-            <p className="text-slate-500">Manage your farm: <span className="font-semibold text-emerald-700">{profile?.farm_name}</span></p>
+            <p className="text-slate-500">Welcome back, <span className="font-semibold text-emerald-700">{profile?.name}</span></p>
           </div>
-          <AddProduceDialog onSuccess={fetchProfile} />
+          <AddFarmDialog onSuccess={fetchData} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Profile Summary */}
-          <Card className="md:col-span-1 border-emerald-100">
+          <Card className="lg:col-span-1 border-emerald-100 h-fit">
             <CardHeader>
-              <CardTitle className="text-lg">Farm Profile</CardTitle>
+              <CardTitle className="text-lg">Your Profile</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-center mb-4">
@@ -120,93 +145,111 @@ const Dashboard = () => {
                   />
                 </div>
               </div>
-              
-              {!profile?.is_verified && (
-                <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-800 mb-4">
-                  <p className="font-bold mb-1">Verification Pending</p>
-                  <p>Our team is reviewing your credentials. Once verified, a blue checkmark will appear on your profile.</p>
-                </div>
-              )}
-
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase">Producer Name</label>
-                <p className="text-slate-700 flex items-center gap-1">
-                  {profile?.name}
-                  {profile?.is_verified && <CheckCircle2 className="w-4 h-4 text-blue-500" />}
-                </p>
-              </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase">Contact Info</label>
                 <p className="text-slate-700">{profile?.phone}</p>
                 <p className="text-slate-700">{profile?.email}</p>
               </div>
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase">Locations</label>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {profile?.locations?.map((loc, i) => (
-                    <span key={i} className="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full border border-emerald-100">
-                      {loc}
-                    </span>
-                  ))}
-                </div>
-              </div>
               {profile && (
-                <EditProfileDialog profile={profile} onSuccess={fetchProfile} />
+                <EditProfileDialog profile={profile} onSuccess={fetchData} />
               )}
             </CardContent>
           </Card>
 
-          {/* Produce List */}
-          <div className="md:col-span-2 space-y-4">
-            <h2 className="text-xl font-bold text-slate-800">Your Produce Listings</h2>
-            {profile?.produce && profile.produce.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {profile.produce.map((item) => (
-                  <Card key={item.id} className="overflow-hidden border-slate-200">
-                    <div className="aspect-video relative">
-                      <SecureImage 
-                        path={item.image_url}
-                        bucket="produce_images"
-                        alt={item.name}
-                        className="w-full h-full"
-                        fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
-                      />
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <Button 
-                          variant="destructive" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={() => handleDeleteProduce(item.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+          {/* Farms List */}
+          <div className="lg:col-span-3 space-y-6">
+            <h2 className="text-xl font-bold text-slate-800">Your Farms</h2>
+            {farms.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6">
+                {farms.map((farm) => (
+                  <Card key={farm.id} className="overflow-hidden border-slate-200">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="md:w-1/3 aspect-video md:aspect-auto relative">
+                        <SecureImage 
+                          path={farm.picture_url}
+                          bucket="profile_pictures"
+                          alt={farm.name}
+                          className="w-full h-full"
+                          coordinates={farm.latitude ? { lat: farm.latitude, lng: farm.longitude } : undefined}
+                          fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <Button 
+                            variant="destructive" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => handleDeleteFarm(farm.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="md:w-2/3 p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-emerald-900">{farm.name}</h3>
+                            <div className="flex flex-wrap gap-3 mt-1">
+                              {farm.size && (
+                                <span className="text-xs text-slate-500 flex items-center gap-1">
+                                  <Ruler className="w-3 h-3" />
+                                  {farm.size}
+                                </span>
+                              )}
+                              {farm.address && (
+                                <span className="text-xs text-slate-500 flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  {farm.address}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <AddProduceDialog farmId={farm.id} onSuccess={fetchData} />
+                        </div>
+
+                        <div className="border-t pt-4">
+                          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Produce on this farm</h4>
+                          {farm.produce && farm.produce.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {farm.produce.map((item) => (
+                                <div key={item.id} className="flex items-center gap-3 p-2 bg-slate-50 rounded-lg border border-slate-100 group">
+                                  <div className="w-10 h-10 rounded overflow-hidden shrink-0">
+                                    <SecureImage 
+                                      path={item.image_url}
+                                      bucket="produce_images"
+                                      alt={item.name}
+                                      className="w-full h-full"
+                                      fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=100"
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-slate-800 truncate">{item.name}</p>
+                                    <p className="text-[10px] text-slate-500">{item.price} • {item.quantity}</p>
+                                  </div>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => handleDeleteProduce(item.id)}
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic">No produce listed for this farm yet.</p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h4 className="font-bold text-emerald-900">{item.name}</h4>
-                          <p className="text-xs text-slate-500 italic">{item.variety}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-emerald-600">{item.price}</p>
-                          <p className="text-[10px] text-slate-400">{item.quantity}</p>
-                        </div>
-                      </div>
-                      {item.description && (
-                        <p className="text-xs text-slate-600 line-clamp-2 border-t pt-2 mt-2">
-                          {item.description}
-                        </p>
-                      )}
-                    </CardContent>
                   </Card>
                 ))}
               </div>
             ) : (
               <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-slate-200">
-                <p className="text-slate-400">You haven't listed any produce yet.</p>
+                <p className="text-slate-400">You haven't added any farms yet.</p>
                 <Button variant="link" className="text-emerald-600" onClick={() => document.querySelector('button[aria-haspopup="dialog"]')?.dispatchEvent(new MouseEvent('click', {bubbles: true}))}>
-                  Add your first item
+                  Add your first farm
                 </Button>
               </div>
             )}

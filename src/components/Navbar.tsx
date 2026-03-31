@@ -56,7 +56,7 @@ export const Navbar = () => {
               <Link to="/register">
                 <Button className="bg-emerald-600 hover:bg-emerald-700">
                   <PlusCircle className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">List Your Produce</span>
+                  <span className="hidden sm:inline">Create Account</span>
                   <span className="sm:hidden">Join</span>
                 </Button>
               </Link>

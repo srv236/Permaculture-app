@@ -1,6 +1,6 @@
 export interface Produce {
   id: string;
-  producer_id: string;
+  farm_id: string;
   name: string;
   variety: string;
   description?: string;
@@ -9,19 +9,29 @@ export interface Produce {
   image_url: string;
 }
 
+export interface Farm {
+  id: string;
+  user_id: string;
+  name: string;
+  size: string;
+  picture_url?: string;
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
+  address?: string;
+  produce: Produce[];
+  created_at: string;
+}
+
 export interface Producer {
   id: string;
   name: string;
   phone: string;
   email: string;
-  farm_name: string;
-  address?: string;
-  latitude?: number;
-  longitude?: number;
-  google_maps_url?: string;
+  farm_name: string; // Legacy field, keeping for compatibility
   locations: string[];
   picture_url?: string;
   is_verified: boolean;
   has_completed_course: boolean;
-  produce: Produce[];
+  farms?: Farm[];
 }
