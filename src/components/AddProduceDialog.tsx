@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Loader2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
@@ -26,8 +26,10 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
     name: "",
     variety: "",
     description: "",
-    price: "",
-    quantity: "",
+    priceValue: "",
+    priceUnit: "kg",
+    quantityValue: "",
+    quantityUnit: "kg",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,16 +44,20 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         imageUrl = await uploadImage(imageFile, "produce_images");
       }
 
+      // Format price and quantity strings
+      const formattedPrice = `₹${formData.priceValue} / ${formData.priceUnit}`;
+      const formattedQuantity = `${formData.quantityValue} ${formData.quantityUnit}`;
+
       const { error } = await supabase
         .from('produce')
         .insert({
           farm_id: farmId,
-          producer_id: user.id, // Keeping for legacy compatibility
+          producer_id: user.id,
           name: formData.name,
           variety: formData.variety,
           description: formData.description,
-          price: formData.price,
-          quantity: formData.quantity,
+          price: formattedPrice,
+          quantity: formattedQuantity,
           image_url: imageUrl,
         });
 
@@ -59,7 +65,15 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
 
       showSuccess("Produce added successfully!");
       setOpen(false);
-      setFormData({ name: "", variety: "", description: "", price: "", quantity: "" });
+      setFormData({ 
+        name: "", 
+        variety: "", 
+        description: "", 
+        priceValue: "", 
+        priceUnit: "kg", 
+        quantityValue: "", 
+        quantityUnit: "kg" 
+      });
       setImageFile(null);
       onSuccess();
     } catch (error: any) {
@@ -101,28 +115,71 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
               onChange={(e) => setFormData({...formData, variety: e.target.value})}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
-              <Input 
-                id="price" 
-                placeholder="e.g. $4.50/lb" 
-                required 
-                value={formData.price}
-                onChange={(e) => setFormData({...formData, price: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity</Label>
-              <Input 
-                id="quantity" 
-                placeholder="e.g. 20 lbs" 
-                required 
-                value={formData.quantity}
-                onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-              />
+          
+          <div className="space-y-2">
+            <Label>Price (in ₹)</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
+                <Input 
+                  type="number"
+                  className="pl-7"
+                  placeholder="0.00" 
+                  required 
+                  value={formData.priceValue}
+                  onChange={(e) => setFormData({...formData, priceValue: e.target.value})}
+                />
+              </div>
+              <div className="w-[120px]">
+                <Select 
+                  value={formData.priceUnit} 
+                  onValueChange={(value) => setFormData({...formData, priceUnit: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unit">per unit</SelectItem>
+                    <SelectItem value="dozen">per dozen</SelectItem>
+                    <SelectItem value="g">per g</SelectItem>
+                    <SelectItem value="kg">per kg</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label>Quantity Available</Label>
+            <div className="flex gap-2">
+              <Input 
+                type="number"
+                className="flex-1"
+                placeholder="0" 
+                required 
+                value={formData.quantityValue}
+                onChange={(e) => setFormData({...formData, quantityValue: e.target.value})}
+              />
+              <div className="w-[120px]">
+                <Select 
+                  value={formData.quantityUnit} 
+                  onValueChange={(value) => setFormData({...formData, quantityUnit: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="units">units</SelectItem>
+                    <SelectItem value="dozen">dozen</SelectItem>
+                    <SelectItem value="g">g</SelectItem>
+                    <SelectItem value="kg">kg</SelectItem>
+                    <SelectItem value="tonne">tonne</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="image">Produce Image</Label>
             <div className="flex items-center gap-4">
