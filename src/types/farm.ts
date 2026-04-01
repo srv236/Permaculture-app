@@ -28,10 +28,15 @@ export interface Producer {
   name: string;
   phone: string;
   email: string;
-  farm_name: string; // Legacy field, keeping for compatibility
-  locations: string[];
+  farm_name: string;
   picture_url?: string;
   is_verified: boolean;
+  is_admin: boolean;
   has_completed_course: boolean;
+  basic_course_date?: string;
+  advanced_course_date?: string;
+  practitioner_since?: string;
+  about?: string;
   farms?: Farm[];
+  created_at?: string;
 }

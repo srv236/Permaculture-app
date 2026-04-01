@@ -19,7 +19,8 @@ import {
   ExternalLink,
   Sprout,
   ShieldCheck,
-  Loader2
+  Loader2,
+  GraduationCap
 } from "lucide-react";
 
 const Profile = () => {
@@ -92,6 +93,8 @@ const Profile = () => {
       ? `https://www.google.com/maps/search/?api=1&query=${producer.latitude},${producer.longitude}`
       : null);
 
+  const practitionerDate = producer.practitioner_since ? new Date(producer.practitioner_since).getFullYear() : null;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -133,7 +136,9 @@ const Profile = () => {
               <div className="flex flex-wrap justify-center md:justify-start gap-6 text-emerald-100/80">
                 <div className="flex items-center gap-2">
                   <Sprout className="w-5 h-5 text-emerald-400" />
-                  <span className="font-medium">Permaculture Practitioner</span>
+                  <span className="font-medium">
+                    {practitionerDate ? `Permafolk since ${practitionerDate}` : 'Permaculture Practitioner'}
+                  </span>
                 </div>
                 {producer.address && (
                   <div className="flex items-center gap-2">
@@ -166,6 +171,26 @@ const Profile = () => {
                     name={producer.name} 
                   />
                 </div>
+
+                <div className="pt-6 border-t border-slate-100">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Credentials</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-sm text-slate-600">
+                      <GraduationCap className="w-4 h-4 text-emerald-500" />
+                      <div>
+                        <p className="font-bold">Basic Course</p>
+                        <p className="text-xs text-slate-400">{producer.basic_course_date ? new Date(producer.basic_course_date).toLocaleDateString() : 'Verified'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-slate-600">
+                      <GraduationCap className="w-4 h-4 text-emerald-500" />
+                      <div>
+                        <p className="font-bold">Advanced Course</p>
+                        <p className="text-xs text-slate-400">{producer.advanced_course_date ? new Date(producer.advanced_course_date).toLocaleDateString() : 'Verified'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 
                 {mapsUrl && (
                   <div className="pt-6 border-t border-slate-100">
@@ -190,23 +215,21 @@ const Profile = () => {
                     </a>
                   </div>
                 )}
-
-                <div className="pt-6 border-t border-slate-100">
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Service Areas</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {producer.locations?.map((loc, i) => (
-                      <Badge key={i} variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                        {loc}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-10">
+            {producer.about && (
+              <section className="bg-white p-8 rounded-[2.5rem] border border-emerald-100 shadow-sm">
+                <h2 className="text-2xl font-bold text-emerald-900 mb-4">About the Producer</h2>
+                <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                  {producer.about}
+                </p>
+              </section>
+            )}
+
             {farms.map((farm) => (
               <section key={farm.id} className="space-y-6">
                 <div className="flex items-center justify-between">
