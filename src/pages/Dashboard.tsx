@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
@@ -26,18 +24,19 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const fetchData = async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const { data: profileData } = await supabase
         .from('profiles')
         .select(`*`)
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
 
       const { data: farmsData } = await supabase
         .from('farms')
         .select(`*, produce (*)`)
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       setProfile(profileData);
       setFarms(farmsData || []);
