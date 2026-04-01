@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +23,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -49,11 +49,12 @@ const Dashboard = () => {
         setAllProfiles(profilesData || []);
       }
     } catch (error) {
+      console.error("Dashboard fetch error:", error);
       showError("Could not load dashboard data.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!sessionLoading && !user) {
@@ -64,7 +65,7 @@ const Dashboard = () => {
     if (user) {
       fetchData();
     }
-  }, [user, sessionLoading]);
+  }, [user, sessionLoading, fetchData, navigate]);
 
   const handleToggleVerify = async (targetId: string, currentStatus: boolean) => {
     const { error } = await supabase
