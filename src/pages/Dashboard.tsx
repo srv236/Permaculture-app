@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,17 +24,6 @@ const Dashboard = () => {
   const [allProfiles, setAllProfiles] = useState<Producer[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!sessionLoading && !user) {
-      navigate("/login");
-      return;
-    }
-
-    if (user) {
-      fetchData();
-    }
-  }, [user, sessionLoading]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -66,6 +55,17 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!sessionLoading && !user) {
+      navigate("/login");
+      return;
+    }
+
+    if (user) {
+      fetchData();
+    }
+  }, [user, sessionLoading]);
 
   const handleToggleVerify = async (targetId: string, currentStatus: boolean) => {
     const { error } = await supabase
