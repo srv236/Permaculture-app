@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getSignedUrl, getPublicUrl } from "@/utils/upload";
 import { Skeleton } from "./ui/skeleton";
 import { cn } from "@/lib/utils";
+import { MapPin } from "lucide-react";
 
 interface SecureImageProps {
   path?: string;
@@ -17,13 +18,15 @@ interface SecureImageProps {
 export const SecureImage = ({ path, bucket, alt, className, fallback, coordinates }: SecureImageProps) => {
   const [url, setUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchUrl = async () => {
+      setError(false);
+      
       // If no path but we have coordinates, use Google Static Maps
       if (!path && coordinates?.lat && coordinates?.lng) {
         const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=15&size=400x400&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=YOUR_API_KEY_HERE`;
-        // Note: Without an API key, this might fail, so we'll use a generic map placeholder if it fails
         setUrl(mapUrl);
         setLoading(false);
         return;
@@ -43,22 +46,35 @@ export const SecureImage = ({ path, bucket, alt, className, fallback, coordinate
 
       setLoading(true);
       
-      if (bucket === 'assets') {
-        const publicUrl = getPublicUrl(bucket, path);
-        setUrl(publicUrl || fallback || "");
-      } else {
-        const signedUrl = await getSignedUrl(bucket, path);
-        setUrl(signedUrl || fallback || "");
+      try {
+        if (bucket === 'assets') {
+          const publicUrl = getPublicUrl(bucket, path);
+          setUrl(publicUrl || fallback || "");
+        } else {
+          const signedUrl = await getSignedUrl(bucket, path);
+          setUrl(signedUrl || fallback || "");
+        }
+      } catch (err) {
+        console.error("Error fetching image URL:", err);
+        setUrl(fallback || "");
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     fetchUrl();
   }, [path, bucket, fallback, coordinates]);
 
   if (loading) {
-    return <Skeleton className={cn("w-full h-full", className)} />;
+    return <Skeleton className={cn("w-full h-full rounded-xl", className)} />;
+  }
+
+  if (error || (!url && !fallback)) {
+    return (
+      <div className={cn("w-full h-full bg-slate-100 flex items-center justify-center text-slate-400", className)}>
+        <MapPin className="w-8 h-8 opacity-20" />
+      </div>
+    );
   }
 
   return (
@@ -66,10 +82,11 @@ export const SecureImage = ({ path, bucket, alt, className, fallback, coordinate
       src={url || fallback} 
       alt={alt} 
       className={cn("object-cover", className)}
-      onError={(e) => {
-        // If map fails or image fails, use fallback
-        if (fallback && url !== fallback) {
-          setUrl(fallback);
+      onError={() => {
+        if (url !== fallback) {
+          setUrl(fallback || "");
+        } else {
+          setError(true);
         }
       }}
     />
