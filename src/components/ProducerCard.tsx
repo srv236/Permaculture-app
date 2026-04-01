@@ -35,9 +35,9 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
                   <CheckCircle2 className="w-5 h-5 text-blue-500 fill-blue-50" />
                 )}
               </div>
-              <Link to={`/farm/${(producer as any).farm_id || producer.id}`}>
+              <Link to={`/profile/${producer.id}`}>
                 <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100/50">
-                  View Farm
+                  View Profile
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -52,11 +52,6 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
             )}
 
             <div className="flex flex-wrap gap-2 mt-2">
-              {producer.locations?.map((loc, i) => (
-                <span key={i} className="flex items-center text-[10px] bg-white/80 px-2 py-0.5 rounded-full text-slate-600 border border-emerald-100">
-                  {loc}
-                </span>
-              ))}
               {mapsUrl && (
                 <a 
                   href={mapsUrl} 
@@ -85,7 +80,7 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
           ))}
         </div>
         {producer.produce && producer.produce.length > 2 && (
-          <Link to={`/farm/${(producer as any).farm_id || producer.id}`} className="block text-center mt-4 text-xs font-bold text-emerald-600 hover:underline">
+          <Link to={`/profile/${producer.id}`} className="block text-center mt-4 text-xs font-bold text-emerald-600 hover:underline">
             + {producer.produce.length - 2} more items
           </Link>
         )}

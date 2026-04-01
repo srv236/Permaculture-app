@@ -1,7 +1,6 @@
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { CheckCircle2, Mail, Phone, MapPin, ArrowRight } from "lucide-react";
+import { CheckCircle2, Mail, Phone, ArrowRight } from "lucide-react";
 import { SecureImage } from "./SecureImage";
 import { ContactButtons } from "./ContactButtons";
 import { Link } from "react-router-dom";
@@ -29,14 +28,6 @@ export const PermafolkCard = ({ permafolk }: { permafolk: Producer }) => {
               )}
             </div>
             <p className="text-sm font-medium text-emerald-600 mb-2">Certified Permafolk</p>
-            <div className="flex flex-wrap gap-1">
-              {permafolk.locations?.slice(0, 2).map((loc, i) => (
-                <Badge key={i} variant="outline" className="text-[10px] bg-white/50 border-emerald-100 text-slate-600">
-                  <MapPin className="w-2 h-2 mr-1" />
-                  {loc}
-                </Badge>
-              ))}
-            </div>
           </div>
         </div>
       </CardHeader>

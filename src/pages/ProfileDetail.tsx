@@ -16,7 +16,6 @@ import {
   Sprout,
   GraduationCap,
   Award,
-  ExternalLink,
   ChevronRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,14 +122,6 @@ const ProfileDetail = () => {
                 )}
               </div>
               <p className="text-emerald-300 text-xl font-medium mb-4">Certified Permaculture Practitioner</p>
-              <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                {profile.locations?.map((loc, i) => (
-                  <Badge key={i} variant="outline" className="bg-emerald-800/50 border-emerald-700 text-emerald-100 px-3 py-1">
-                    <MapPin className="w-3 h-3 mr-1.5" />
-                    {loc}
-                  </Badge>
-                ))}
-              </div>
             </div>
             <div className="shrink-0 w-full md:w-auto">
               <ContactButtons 
