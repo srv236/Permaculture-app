@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
@@ -5,7 +7,7 @@ import { PermafolkCard } from "@/components/PermafolkCard";
 import { ProduceCard } from "@/components/ProduceCard";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, ShieldCheck, Zap, Heart } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 
@@ -21,6 +23,7 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Fetch Farms with their producers and produce
         const { data: farmsData } = await supabase
           .from('farms')
           .select(`
@@ -29,10 +32,12 @@ const Index = () => {
             produce (*)
           `);
 
+        // Fetch all Permafolk (Profiles)
         const { data: profilesData } = await supabase
           .from('profiles')
           .select('*');
 
+        // Fetch all Produce
         const { data: produceData } = await supabase
           .from('produce')
           .select('*');
@@ -82,29 +87,29 @@ const Index = () => {
     <div className="min-h-screen bg-slate-50">
       <Navbar />
       
-      <header className="bg-emerald-900 text-white py-24 px-4 relative overflow-hidden">
+      <header className="bg-emerald-900 text-white py-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-64 h-64 bg-emerald-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
         </div>
         
-        <div className="container mx-auto text-center max-w-4xl relative z-10">
-          <div className="inline-flex items-center gap-2 bg-emerald-800/50 px-4 py-2 rounded-full text-emerald-200 text-sm font-medium mb-8 border border-emerald-700/50 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="container mx-auto text-center max-w-3xl relative z-10">
+          <div className="inline-flex items-center gap-2 bg-emerald-800/50 px-4 py-2 rounded-full text-emerald-200 text-sm font-medium mb-6 border border-emerald-700/50">
             <Sprout className="w-4 h-4" />
-            The Art of Living Permaculture Network
+            The Art of Living Permaculture
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight animate-in fade-in slide-in-from-bottom-6 duration-1000">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
             Connect with the <span className="text-emerald-400">Permafolk</span>
           </h1>
-          <p className="text-emerald-100/80 text-xl md:text-2xl mb-12 leading-relaxed max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <p className="text-emerald-100/80 text-lg md:text-xl mb-10 leading-relaxed">
             Discover sustainable farms, fresh local produce, and the passionate people 
             practicing permaculture in your community.
           </p>
           
-          <div className="relative max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 w-6 h-6" />
+          <div className="relative max-w-xl mx-auto">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
             <Input 
-              className="pl-16 h-20 bg-white text-slate-900 rounded-3xl border-none shadow-2xl text-xl focus-visible:ring-emerald-500"
+              className="pl-14 h-16 bg-white text-slate-900 rounded-2xl border-none shadow-2xl text-lg focus-visible:ring-emerald-500"
               placeholder="Search farms, produce, or permafolk..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -113,90 +118,57 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white border-b">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto text-emerald-600">
-                <ShieldCheck className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">Verified Producers</h3>
-              <p className="text-slate-500">Every farmer is a certified graduate of our advanced permaculture courses.</p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto text-emerald-600">
-                <Zap className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">Direct Connection</h3>
-              <p className="text-slate-500">Contact producers directly via WhatsApp or phone to arrange your harvest pickup.</p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto text-emerald-600">
-                <Heart className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">Sustainable Future</h3>
-              <p className="text-slate-500">Support local ecosystems and regenerative agriculture with every purchase.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <main className="container mx-auto px-4 py-20">
+      <main className="container mx-auto px-4 py-16">
         <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
-          <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8">
-            <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-sm border border-emerald-100">
-              <TabsTrigger value="farms" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-semibold">
-                <MapIcon className="w-5 h-5 mr-2" />
+          <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+            <TabsList className="bg-white p-1 h-auto rounded-2xl shadow-sm border border-emerald-100">
+              <TabsTrigger value="farms" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+                <MapIcon className="w-4 h-4 mr-2" />
                 Featured Farms
               </TabsTrigger>
-              <TabsTrigger value="produce" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-semibold">
-                <ShoppingBasket className="w-5 h-5 mr-2" />
+              <TabsTrigger value="produce" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+                <ShoppingBasket className="w-4 h-4 mr-2" />
                 Featured Produce
               </TabsTrigger>
-              <TabsTrigger value="permafolk" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-semibold">
-                <User className="w-5 h-5 mr-2" />
+              <TabsTrigger value="permafolk" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+                <User className="w-4 h-4 mr-2" />
                 Featured Permafolk
               </TabsTrigger>
             </TabsList>
             
             {!loading && (
-              <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-full border border-slate-100 shadow-sm">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <p className="text-sm text-slate-600 font-bold">
-                  {activeTab === "farms" ? filteredFarms.length : 
-                   activeTab === "produce" ? filteredProduce.length : 
-                   filteredPermafolk.length} Results Found
-                </p>
-              </div>
+              <p className="text-sm text-slate-500 font-medium bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
+                Showing {
+                  activeTab === "farms" ? filteredFarms.length : 
+                  activeTab === "produce" ? filteredProduce.length : 
+                  filteredPermafolk.length
+                } results
+              </p>
             )}
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-40 gap-6">
-              <div className="relative">
-                <Loader2 className="w-16 h-16 text-emerald-600 animate-spin" />
-                <Sprout className="w-6 h-6 text-emerald-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-              </div>
-              <p className="text-slate-400 font-bold text-lg">Cultivating the network...</p>
+            <div className="flex flex-col items-center justify-center py-32 gap-4">
+              <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
+              <p className="text-slate-400 font-medium">Loading the network...</p>
             </div>
           ) : (
-            <div className="animate-in fade-in duration-700">
+            <>
               <TabsContent value="farms" className="mt-0">
                 {filteredFarms.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {filteredFarms.map(farm => (
                       <ProducerCard 
                         key={farm.id} 
                         producer={{
                           id: farm.user_id,
-                          name: (farm as any).profiles?.name || "Unknown",
-                          phone: (farm as any).profiles?.phone || "",
-                          email: (farm as any).profiles?.email || "",
+                          name: (farm as any).producer?.name || "Unknown",
+                          phone: (farm as any).producer?.phone || "",
+                          email: (farm as any).producer?.email || "",
                           farm_name: farm.name,
                           locations: farm.address ? [farm.address] : [],
                           picture_url: farm.picture_url,
-                          is_verified: (farm as any).profiles?.is_verified || false,
+                          is_verified: (farm as any).producer?.is_verified || false,
                           has_completed_course: true,
                           produce: farm.produce,
                           latitude: farm.latitude,
@@ -214,7 +186,7 @@ const Index = () => {
 
               <TabsContent value="produce" className="mt-0">
                 {filteredProduce.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {filteredProduce.map(item => (
                       <ProduceCard key={item.id} produce={item} />
                     ))}
@@ -226,7 +198,7 @@ const Index = () => {
 
               <TabsContent value="permafolk" className="mt-0">
                 {filteredPermafolk.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredPermafolk.map(person => (
                       <PermafolkCard key={person.id} permafolk={person} />
                     ))}
@@ -235,30 +207,21 @@ const Index = () => {
                   <EmptyState message="No permafolk found matching your search." />
                 )}
               </TabsContent>
-            </div>
+            </>
           )}
         </Tabs>
       </main>
 
-      <footer className="bg-white border-t py-24 mt-20">
+      <footer className="bg-white border-t py-16 mt-20">
         <div className="container mx-auto px-4 text-center">
-          <div className="flex justify-center mb-10">
-            <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center border border-emerald-100 shadow-sm">
-              <Sprout className="w-8 h-8 text-emerald-600" />
+          <div className="flex justify-center mb-8">
+            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-100">
+              <Sprout className="w-6 h-6 text-emerald-600" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-emerald-900 mb-4">The Art of Living Permaculture</h2>
-          <p className="text-slate-500 text-base max-w-lg mx-auto leading-relaxed mb-8">
-            Connecting conscious consumers with regenerative practitioners. All producers are verified graduates of our basic and advanced courses.
+          <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
+            © 2024 Permaculture Department Market. All practitioners are verified graduates of our basic and advanced courses.
           </p>
-          <div className="flex justify-center gap-8 text-sm font-bold text-emerald-700">
-            <a href="#" className="hover:text-emerald-900 transition-colors">About Us</a>
-            <a href="#" className="hover:text-emerald-900 transition-colors">Courses</a>
-            <a href="#" className="hover:text-emerald-900 transition-colors">Contact</a>
-          </div>
-          <div className="mt-12 pt-8 border-t border-slate-100">
-            <p className="text-slate-400 text-xs">© 2024 Permaculture Department Market. All rights reserved.</p>
-          </div>
         </div>
       </footer>
     </div>
@@ -266,12 +229,11 @@ const Index = () => {
 };
 
 const EmptyState = ({ message }: { message: string }) => (
-  <div className="text-center py-40 bg-white rounded-[40px] border-2 border-dashed border-slate-200">
-    <div className="bg-slate-50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-      <Search className="w-10 h-10 text-slate-300" />
+  <div className="text-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+    <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Search className="w-8 h-8 text-slate-300" />
     </div>
-    <p className="text-slate-400 text-xl font-bold">{message}</p>
-    <p className="text-slate-400 mt-2">Try searching for something else or browse all categories.</p>
+    <p className="text-slate-400 text-lg font-medium">{message}</p>
   </div>
 );
 

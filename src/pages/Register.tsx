@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { GraduationCap, AlertCircle, Loader2, Calendar } from "lucide-react";
+import { GraduationCap, AlertCircle, Loader2 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -21,9 +21,6 @@ const Register = () => {
     email: "",
     phone: "",
     password: "",
-    basicCourseDate: "",
-    advancedCourseDate: "",
-    practitionerSince: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,6 +29,7 @@ const Register = () => {
 
     setLoading(true);
     try {
+      // 1. Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -40,6 +38,7 @@ const Register = () => {
       if (authError) throw authError;
 
       if (authData.user) {
+        // 2. Create the profile
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -49,14 +48,11 @@ const Register = () => {
             email: formData.email,
             phone: formData.phone,
             has_completed_course: true,
-            basic_course_date: formData.basicCourseDate || null,
-            advanced_course_date: formData.advancedCourseDate || null,
-            practitioner_since: formData.practitionerSince || null,
           });
 
         if (profileError) throw profileError;
 
-        showSuccess("Registration successful! Your credentials will be verified shortly.");
+        showSuccess("Registration successful! You can now list your produce.");
         navigate("/");
       }
     } catch (error: any) {
@@ -93,7 +89,7 @@ const Register = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
                     <Input 
@@ -115,32 +111,17 @@ const Register = () => {
                     />
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="john@example.com" 
-                      required 
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input 
-                      id="phone" 
-                      type="tel" 
-                      placeholder="+1 (555) 000-0000" 
-                      required 
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="john@example.com" 
+                    required 
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <Input 
@@ -152,35 +133,16 @@ const Register = () => {
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                   />
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase text-slate-500">Basic Course Date</Label>
-                    <Input 
-                      type="date" 
-                      required={hasCompletedCourse}
-                      value={formData.basicCourseDate}
-                      onChange={(e) => setFormData({...formData, basicCourseDate: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase text-slate-500">Advanced Course Date</Label>
-                    <Input 
-                      type="date" 
-                      required={hasCompletedCourse}
-                      value={formData.advancedCourseDate}
-                      onChange={(e) => setFormData({...formData, advancedCourseDate: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase text-slate-500">Practitioner Since</Label>
-                    <Input 
-                      type="date" 
-                      required={hasCompletedCourse}
-                      value={formData.practitionerSince}
-                      onChange={(e) => setFormData({...formData, practitionerSince: e.target.value})}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input 
+                    id="phone" 
+                    type="tel" 
+                    placeholder="+1 (555) 000-0000" 
+                    required 
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  />
                 </div>
               </div>
 
