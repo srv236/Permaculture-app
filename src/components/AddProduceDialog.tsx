@@ -1,10 +1,12 @@
+"use client";
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Image as ImageIcon, Tag } from "lucide-react";
+import { Plus, Loader2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
@@ -15,11 +17,6 @@ interface AddProduceDialogProps {
   onSuccess: () => void;
 }
 
-const CATEGORIES = [
-  "Vegetables", "Fruits", "Grains", "Honey & Bee Products", 
-  "Dairy & Eggs", "Herbs & Spices", "Seeds & Saplings", "Other"
-];
-
 export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) => {
   const { user } = useSession();
   const [open, setOpen] = useState(false);
@@ -29,7 +26,6 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
     name: "",
     variety: "",
     description: "",
-    category: "Vegetables",
     priceValue: "",
     priceUnit: "kg",
     quantityValue: "",
@@ -48,6 +44,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         imageUrl = await uploadImage(imageFile, "produce_images");
       }
 
+      // Format price and quantity strings
       const formattedPrice = `₹${formData.priceValue} / ${formData.priceUnit}`;
       const formattedQuantity = `${formData.quantityValue} ${formData.quantityUnit}`;
 
@@ -59,7 +56,6 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           name: formData.name,
           variety: formData.variety,
           description: formData.description,
-          category: formData.category,
           price: formattedPrice,
           quantity: formattedQuantity,
           image_url: imageUrl,
@@ -73,7 +69,6 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         name: "", 
         variety: "", 
         description: "", 
-        category: "Vegetables",
         priceValue: "", 
         priceUnit: "kg", 
         quantityValue: "", 
@@ -101,35 +96,16 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           <DialogTitle>Add Produce to Farm</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Produce Name</Label>
-              <Input 
-                id="name" 
-                placeholder="e.g. Tomatoes" 
-                required 
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => setFormData({...formData, category: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Produce Name</Label>
+            <Input 
+              id="name" 
+              placeholder="e.g. Tomatoes" 
+              required 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+            />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="variety">Variety</Label>
             <Input 
