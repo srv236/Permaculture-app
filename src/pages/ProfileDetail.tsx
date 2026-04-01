@@ -14,7 +14,6 @@ import {
   XCircle,
   ArrowLeft, 
   Loader2, 
-  Sprout,
   GraduationCap,
   Award,
   ChevronRight
@@ -185,22 +184,11 @@ const ProfileDetail = () => {
                 </div>
               </CardContent>
             </Card>
-
-            <div className="bg-white p-8 rounded-3xl border border-emerald-100 shadow-lg">
-              <h3 className="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
-                <Sprout className="w-6 h-6 text-emerald-600" />
-                Regenerative Vision
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed italic">
-                "Permaculture is a philosophy of working with, rather than against nature; of protracted and thoughtful observation rather than protracted and thoughtless labor."
-              </p>
-            </div>
           </div>
 
           <div className="lg:col-span-2 space-y-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-slate-900">Managed Farms</h2>
-              <Badge className="bg-emerald-600">{farms.length} Active Projects</Badge>
+              <h2 className="text-2xl font-bold text-slate-900">Farms</h2>
             </div>
 
             {farms.length > 0 ? (
