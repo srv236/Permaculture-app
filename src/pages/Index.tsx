@@ -6,10 +6,11 @@ import { ProducerCard } from "@/components/ProducerCard";
 import { StatsSummary } from "@/components/StatsSummary";
 import { PermafolkCard } from "@/components/PermafolkCard";
 import { ProduceCard } from "@/components/ProduceCard";
+import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { cn } from "@/lib/utils";
@@ -39,17 +40,11 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Use RPC (Remote Procedure Calls) to fetch data through the secure gateway functions
         const [directoryRes, profilesRes, produceRes] = await Promise.all([
           supabase.rpc('get_public_directory'),
           supabase.rpc('get_public_profiles'),
           supabase.from('produce').select('*')
         ]);
-
-        if (directoryRes.error) {
-          console.error("Error fetching directory:", directoryRes.error);
-          showError("Could not load directory. Please ensure the SQL script was run.");
-        }
 
         if (directoryRes.data && produceRes.data) {
           const mappedFarms = directoryRes.data.map((farm: any) => ({
@@ -108,7 +103,7 @@ const Index = () => {
 
   const totalProducers = permafolk.length;
   const totalProducts = produce.length;
-  const uniqueLocations = farms.length; // Using farm count as a proxy for locations in the public view
+  const uniqueLocations = farms.length;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -156,10 +151,14 @@ const Index = () => {
 
         <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
           <div className="flex flex-col lg:flex-row items-center justify-between mb-8 gap-6">
-            <TabsList className="bg-white p-1 h-auto rounded-2xl shadow-sm border border-emerald-100">
+            <TabsList className="bg-white p-1 h-auto rounded-2xl shadow-sm border border-emerald-100 flex-wrap justify-center">
               <TabsTrigger value="farms" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
                 <MapIcon className="w-4 h-4 mr-2" />
                 Featured Farms
+              </TabsTrigger>
+              <TabsTrigger value="map" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+                <Globe className="w-4 h-4 mr-2" />
+                Map View
               </TabsTrigger>
               <TabsTrigger value="produce" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
                 <ShoppingBasket className="w-4 h-4 mr-2" />
@@ -176,6 +175,7 @@ const Index = () => {
                 <p className="text-sm text-slate-500 font-medium bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
                   Showing {
                     activeTab === "farms" ? filteredFarms.length : 
+                    activeTab === "map" ? filteredFarms.length :
                     activeTab === "produce" ? filteredProduce.length : 
                     filteredPermafolk.length
                   } results
@@ -184,7 +184,7 @@ const Index = () => {
             )}
           </div>
 
-          {(activeTab === "farms" || activeTab === "produce") && (
+          {(activeTab === "farms" || activeTab === "produce" || activeTab === "map") && (
             <div className="flex flex-wrap gap-2 mb-12 justify-center">
               <div className="flex items-center gap-2 mr-4 text-slate-400">
                 <Filter className="w-4 h-4" />
@@ -242,6 +242,10 @@ const Index = () => {
                 ) : (
                   <EmptyState message="No farms found matching your search." />
                 )}
+              </TabsContent>
+
+              <TabsContent value="map" className="mt-0">
+                <FarmMap farms={filteredFarms} />
               </TabsContent>
 
               <TabsContent value="produce" className="mt-0">
