@@ -38,29 +38,31 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Only select non-sensitive fields for the public directory
-        const { data: farmsData } = await supabase
-          .from('farms')
-          .select(`
-            *,
-            profiles (id, name, is_verified, picture_url),
-            produce (*)
-          `);
+        // Fetch from secure public views instead of raw tables
+        const { data: directoryData } = await supabase
+          .from('public_farm_directory')
+          .select('*');
 
         const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('id, name, farm_name, picture_url, is_verified');
+          .from('public_profiles')
+          .select('*');
 
         const { data: produceData } = await supabase
           .from('produce')
           .select('*');
 
-        if (farmsData) {
-          const mappedFarms = farmsData.map(farm => ({
+        if (directoryData && produceData) {
+          const mappedFarms = directoryData.map(farm => ({
             ...farm,
-            producer: farm.profiles
+            producer: {
+              id: farm.user_id,
+              name: farm.producer_name,
+              picture_url: farm.producer_picture_url,
+              is_verified: farm.producer_is_verified
+            },
+            produce: produceData.filter(p => p.farm_id === farm.id)
           })) || [];
-          setFarms(mappedFarms);
+          setFarms(mappedFarms as any);
         }
 
         if (profilesData) {
