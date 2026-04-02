@@ -8,12 +8,26 @@ import { PermafolkCard } from "@/components/PermafolkCard";
 import { ProduceCard } from "@/components/ProduceCard";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
+import { cn } from "@/lib/utils";
+
+const CATEGORIES = [
+  "All",
+  "Vegetables",
+  "Fruits",
+  "Grains & Pulses",
+  "Herbs & Spices",
+  "Dairy & Eggs",
+  "Honey & Preserves",
+  "Seeds & Saplings"
+];
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [farms, setFarms] = useState<Farm[]>([]);
   const [permafolk, setPermafolk] = useState<Producer[]>([]);
   const [produce, setProduce] = useState<Produce[]>([]);
@@ -65,22 +79,30 @@ const Index = () => {
     fetchData();
   }, []);
 
-  const filteredFarms = farms.filter(farm => 
-    farm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    farm.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    farm.produce?.some(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredFarms = farms.filter(farm => {
+    const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      farm.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      farm.produce?.some(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesCategory = selectedCategory === "All" || 
+      farm.produce?.some(p => p.category === selectedCategory);
+
+    return matchesSearch && matchesCategory;
+  });
 
   const filteredPermafolk = permafolk.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredProduce = produce.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.variety?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProduce = produce.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      p.variety?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
 
-  // Calculate stats
+    return matchesSearch && matchesCategory;
+  });
+
   const totalProducers = permafolk.length;
   const totalProducts = produce.length;
   const uniqueLocations = new Set(farms.map(f => f.address).filter(Boolean)).size;
@@ -130,7 +152,7 @@ const Index = () => {
         )}
 
         <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
-          <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+          <div className="flex flex-col lg:flex-row items-center justify-between mb-8 gap-6">
             <TabsList className="bg-white p-1 h-auto rounded-2xl shadow-sm border border-emerald-100">
               <TabsTrigger value="farms" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
                 <MapIcon className="w-4 h-4 mr-2" />
@@ -147,15 +169,41 @@ const Index = () => {
             </TabsList>
             
             {!loading && (
-              <p className="text-sm text-slate-500 font-medium bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
-                Showing {
-                  activeTab === "farms" ? filteredFarms.length : 
-                  activeTab === "produce" ? filteredProduce.length : 
-                  filteredPermafolk.length
-                } results
-              </p>
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-slate-500 font-medium bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
+                  Showing {
+                    activeTab === "farms" ? filteredFarms.length : 
+                    activeTab === "produce" ? filteredProduce.length : 
+                    filteredPermafolk.length
+                  } results
+                </p>
+              </div>
             )}
           </div>
+
+          {(activeTab === "farms" || activeTab === "produce") && (
+            <div className="flex flex-wrap gap-2 mb-12 justify-center">
+              <div className="flex items-center gap-2 mr-4 text-slate-400">
+                <Filter className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">Filter by Category:</span>
+              </div>
+              {CATEGORIES.map(cat => (
+                <Badge 
+                  key={cat}
+                  variant={selectedCategory === cat ? "default" : "outline"}
+                  className={cn(
+                    "cursor-pointer px-4 py-1.5 rounded-full transition-all",
+                    selectedCategory === cat 
+                      ? "bg-emerald-600 hover:bg-emerald-700 border-none" 
+                      : "bg-white hover:bg-emerald-50 border-emerald-100 text-emerald-700"
+                  )}
+                  onClick={() => setSelectedCategory(cat)}
+                >
+                  {cat}
+                </Badge>
+              ))}
+            </div>
+          )}
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32 gap-4">

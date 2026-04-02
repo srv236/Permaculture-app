@@ -7,6 +7,7 @@ export interface Produce {
   price: string;
   quantity: string;
   image_url: string;
+  category?: string;
 }
 
 export interface Farm {
@@ -37,7 +38,6 @@ export interface Producer {
   advanced_course_date?: string;
   practitioner_since?: string;
   farms?: Farm[];
-  // Added for compatibility with ProducerCard
   latitude?: number;
   longitude?: number;
   google_maps_url?: string;
