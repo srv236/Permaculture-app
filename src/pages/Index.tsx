@@ -39,22 +39,20 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch from secure public views
+        // Use RPC (Remote Procedure Calls) to fetch data through the secure gateway functions
         const [directoryRes, profilesRes, produceRes] = await Promise.all([
-          supabase.from('public_farm_directory').select('*'),
-          supabase.from('public_profiles').select('*'),
+          supabase.rpc('get_public_directory'),
+          supabase.rpc('get_public_profiles'),
           supabase.from('produce').select('*')
         ]);
 
         if (directoryRes.error) {
           console.error("Error fetching directory:", directoryRes.error);
-          if (directoryRes.error.code === 'PGRST116' || directoryRes.error.message.includes('not found')) {
-            showError("Database views not found. Please run the security SQL script.");
-          }
+          showError("Could not load directory. Please ensure the SQL script was run.");
         }
 
         if (directoryRes.data && produceRes.data) {
-          const mappedFarms = directoryRes.data.map(farm => ({
+          const mappedFarms = directoryRes.data.map((farm: any) => ({
             ...farm,
             producer: {
               id: farm.user_id,
@@ -110,7 +108,7 @@ const Index = () => {
 
   const totalProducers = permafolk.length;
   const totalProducts = produce.length;
-  const uniqueLocations = new Set(farms.map(f => f.address).filter(Boolean)).size;
+  const uniqueLocations = farms.length; // Using farm count as a proxy for locations in the public view
 
   return (
     <div className="min-h-screen bg-slate-50">

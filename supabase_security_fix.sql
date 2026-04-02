@@ -1,40 +1,60 @@
--- 1. Secure the profiles table: Only authenticated users can see full PII
-DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
-DROP POLICY IF EXISTS "profiles_read_authenticated" ON public.profiles;
-CREATE POLICY "profiles_read_authenticated" ON public.profiles
-FOR SELECT TO authenticated USING (true);
+-- 1. Ensure produce is viewable by everyone (it contains no PII)
+DROP POLICY IF EXISTS "produce_select_public" ON public.produce;
+CREATE POLICY "produce_select_public" ON public.produce
+FOR SELECT USING (true);
 
--- 2. Secure the farms table: Only authenticated users can see exact locations
-DROP POLICY IF EXISTS "Farms are viewable by everyone" ON public.farms;
-DROP POLICY IF EXISTS "farms_read_authenticated" ON public.farms;
-CREATE POLICY "farms_read_authenticated" ON public.farms
-FOR SELECT TO authenticated USING (true);
+-- 2. Create a SECURITY DEFINER function to safely expose public farm/producer data
+-- This function runs with the permissions of the creator (postgres), bypassing RLS
+-- but only returning the specific columns we define here.
+CREATE OR REPLACE FUNCTION public.get_public_directory()
+RETURNS TABLE (
+  id UUID,
+  user_id UUID,
+  name TEXT,
+  size TEXT,
+  picture_url TEXT,
+  created_at TIMESTAMPTZ,
+  producer_name TEXT,
+  producer_picture_url TEXT,
+  producer_is_verified BOOLEAN
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER -- This is the key to fixing the 0 count for guests
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    f.id, f.user_id, f.name, f.size, f.picture_url, f.created_at,
+    p.name as producer_name,
+    p.picture_url as producer_picture_url,
+    p.is_verified as producer_is_verified
+  FROM public.farms f
+  LEFT JOIN public.profiles p ON f.user_id = p.id;
+END;
+$$;
 
--- 3. Create a public view for profiles (Excludes: email, phone, address, lat, lng)
-CREATE OR REPLACE VIEW public.public_profiles AS
-SELECT 
-  id, name, farm_name, picture_url, is_verified, 
-  has_completed_course, about, basic_course_date, 
-  advanced_course_date, practitioner_since, updated_at
-FROM public.profiles;
+-- 3. Create a function for public profiles
+CREATE OR REPLACE FUNCTION public.get_public_profiles()
+RETURNS TABLE (
+  id UUID,
+  name TEXT,
+  farm_name TEXT,
+  picture_url TEXT,
+  is_verified BOOLEAN,
+  about TEXT,
+  practitioner_since DATE
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id, p.name, p.farm_name, p.picture_url, p.is_verified, p.about, p.practitioner_since
+  FROM public.profiles p;
+END;
+$$;
 
--- 4. Create a public view for farms (Excludes: address, lat, lng, google_maps_url)
-CREATE OR REPLACE VIEW public.public_farms AS
-SELECT 
-  id, user_id, name, size, picture_url, created_at
-FROM public.farms;
-
--- 5. Create a combined view for the public directory
-CREATE OR REPLACE VIEW public.public_farm_directory AS
-SELECT 
-  f.id, f.user_id, f.name, f.size, f.picture_url, f.created_at,
-  p.name as producer_name,
-  p.picture_url as producer_picture_url,
-  p.is_verified as producer_is_verified
-FROM public.farms f
-LEFT JOIN public.profiles p ON f.user_id = p.id;
-
--- 6. Grant access to the views for everyone
-GRANT SELECT ON public.public_profiles TO anon, authenticated;
-GRANT SELECT ON public.public_farms TO anon, authenticated;
-GRANT SELECT ON public.public_farm_directory TO anon, authenticated;
+-- 4. Grant execution permission to everyone
+GRANT EXECUTE ON FUNCTION public.get_public_directory() TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_public_profiles() TO anon, authenticated;
