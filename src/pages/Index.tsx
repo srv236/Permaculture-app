@@ -10,11 +10,12 @@ import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, Globe } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, Globe, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { cn } from "@/lib/utils";
-import { showError } from "@/utils/toast";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const CATEGORIES = [
   "All",
@@ -27,6 +28,35 @@ const CATEGORIES = [
   "Seeds & Saplings"
 ];
 
+// Demo data to show when database is empty
+const DEMO_FARMS: any[] = [
+  {
+    id: "demo-1",
+    name: "Green Valley Permaculture",
+    address: "North Hills, Himachal Pradesh",
+    latitude: 32.2190,
+    longitude: 76.3234,
+    picture_url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800",
+    producer: { name: "Elena Rodriguez", is_verified: true },
+    produce: [
+      { id: "p1", name: "Heirloom Tomatoes", price: "₹120/kg", category: "Vegetables", image_url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400" },
+      { id: "p2", name: "Wildflower Honey", price: "₹450/jar", category: "Honey & Preserves", image_url: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=400" }
+    ]
+  },
+  {
+    id: "demo-2",
+    name: "Earthwise Sanctuary",
+    address: "Auroville, Tamil Nadu",
+    latitude: 12.0068,
+    longitude: 79.8105,
+    picture_url: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=800",
+    producer: { name: "Marcus Thorne", is_verified: true },
+    produce: [
+      { id: "p3", name: "Organic Kale", price: "₹80/bunch", category: "Vegetables", image_url: "https://images.unsplash.com/photo-1524179524541-1aa1ece28142?auto=format&fit=crop&q=80&w=400" }
+    ]
+  }
+];
+
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -35,6 +65,7 @@ const Index = () => {
   const [produce, setProduce] = useState<Produce[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("farms");
+  const [isUsingDemoData, setIsUsingDemoData] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,8 +77,12 @@ const Index = () => {
           supabase.from('produce').select('*')
         ]);
 
-        if (directoryRes.data && produceRes.data) {
-          const mappedFarms = directoryRes.data.map((farm: any) => ({
+        let fetchedFarms = [];
+        let fetchedProfiles = [];
+        let fetchedProduce = produceRes.data || [];
+
+        if (directoryRes.data && directoryRes.data.length > 0) {
+          fetchedFarms = directoryRes.data.map((farm: any) => ({
             ...farm,
             producer: {
               id: farm.user_id,
@@ -55,20 +90,32 @@ const Index = () => {
               picture_url: farm.producer_picture_url,
               is_verified: farm.producer_is_verified
             },
-            produce: (produceRes.data || []).filter(p => p.farm_id === farm.id)
-          })) || [];
-          setFarms(mappedFarms as any);
+            produce: fetchedProduce.filter(p => p.farm_id === farm.id)
+          }));
         }
 
-        if (profilesRes.data) {
-          setPermafolk(profilesRes.data as any);
+        if (profilesRes.data && profilesRes.data.length > 0) {
+          fetchedProfiles = profilesRes.data;
         }
 
-        if (produceRes.data) {
-          setProduce(produceRes.data as any);
+        // If database is empty, use demo data
+        if (fetchedFarms.length === 0 && fetchedProfiles.length === 0) {
+          console.log("Database appears empty, showing demo data.");
+          setFarms(DEMO_FARMS as any);
+          setPermafolk(DEMO_FARMS.map(f => ({ ...f.producer, id: f.id, farm_name: f.name })) as any);
+          setProduce(DEMO_FARMS.flatMap(f => f.produce) as any);
+          setIsUsingDemoData(true);
+        } else {
+          setFarms(fetchedFarms as any);
+          setPermafolk(fetchedProfiles as any);
+          setProduce(fetchedProduce as any);
+          setIsUsingDemoData(false);
         }
       } catch (error) {
-        console.error("Unexpected error fetching data:", error);
+        console.error("Error fetching data:", error);
+        // Fallback to demo data on error
+        setFarms(DEMO_FARMS as any);
+        setIsUsingDemoData(true);
       } finally {
         setLoading(false);
       }
@@ -79,8 +126,7 @@ const Index = () => {
 
   const filteredFarms = farms.filter(farm => {
     const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      farm.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      farm.produce?.some(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      farm.address?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesCategory = selectedCategory === "All" || 
       farm.produce?.some(p => p.category === selectedCategory);
@@ -100,10 +146,6 @@ const Index = () => {
 
     return matchesSearch && matchesCategory;
   });
-
-  const totalProducers = permafolk.length;
-  const totalProducts = produce.length;
-  const uniqueLocations = farms.length;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -141,11 +183,31 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
+        {isUsingDemoData && !loading && (
+          <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-amber-100 p-2 rounded-full">
+                <Sprout className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-amber-900">Viewing Demo Data</p>
+                <p className="text-xs text-amber-700">Your database is currently empty. Register as a producer to list your own farm!</p>
+              </div>
+            </div>
+            <Link to="/register">
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none">
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Join the Network
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {!loading && !searchQuery && (
           <StatsSummary 
-            totalProducers={totalProducers}
-            totalProducts={totalProducts}
-            totalLocations={uniqueLocations}
+            totalProducers={permafolk.length}
+            totalProducts={produce.length}
+            totalLocations={farms.length}
           />
         )}
 
@@ -169,27 +231,10 @@ const Index = () => {
                 Featured Permafolk
               </TabsTrigger>
             </TabsList>
-            
-            {!loading && (
-              <div className="flex items-center gap-4">
-                <p className="text-sm text-slate-500 font-medium bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
-                  Showing {
-                    activeTab === "farms" ? filteredFarms.length : 
-                    activeTab === "map" ? filteredFarms.length :
-                    activeTab === "produce" ? filteredProduce.length : 
-                    filteredPermafolk.length
-                  } results
-                </p>
-              </div>
-            )}
           </div>
 
           {(activeTab === "farms" || activeTab === "produce" || activeTab === "map") && (
             <div className="flex flex-wrap gap-2 mb-12 justify-center">
-              <div className="flex items-center gap-2 mr-4 text-slate-400">
-                <Filter className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">Filter by Category:</span>
-              </div>
               {CATEGORIES.map(cat => (
                 <Badge 
                   key={cat}
