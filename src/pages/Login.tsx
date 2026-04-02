@@ -45,9 +45,9 @@ const Login = () => {
             <div className="mx-auto bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
               <LogIn className="w-6 h-6 text-emerald-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-emerald-900">Producer Login</CardTitle>
+            <CardTitle className="text-2xl font-bold text-emerald-900">Permafolk Login</CardTitle>
             <CardDescription>
-              Manage your farm profile and produce listings.
+              Manage your farm profile and permaculture projects.
             </CardDescription>
           </CardHeader>
           <CardContent>
