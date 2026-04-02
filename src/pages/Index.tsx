@@ -13,6 +13,7 @@ import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter }
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { cn } from "@/lib/utils";
+import { showError } from "@/utils/toast";
 
 const CATEGORIES = [
   "All",
@@ -38,50 +39,43 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch farms with their associated profiles and produce
-        // We only select non-sensitive fields from profiles to maintain security
-        const { data: farmsData, error: farmsError } = await supabase
-          .from('farms')
-          .select(`
-            *,
-            profiles:user_id (id, name, farm_name, picture_url, is_verified),
-            produce (*)
-          `);
+        // Fetch from secure public views
+        const [directoryRes, profilesRes, produceRes] = await Promise.all([
+          supabase.from('public_farm_directory').select('*'),
+          supabase.from('public_profiles').select('*'),
+          supabase.from('produce').select('*')
+        ]);
 
-        if (farmsError) throw farmsError;
+        if (directoryRes.error) {
+          console.error("Error fetching directory:", directoryRes.error);
+          if (directoryRes.error.code === 'PGRST116' || directoryRes.error.message.includes('not found')) {
+            showError("Database views not found. Please run the security SQL script.");
+          }
+        }
 
-        // Fetch all permafolk (safe fields only)
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, name, farm_name, picture_url, is_verified');
-
-        if (profilesError) throw profilesError;
-
-        // Fetch all produce
-        const { data: produceData, error: produceError } = await supabase
-          .from('produce')
-          .select('*');
-
-        if (produceError) throw produceError;
-
-        if (farmsData) {
-          const mappedFarms = farmsData.map(farm => ({
+        if (directoryRes.data && produceRes.data) {
+          const mappedFarms = directoryRes.data.map(farm => ({
             ...farm,
-            producer: farm.profiles,
-            produce: farm.produce || []
+            producer: {
+              id: farm.user_id,
+              name: farm.producer_name,
+              picture_url: farm.producer_picture_url,
+              is_verified: farm.producer_is_verified
+            },
+            produce: (produceRes.data || []).filter(p => p.farm_id === farm.id)
           })) || [];
           setFarms(mappedFarms as any);
         }
 
-        if (profilesData) {
-          setPermafolk(profilesData as any);
+        if (profilesRes.data) {
+          setPermafolk(profilesRes.data as any);
         }
 
-        if (produceData) {
-          setProduce(produceData as any);
+        if (produceRes.data) {
+          setProduce(produceRes.data as any);
         }
       } catch (error) {
-        console.error("Error fetching directory data:", error);
+        console.error("Unexpected error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -114,7 +108,6 @@ const Index = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Stats calculation
   const totalProducers = permafolk.length;
   const totalProducts = produce.length;
   const uniqueLocations = new Set(farms.map(f => f.address).filter(Boolean)).size;
@@ -155,7 +148,7 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
-        {!loading && (
+        {!loading && !searchQuery && (
           <StatsSummary 
             totalProducers={totalProducers}
             totalProducts={totalProducts}
@@ -233,8 +226,8 @@ const Index = () => {
                         producer={{
                           id: farm.user_id,
                           name: (farm as any).producer?.name || "Unknown",
-                          phone: "", // Hidden for security on index
-                          email: "", // Hidden for security on index
+                          phone: "", 
+                          email: "", 
                           farm_name: farm.name,
                           picture_url: farm.picture_url,
                           is_verified: (farm as any).producer?.is_verified || false,

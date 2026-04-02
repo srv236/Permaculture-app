@@ -1,10 +1,12 @@
 -- 1. Secure the profiles table: Only authenticated users can see full PII
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_read_authenticated" ON public.profiles;
 CREATE POLICY "profiles_read_authenticated" ON public.profiles
 FOR SELECT TO authenticated USING (true);
 
 -- 2. Secure the farms table: Only authenticated users can see exact locations
 DROP POLICY IF EXISTS "Farms are viewable by everyone" ON public.farms;
+DROP POLICY IF EXISTS "farms_read_authenticated" ON public.farms;
 CREATE POLICY "farms_read_authenticated" ON public.farms
 FOR SELECT TO authenticated USING (true);
 
@@ -22,7 +24,7 @@ SELECT
   id, user_id, name, size, picture_url, created_at
 FROM public.farms;
 
--- 5. Create a combined view for the public directory to simplify frontend fetching
+-- 5. Create a combined view for the public directory
 CREATE OR REPLACE VIEW public.public_farm_directory AS
 SELECT 
   f.id, f.user_id, f.name, f.size, f.picture_url, f.created_at,
