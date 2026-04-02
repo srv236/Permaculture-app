@@ -1,11 +1,19 @@
--- 1. Ensure produce is viewable by everyone (it contains no PII)
-DROP POLICY IF EXISTS "produce_select_public" ON public.produce;
-CREATE POLICY "produce_select_public" ON public.produce
-FOR SELECT USING (true);
+-- 1. Fix RLS for produce table (Public Read)
+ALTER TABLE public.produce ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public read access for produce" ON public.produce;
+CREATE POLICY "Allow public read access for produce" ON public.produce FOR SELECT USING (true);
 
--- 2. Create a SECURITY DEFINER function to safely expose public farm/producer data
--- This function runs with the permissions of the creator (postgres), bypassing RLS
--- but only returning the specific columns we define here.
+-- 2. Fix RLS for farms table (Authenticated Read/Write, Public via RPC)
+ALTER TABLE public.farms ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow authenticated read access for farms" ON public.farms;
+CREATE POLICY "Allow authenticated read access for farms" ON public.farms FOR SELECT TO authenticated USING (true);
+
+-- 3. Fix RLS for profiles table (Authenticated Read/Write, Public via RPC)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow authenticated read access for profiles" ON public.profiles;
+CREATE POLICY "Allow authenticated read access for profiles" ON public.profiles FOR SELECT TO authenticated USING (true);
+
+-- 4. Create the Public Directory RPC Function
 CREATE OR REPLACE FUNCTION public.get_public_directory()
 RETURNS TABLE (
   id UUID,
@@ -19,7 +27,8 @@ RETURNS TABLE (
   producer_is_verified BOOLEAN
 ) 
 LANGUAGE plpgsql
-SECURITY DEFINER -- This is the key to fixing the 0 count for guests
+SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   RETURN QUERY
@@ -33,7 +42,7 @@ BEGIN
 END;
 $$;
 
--- 3. Create a function for public profiles
+-- 5. Create the Public Profiles RPC Function
 CREATE OR REPLACE FUNCTION public.get_public_profiles()
 RETURNS TABLE (
   id UUID,
@@ -46,6 +55,7 @@ RETURNS TABLE (
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   RETURN QUERY
@@ -55,6 +65,6 @@ BEGIN
 END;
 $$;
 
--- 4. Grant execution permission to everyone
+-- 6. Grant permissions
 GRANT EXECUTE ON FUNCTION public.get_public_directory() TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_public_profiles() TO anon, authenticated;
