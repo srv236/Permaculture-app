@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
+import { StatsSummary } from "@/components/StatsSummary";
 import { Input } from "@/components/ui/input";
 import { Search, Sprout, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +43,11 @@ const Index = () => {
     return matchesProducer || matchesProduce;
   });
 
+  // Calculate stats
+  const totalProducers = producers.length;
+  const totalProducts = producers.reduce((acc, p) => acc + (p.produce?.length || 0), 0);
+  const uniqueLocations = new Set(producers.flatMap(p => p.locations || [])).size;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -67,6 +73,14 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
+        {!loading && !searchQuery && (
+          <StatsSummary 
+            totalProducers={totalProducers}
+            totalProducts={totalProducts}
+            totalLocations={uniqueLocations}
+          />
+        )}
+
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
             <Sprout className="text-emerald-600" />
