@@ -38,17 +38,18 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Only select non-sensitive fields for the public directory
         const { data: farmsData } = await supabase
           .from('farms')
           .select(`
             *,
-            profiles (id, name, phone, email, is_verified, picture_url),
+            profiles (id, name, is_verified, picture_url),
             produce (*)
           `);
 
         const { data: profilesData } = await supabase
           .from('profiles')
-          .select('*');
+          .select('id, name, farm_name, picture_url, is_verified');
 
         const { data: produceData } = await supabase
           .from('produce')

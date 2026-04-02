@@ -7,6 +7,7 @@ import { SecureImage } from "@/components/SecureImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ContactButtons } from "@/components/ContactButtons";
+import { useSession } from "@/components/SessionProvider";
 import { 
   MapPin, 
   Calendar, 
@@ -16,13 +17,15 @@ import {
   Loader2, 
   GraduationCap,
   Award,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ProfileDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useSession();
   const [profile, setProfile] = useState<Producer | null>(null);
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,11 +122,23 @@ const ProfileDetail = () => {
               <p className="text-emerald-300 text-xl font-medium mb-4">Certified Permaculture Practitioner</p>
             </div>
             <div className="shrink-0 w-full md:w-auto">
-              <ContactButtons 
-                phone={profile.phone} 
-                email={profile.email} 
-                name={profile.name} 
-              />
+              {user ? (
+                <ContactButtons 
+                  phone={profile.phone} 
+                  email={profile.email} 
+                  name={profile.name} 
+                />
+              ) : (
+                <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center">
+                  <Lock className="w-5 h-5 mx-auto mb-2 text-emerald-300" />
+                  <p className="text-xs font-medium text-emerald-100 mb-3">Login to view contact details</p>
+                  <Link to="/login">
+                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white border-none">
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
