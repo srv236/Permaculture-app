@@ -38,29 +38,37 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch from secure public views instead of raw tables
-        const { data: directoryData } = await supabase
-          .from('public_farm_directory')
-          .select('*');
+        // Fetch farms with their associated profiles and produce
+        // We only select non-sensitive fields from profiles to maintain security
+        const { data: farmsData, error: farmsError } = await supabase
+          .from('farms')
+          .select(`
+            *,
+            profiles:user_id (id, name, farm_name, picture_url, is_verified),
+            produce (*)
+          `);
 
-        const { data: profilesData } = await supabase
-          .from('public_profiles')
-          .select('*');
+        if (farmsError) throw farmsError;
 
-        const { data: produceData } = await supabase
+        // Fetch all permafolk (safe fields only)
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, name, farm_name, picture_url, is_verified');
+
+        if (profilesError) throw profilesError;
+
+        // Fetch all produce
+        const { data: produceData, error: produceError } = await supabase
           .from('produce')
           .select('*');
 
-        if (directoryData && produceData) {
-          const mappedFarms = directoryData.map(farm => ({
+        if (produceError) throw produceError;
+
+        if (farmsData) {
+          const mappedFarms = farmsData.map(farm => ({
             ...farm,
-            producer: {
-              id: farm.user_id,
-              name: farm.producer_name,
-              picture_url: farm.producer_picture_url,
-              is_verified: farm.producer_is_verified
-            },
-            produce: produceData.filter(p => p.farm_id === farm.id)
+            producer: farm.profiles,
+            produce: farm.produce || []
           })) || [];
           setFarms(mappedFarms as any);
         }
@@ -73,7 +81,7 @@ const Index = () => {
           setProduce(produceData as any);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching directory data:", error);
       } finally {
         setLoading(false);
       }
@@ -106,6 +114,7 @@ const Index = () => {
     return matchesSearch && matchesCategory;
   });
 
+  // Stats calculation
   const totalProducers = permafolk.length;
   const totalProducts = produce.length;
   const uniqueLocations = new Set(farms.map(f => f.address).filter(Boolean)).size;
@@ -146,7 +155,7 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
-        {!loading && !searchQuery && (
+        {!loading && (
           <StatsSummary 
             totalProducers={totalProducers}
             totalProducts={totalProducts}
@@ -224,8 +233,8 @@ const Index = () => {
                         producer={{
                           id: farm.user_id,
                           name: (farm as any).producer?.name || "Unknown",
-                          phone: (farm as any).producer?.phone || "",
-                          email: (farm as any).producer?.email || "",
+                          phone: "", // Hidden for security on index
+                          email: "", // Hidden for security on index
                           farm_name: farm.name,
                           picture_url: farm.picture_url,
                           is_verified: (farm as any).producer?.is_verified || false,
