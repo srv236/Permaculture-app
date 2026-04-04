@@ -1,12 +1,15 @@
 export interface Produce {
   id: string;
   farm_id: string;
+  producer_id: string;
   name: string;
   variety: string;
   description?: string;
+  category: string;
   price: string;
   quantity: string;
   image_url: string;
+  created_at?: string;
 }
 
 export interface Farm {

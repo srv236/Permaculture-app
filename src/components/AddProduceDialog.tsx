@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,6 +15,17 @@ interface AddProduceDialogProps {
   onSuccess: () => void;
 }
 
+const CATEGORIES = [
+  "Vegetables",
+  "Fruits",
+  "Grains & Pulses",
+  "Honey & Preserves",
+  "Dairy & Eggs",
+  "Herbs & Spices",
+  "Seeds & Saplings",
+  "Other"
+];
+
 export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) => {
   const { user } = useSession();
   const [open, setOpen] = useState(false);
@@ -25,6 +34,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
   const [formData, setFormData] = useState({
     name: "",
     variety: "",
+    category: "Vegetables",
     description: "",
     priceValue: "",
     priceUnit: "kg",
@@ -44,7 +54,6 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         imageUrl = await uploadImage(imageFile, "produce_images");
       }
 
-      // Format price and quantity strings
       const formattedPrice = `₹${formData.priceValue} / ${formData.priceUnit}`;
       const formattedQuantity = `${formData.quantityValue} ${formData.quantityUnit}`;
 
@@ -55,6 +64,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           producer_id: user.id,
           name: formData.name,
           variety: formData.variety,
+          category: formData.category,
           description: formData.description,
           price: formattedPrice,
           quantity: formattedQuantity,
@@ -68,6 +78,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
       setFormData({ 
         name: "", 
         variety: "", 
+        category: "Vegetables",
         description: "", 
         priceValue: "", 
         priceUnit: "kg", 
@@ -96,16 +107,35 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           <DialogTitle>Add Produce to Farm</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Produce Name</Label>
-            <Input 
-              id="name" 
-              placeholder="e.g. Tomatoes" 
-              required 
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Produce Name</Label>
+              <Input 
+                id="name" 
+                placeholder="e.g. Tomatoes" 
+                required 
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select 
+                value={formData.category} 
+                onValueChange={(value) => setFormData({...formData, category: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          
           <div className="space-y-2">
             <Label htmlFor="variety">Variety</Label>
             <Input 
