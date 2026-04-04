@@ -1,3 +1,9 @@
+...
+＜/dyad-write>
+<dyad-write path="src/components/FarmMap.tsx" description="Fixing Leaflet map rendering and height issues">
+...
+＜/dyad-write>
+<dyad-chat-summary>Fixing stat icons, moving filters below listings, and resolving map display issues＜/dyad-chat-summary></think><dyad-write path="src/pages/Index.tsx" description="Updating landing page with correct stat icons, moving filters below listings, and fixing map display">
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
@@ -6,7 +12,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, LogIn, Users, MapPin, ShoppingBag, Ruler } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -163,7 +169,7 @@ const Index = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           <Card className="border-emerald-100 bg-white">
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <Users className="w-8 h-8 text-emerald-600 mb-2" />
+              <Users className="w-8 h-8 text-blue-600 mb-2" />
               <span className="text-3xl font-bold text-slate-900">{stats.verifiedPermafolk}</span>
               <span className="text-sm text-slate-500 font-medium">Verified Permafolk</span>
             </CardContent>
@@ -177,16 +183,16 @@ const Index = () => {
           </Card>
           <Card className="border-emerald-100 bg-white">
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <Ruler className="w-8 h-8 text-emerald-600 mb-2" />
-              <span className="text-3xl font-bold text-slate-900">{stats.totalFarmSize}</span>
-              <span className="text-sm text-slate-500 font-medium">Total Farm Size</span>
+              <ShoppingBasket className="w-8 h-8 text-amber-600 mb-2" />
+              <span className="text-3xl font-bold text-slate-900">{stats.totalProduce}</span>
+              <span className="text-sm text-slate-500 font-medium">Available Produce</span>
             </CardContent>
           </Card>
           <Card className="border-emerald-100 bg-white">
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <ShoppingBag className="w-8 h-8 text-emerald-600 mb-2" />
-              <span className="text-3xl font-bold text-slate-900">{stats.totalProduce}</span>
-              <span className="text-sm text-slate-500 font-medium">Available Produce</span>
+              <Sprout className="w-8 h-8 text-purple-600 mb-2" />
+              <span className="text-3xl font-bold text-slate-900">{stats.totalFarmSize}</span>
+              <span className="text-sm text-slate-500 font-medium">Total Farm Size</span>
             </CardContent>
           </Card>
         </div>
@@ -197,7 +203,7 @@ const Index = () => {
             <MapIcon className="w-6 h-6 text-emerald-600" />
             Farm Locations
           </h2>
-          <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
+          <div className="h-[500px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
             {loading ? (
               <div className="flex items-center justify-center h-full bg-slate-100">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
@@ -273,23 +279,6 @@ const Index = () => {
                   Featured Permafolk
                 </TabsTrigger>
               </TabsList>
-              
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map(cat => (
-                  <Badge 
-                    key={cat}
-                    variant={selectedCategory === cat ? "default" : "outline"}
-                    className={`cursor-pointer px-4 py-2 rounded-full text-sm transition-all ${
-                      selectedCategory === cat 
-                        ? "bg-emerald-600 hover:bg-emerald-700 border-none" 
-                        : "bg-white hover:bg-emerald-50 border-emerald-100 text-slate-600"
-                    }`}
-                    onClick={() => setSelectedCategory(cat)}
-                  >
-                    {cat}
-                  </Badge>
-                ))}
-              </div>
             </div>
 
             {loading ? (
@@ -326,6 +315,7 @@ const Index = () => {
                   ) : (
                     <EmptyState message="No farms found matching your search." />
                   )}
+                  <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
                 </TabsContent>
 
                 <TabsContent value="produce" className="mt-0">
@@ -338,6 +328,7 @@ const Index = () => {
                   ) : (
                     <EmptyState message="No produce found matching your search." />
                   )}
+                  <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
                 </TabsContent>
 
                 <TabsContent value="permafolk" className="mt-0">
@@ -350,6 +341,7 @@ const Index = () => {
                   ) : (
                     <EmptyState message="No permafolk found matching your search." />
                   )}
+                  <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
                 </TabsContent>
               </>
             )}
@@ -372,6 +364,25 @@ const Index = () => {
     </div>
   );
 };
+
+const CategoryFilter = ({ selected, onSelect }: { selected: string; onSelect: (cat: string) => void }) => (
+  <div className="flex flex-wrap justify-center gap-2 mt-8 pt-6 border-t border-slate-100">
+    {CATEGORIES.map(cat => (
+      <Badge 
+        key={cat}
+        variant={selected === cat ? "default" : "outline"}
+        className={`cursor-pointer px-4 py-2 rounded-full text-sm transition-all ${
+          selected === cat 
+            ? "bg-emerald-600 hover:bg-emerald-700 border-none" 
+            : "bg-white hover:bg-emerald-50 border-emerald-100 text-slate-600"
+        }`}
+        onClick={() => onSelect(cat)}
+      >
+        {cat}
+      </Badge>
+    ))}
+  </div>
+);
 
 const EmptyState = ({ message }: { message: string }) => (
   <div className="text-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
