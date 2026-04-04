@@ -6,7 +6,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, LogIn, Users, MapPin, ShoppingBag, Ruler } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, LogIn, Users, MapPin, ShoppingBag, Ruler, Calendar, Award, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -163,28 +163,36 @@ const Index = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           <Card className="border-emerald-100 bg-white">
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <Users className="w-8 h-8 text-emerald-600 mb-2" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-2">
+                <Users className="w-6 h-6 text-emerald-600" />
+              </div>
               <span className="text-3xl font-bold text-slate-900">{stats.verifiedPermafolk}</span>
               <span className="text-sm text-slate-500 font-medium">Verified Permafolk</span>
             </CardContent>
           </Card>
           <Card className="border-emerald-100 bg-white">
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <MapPin className="w-8 h-8 text-emerald-600 mb-2" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-2">
+                <MapPin className="w-6 h-6 text-emerald-600" />
+              </div>
               <span className="text-3xl font-bold text-slate-900">{stats.totalFarms}</span>
               <span className="text-sm text-slate-500 font-medium">Active Farms</span>
             </CardContent>
           </Card>
           <Card className="border-emerald-100 bg-white">
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <Ruler className="w-8 h-8 text-emerald-600 mb-2" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-2">
+                <Ruler className="w-6 h-6 text-emerald-600" />
+              </div>
               <span className="text-3xl font-bold text-slate-900">{stats.totalFarmSize}</span>
               <span className="text-sm text-slate-500 font-medium">Total Farm Size</span>
             </CardContent>
           </Card>
           <Card className="border-emerald-100 bg-white">
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <ShoppingBag className="w-8 h-8 text-emerald-600 mb-2" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-2">
+                <ShoppingBag className="w-6 h-6 text-emerald-600" />
+              </div>
               <span className="text-3xl font-bold text-slate-900">{stats.totalProduce}</span>
               <span className="text-sm text-slate-500 font-medium">Available Produce</span>
             </CardContent>
