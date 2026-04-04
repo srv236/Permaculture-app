@@ -1,9 +1,3 @@
-...
-＜/dyad-write>
-<dyad-write path="src/components/FarmMap.tsx" description="Fixing Leaflet map rendering and height issues">
-...
-＜/dyad-write>
-<dyad-chat-summary>Fixing stat icons, moving filters below listings, and resolving map display issues＜/dyad-chat-summary></think><dyad-write path="src/pages/Index.tsx" description="Updating landing page with correct stat icons, moving filters below listings, and fixing map display">
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
