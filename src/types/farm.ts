@@ -1,15 +1,13 @@
 export interface Produce {
   id: string;
   farm_id: string;
-  producer_id: string;
   name: string;
   variety: string;
   description?: string;
-  category: string;
   price: string;
   quantity: string;
   image_url: string;
-  created_at?: string;
+  category?: string;
 }
 
 export interface Farm {
@@ -40,4 +38,10 @@ export interface Producer {
   advanced_course_date?: string;
   practitioner_since?: string;
   farms?: Farm[];
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
+  address?: string;
+  produce?: Produce[];
+  locations?: string[];
 }

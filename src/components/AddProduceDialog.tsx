@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,9 +21,9 @@ const CATEGORIES = [
   "Vegetables",
   "Fruits",
   "Grains & Pulses",
-  "Honey & Preserves",
-  "Dairy & Eggs",
   "Herbs & Spices",
+  "Dairy & Eggs",
+  "Honey & Preserves",
   "Seeds & Saplings",
   "Other"
 ];
@@ -34,8 +36,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
   const [formData, setFormData] = useState({
     name: "",
     variety: "",
-    category: "Vegetables",
     description: "",
+    category: "Vegetables",
     priceValue: "",
     priceUnit: "kg",
     quantityValue: "",
@@ -64,8 +66,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           producer_id: user.id,
           name: formData.name,
           variety: formData.variety,
-          category: formData.category,
           description: formData.description,
+          category: formData.category,
           price: formattedPrice,
           quantity: formattedQuantity,
           image_url: imageUrl,
@@ -78,8 +80,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
       setFormData({ 
         name: "", 
         variety: "", 
-        category: "Vegetables",
         description: "", 
+        category: "Vegetables",
         priceValue: "", 
         priceUnit: "kg", 
         quantityValue: "", 
@@ -135,7 +137,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
               </Select>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="variety">Variety</Label>
             <Input 

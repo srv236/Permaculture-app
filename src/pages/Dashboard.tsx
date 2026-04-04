@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,30 +23,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchData = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select(`*`)
-        .eq('id', user.id)
-        .single();
-
-      const { data: farmsData } = await supabase
-        .from('farms')
-        .select(`*, produce (*)`)
-        .eq('user_id', user.id);
-
-      setProfile(profileData as any);
-      setFarms(farmsData || []);
-    } catch (error) {
-      showError("Could not load dashboard data.");
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
   useEffect(() => {
     if (!sessionLoading && !user) {
       navigate("/login");
@@ -54,7 +32,30 @@ const Dashboard = () => {
     if (user) {
       fetchData();
     }
-  }, [user, sessionLoading, navigate, fetchData]);
+  }, [user, sessionLoading]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select(`*`)
+        .eq('id', user?.id)
+        .single();
+
+      const { data: farmsData } = await supabase
+        .from('farms')
+        .select(`*, produce (*)`)
+        .eq('user_id', user?.id);
+
+      setProfile(profileData);
+      setFarms(farmsData || []);
+    } catch (error) {
+      showError("Could not load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteFarm = async (id: string) => {
     if (!confirm("Are you sure you want to remove this farm and all its produce?")) return;
@@ -128,6 +129,7 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Profile Summary */}
           <Card className="lg:col-span-1 border-emerald-100 h-fit">
             <CardHeader>
               <CardTitle className="text-lg">Your Profile</CardTitle>
@@ -154,6 +156,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
+          {/* Farms List */}
           <div className="lg:col-span-3 space-y-6">
             <h2 className="text-xl font-bold text-slate-800">Your Farms</h2>
             {farms.length > 0 ? (
@@ -220,7 +223,7 @@ const Dashboard = () => {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-slate-800 truncate">{item.name}</p>
-                                    <p className="text-[10px] text-slate-500">{item.category} • {item.price}</p>
+                                    <p className="text-[10px] text-slate-500">{item.price} • {item.quantity}</p>
                                   </div>
                                   <Button 
                                     variant="ghost" 
