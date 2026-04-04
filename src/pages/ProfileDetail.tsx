@@ -11,7 +11,6 @@ import {
   MapPin, 
   Calendar, 
   CheckCircle2, 
-  XCircle,
   ArrowLeft, 
   Loader2, 
   Sprout,
@@ -103,18 +102,10 @@ const ProfileDetail = () => {
               />
             </div>
             <div className="text-center md:text-left flex-1">
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{profile.name}</h1>
-                {profile.is_verified ? (
-                  <Badge className="bg-blue-500 text-white border-none px-3 py-1 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Verified Practitioner
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-700 px-3 py-1 flex items-center gap-1.5">
-                    <XCircle className="w-4 h-4" />
-                    Verification Pending
-                  </Badge>
+                {profile.is_verified && (
+                  <CheckCircle2 className="w-8 h-8 text-blue-400 fill-blue-400/20" />
                 )}
               </div>
               <p className="text-emerald-300 text-xl font-medium mb-4">Certified Permaculture Practitioner</p>
@@ -157,7 +148,7 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Basic Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.basic_course_date ? `Completed: ${profile.basic_course_date}` : "Completed"}
+                      {profile.basic_course_date || "Completed"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -168,20 +159,9 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Advanced Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.advanced_course_date ? `Completed: ${profile.advanced_course_date}` : "Completed"}
+                      {profile.advanced_course_date || "Completed"}
                     </Badge>
                   </div>
-                  {profile.practitioner_since && (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                          <Calendar className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <span className="text-sm font-medium text-slate-700">Practicing Since</span>
-                      </div>
-                      <span className="text-sm font-bold text-slate-900">{profile.practitioner_since}</span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
