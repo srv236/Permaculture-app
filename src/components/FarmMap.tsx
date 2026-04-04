@@ -7,7 +7,7 @@ import L from 'leaflet';
 import { Farm } from '@/types/farm';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
-import { MapPin, ArrowRight, Map } from 'lucide-react';
+import { MapPin, ArrowRight } from 'lucide-react';
 
 // Fix for default marker icons in Leaflet with React
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -41,27 +41,20 @@ export const FarmMap = ({ farms }: FarmMapProps) => {
   const farmsWithCoords = farms.filter(f => f.latitude && f.longitude);
   
   if (!isClient) {
-    return <div className="h-full w-full bg-slate-100 flex items-center justify-center"><Map className="w-8 h-8 text-slate-400" /></div>;
+    return <div className="h-full w-full bg-slate-100 flex items-center justify-center"><MapPin className="w-8 h-8 text-slate-400" /></div>;
   }
 
-  if (farmsWithCoords.length === 0) {
-    return (
-      <div className="h-full w-full bg-slate-50 flex flex-col items-center justify-center text-center p-8">
-        <MapPin className="w-12 h-12 text-slate-300 mb-4" />
-        <h3 className="text-lg font-semibold text-slate-700">No Mapped Locations Yet</h3>
-        <p className="text-slate-500 max-w-md mt-2">Farms will appear here once producers add their coordinates or Google Maps links.</p>
-      </div>
-    );
-  }
-
-  // Default center (India center or first farm)
-  const center: [number, number] = [farmsWithCoords[0].latitude!, farmsWithCoords[0].longitude!];
+  // Default center (India) if no farms have coordinates
+  const defaultCenter: [number, number] = [20.5937, 78.9629];
+  const center: [number, number] = farmsWithCoords.length > 0 
+    ? [farmsWithCoords[0].latitude!, farmsWithCoords[0].longitude!] 
+    : defaultCenter;
 
   return (
     <div className="h-full w-full rounded-3xl overflow-hidden border-4 border-white shadow-2xl relative z-0">
       <MapContainer 
         center={center} 
-        zoom={6} 
+        zoom={farmsWithCoords.length > 0 ? 6 : 4} 
         scrollWheelZoom={false} 
         className="h-full w-full"
       >
