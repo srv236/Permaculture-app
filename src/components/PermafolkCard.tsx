@@ -1,7 +1,8 @@
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { CheckCircle2, Mail, Phone, ArrowRight } from "lucide-react";
 import { SecureImage } from "./SecureImage";
+import { ContactButtons } from "./ContactButtons";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 
@@ -32,7 +33,18 @@ export const PermafolkCard = ({ permafolk }: { permafolk: Producer }) => {
           </div>
         </CardHeader>
       </Link>
-      <CardContent className="p-4 flex-1 flex flex-col justify-end">
+      <CardContent className="p-4 flex-1 flex flex-col justify-between">
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <Mail className="w-4 h-4 text-emerald-500" />
+            {permafolk.email}
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <Phone className="w-4 h-4 text-emerald-500" />
+            {permafolk.phone}
+          </div>
+        </div>
+        
         <div className="space-y-3">
           <Link to={`/profile/${permafolk.id}`} className="block">
             <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
@@ -40,6 +52,11 @@ export const PermafolkCard = ({ permafolk }: { permafolk: Producer }) => {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
+          <ContactButtons 
+            phone={permafolk.phone} 
+            email={permafolk.email} 
+            name={permafolk.name} 
+          />
         </div>
       </CardContent>
     </Card>

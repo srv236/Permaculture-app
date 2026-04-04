@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Admin from "./pages/Admin";
 import ProfileDetail from "./pages/ProfileDetail";
 import FarmDetail from "./pages/FarmDetail";
 import NotFound from "./pages/NotFound";
@@ -27,7 +26,6 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin" element={<Admin />} />
             <Route path="/profile/:id" element={<ProfileDetail />} />
             <Route path="/farm/:id" element={<FarmDetail />} />
             <Route path="*" element={<NotFound />} />
