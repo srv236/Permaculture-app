@@ -22,7 +22,6 @@ export interface Farm {
   address?: string;
   produce: Produce[];
   created_at: string;
-  profiles?: Producer; // Joined profile data
 }
 
 export interface Producer {
@@ -31,13 +30,18 @@ export interface Producer {
   phone: string;
   email: string;
   farm_name: string;
-  locations: string[];
   picture_url?: string;
   is_verified: boolean;
   has_completed_course: boolean;
+  about?: string;
   basic_course_date?: string;
   advanced_course_date?: string;
   practitioner_since?: string;
-  is_admin?: boolean;
-  about?: string;
+  farms?: Farm[];
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
+  address?: string;
+  produce?: Produce[];
+  locations?: string[];
 }

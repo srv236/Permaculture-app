@@ -1,13 +1,13 @@
 "use client";
 
-import { PlusCircle, LayoutDashboard, LogOut, LogIn } from "lucide-react";
+import { PlusCircle, LayoutDashboard, LogOut, LogIn, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useSession } from "./SessionProvider";
 import { SecureImage } from "./SecureImage";
 
 export const Navbar = () => {
-  const { user, signOut } = useSession();
+  const { user, profile, signOut } = useSession();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
@@ -30,6 +30,14 @@ export const Navbar = () => {
         <div className="flex items-center gap-2 sm:gap-4">
           {user ? (
             <>
+              {profile?.is_admin && (
+                <Link to="/admin">
+                  <Button variant="ghost" className="text-purple-700 hover:text-purple-800 hover:bg-purple-50">
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Admin</span>
+                  </Button>
+                </Link>
+              )}
               <Link to="/dashboard">
                 <Button variant="ghost" className="text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50">
                   <LayoutDashboard className="w-4 h-4 mr-2" />

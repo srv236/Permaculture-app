@@ -1,10 +1,12 @@
+"use client";
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Image as ImageIcon, Tag } from "lucide-react";
+import { Plus, Loader2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
@@ -16,8 +18,14 @@ interface AddProduceDialogProps {
 }
 
 const CATEGORIES = [
-  "Vegetables", "Fruits", "Grains", "Honey & Bee Products", 
-  "Dairy & Eggs", "Herbs & Spices", "Seeds & Saplings", "Other"
+  "Vegetables",
+  "Fruits",
+  "Grains & Pulses",
+  "Herbs & Spices",
+  "Dairy & Eggs",
+  "Honey & Preserves",
+  "Seeds & Saplings",
+  "Other"
 ];
 
 export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) => {
