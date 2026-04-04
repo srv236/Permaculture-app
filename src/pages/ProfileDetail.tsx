@@ -7,7 +7,6 @@ import { SecureImage } from "@/components/SecureImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ContactButtons } from "@/components/ContactButtons";
-import { useSession } from "@/components/SessionProvider";
 import { 
   MapPin, 
   Calendar, 
@@ -17,15 +16,13 @@ import {
   Loader2, 
   GraduationCap,
   Award,
-  ChevronRight,
-  Lock
+  ChevronRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ProfileDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useSession();
   const [profile, setProfile] = useState<Producer | null>(null);
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,12 +32,8 @@ const ProfileDetail = () => {
       if (!id) return;
       setLoading(true);
       try {
-        // If user is logged in, fetch from the main table (protected by RLS)
-        // If guest, fetch from the public view (no PII)
-        const table = user ? 'profiles' : 'public_profiles';
-        
         const { data: profileData, error: profileError } = await supabase
-          .from(table)
+          .from('profiles')
           .select('*')
           .eq('id', id)
           .single();
@@ -48,10 +41,8 @@ const ProfileDetail = () => {
         if (profileError) throw profileError;
         setProfile(profileData as any);
 
-        // Same logic for farms
-        const farmTable = user ? 'farms' : 'public_farms';
         const { data: farmsData, error: farmsError } = await supabase
-          .from(farmTable)
+          .from('farms')
           .select('*, produce (*)')
           .eq('user_id', id);
 
@@ -65,7 +56,7 @@ const ProfileDetail = () => {
     };
 
     fetchProfileData();
-  }, [id, user]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -128,23 +119,11 @@ const ProfileDetail = () => {
               <p className="text-emerald-300 text-xl font-medium mb-4">Certified Permaculture Practitioner</p>
             </div>
             <div className="shrink-0 w-full md:w-auto">
-              {user ? (
-                <ContactButtons 
-                  phone={profile.phone} 
-                  email={profile.email} 
-                  name={profile.name} 
-                />
-              ) : (
-                <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center">
-                  <Lock className="w-5 h-5 mx-auto mb-2 text-emerald-300" />
-                  <p className="text-xs font-medium text-emerald-100 mb-3">Login to view contact details</p>
-                  <Link to="/login">
-                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white border-none">
-                      Sign In
-                    </Button>
-                  </Link>
-                </div>
-              )}
+              <ContactButtons 
+                phone={profile.phone} 
+                email={profile.email} 
+                name={profile.name} 
+              />
             </div>
           </div>
         </div>
