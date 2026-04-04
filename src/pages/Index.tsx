@@ -6,7 +6,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, ShoppingBag, Ruler } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, LogIn, Users, MapPin, ShoppingBag, Ruler } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -258,7 +258,7 @@ const Index = () => {
           </Card>
         ) : (
           <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
               <TabsList className="bg-white p-1 h-auto rounded-2xl shadow-sm border border-emerald-100">
                 <TabsTrigger value="farms" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
                   <MapIcon className="w-4 h-4 mr-2" />
@@ -273,6 +273,23 @@ const Index = () => {
                   Featured Permafolk
                 </TabsTrigger>
               </TabsList>
+              
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map(cat => (
+                  <Badge 
+                    key={cat}
+                    variant={selectedCategory === cat ? "default" : "outline"}
+                    className={`cursor-pointer px-4 py-2 rounded-full text-sm transition-all ${
+                      selectedCategory === cat 
+                        ? "bg-emerald-600 hover:bg-emerald-700 border-none" 
+                        : "bg-white hover:bg-emerald-50 border-emerald-100 text-slate-600"
+                    }`}
+                    onClick={() => setSelectedCategory(cat)}
+                  >
+                    {cat}
+                  </Badge>
+                ))}
+              </div>
             </div>
 
             {loading ? (
@@ -334,30 +351,6 @@ const Index = () => {
                     <EmptyState message="No permafolk found matching your search." />
                   )}
                 </TabsContent>
-
-                {/* Category Filters Below List */}
-                <div className="mt-10 pt-8 border-t border-slate-200">
-                  <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <ShoppingBasket className="w-5 h-5 text-emerald-600" />
-                    Filter by Category
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {CATEGORIES.map(cat => (
-                      <Badge 
-                        key={cat}
-                        variant={selectedCategory === cat ? "default" : "outline"}
-                        className={`cursor-pointer px-4 py-2 rounded-full text-sm transition-all ${
-                          selectedCategory === cat 
-                            ? "bg-emerald-600 hover:bg-emerald-700 border-none" 
-                            : "bg-white hover:bg-emerald-50 border-emerald-100 text-slate-600"
-                        }`}
-                        onClick={() => setSelectedCategory(cat)}
-                      >
-                        {cat}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
               </>
             )}
           </Tabs>
