@@ -2,6 +2,7 @@ import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { MapPin, CheckCircle2, ExternalLink, ArrowRight } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
+import { ContactButtons } from "./ContactButtons";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -69,6 +70,11 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
             </div>
           </div>
         </div>
+        <ContactButtons 
+          phone={producer.phone} 
+          email={producer.email} 
+          name={producer.name} 
+        />
       </CardHeader>
       <CardContent className="p-4">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Current Produce</h4>
