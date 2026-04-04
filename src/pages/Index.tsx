@@ -23,18 +23,21 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Fetch Farms with their producers and produce
         const { data: farmsData } = await supabase
           .from('farms')
           .select(`
             *,
-            profiles (id, name, phone, email, is_verified, picture_url),
+            profiles (id, name, phone, email, is_verified, picture_url, locations),
             produce (*)
           `);
 
+        // Fetch all Permafolk (Profiles)
         const { data: profilesData } = await supabase
           .from('profiles')
           .select('*');
 
+        // Fetch all Produce
         const { data: produceData } = await supabase
           .from('produce')
           .select('*');
@@ -71,11 +74,12 @@ const Index = () => {
   );
 
   const filteredPermafolk = permafolk.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.locations?.some(loc => loc.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const filteredProduce = produce.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.variety?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -162,6 +166,7 @@ const Index = () => {
                           phone: (farm as any).producer?.phone || "",
                           email: (farm as any).producer?.email || "",
                           farm_name: farm.name,
+                          locations: farm.address ? [farm.address] : [],
                           picture_url: farm.picture_url,
                           is_verified: (farm as any).producer?.is_verified || false,
                           has_completed_course: true,
