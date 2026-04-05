@@ -53,7 +53,7 @@ const Index = () => {
 
         const { count: farmsCount, data: farmsData } = await supabase
           .from('farms')
-          .select(`*, produce (*)`, { count: 'exact' });
+          .select(`*, produce (*), profiles (*)`, { count: 'exact' });
 
         const { count: produceCount } = await supabase
           .from('produce')
@@ -173,7 +173,7 @@ const Index = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-bold text-slate-900 leading-none">{stats.verifiedPermafolk}</span>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Producers</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Permafolk</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -333,7 +333,7 @@ const Index = () => {
                         <ProducerCard 
                           key={farm.id} 
                           producer={{
-                            id: farm.user_id,
+                            id: farm.id, // Use farm ID for linking
                             name: (farm as any).profiles?.name || "Practitioner",
                             phone: (farm as any).profiles?.phone || "",
                             email: (farm as any).profiles?.email || "",

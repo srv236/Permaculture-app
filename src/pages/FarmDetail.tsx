@@ -164,26 +164,37 @@ const FarmDetail = () => {
                 Farm Location
               </h2>
               {farm.latitude && farm.longitude ? (
-                <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
-                  <MapContainer 
-                    center={[farm.latitude, farm.longitude]} 
-                    zoom={13} 
-                    scrollWheelZoom={false} 
-                    className="h-full w-full"
-                  >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <Marker position={[farm.latitude, farm.longitude]}>
-                      <Popup>
-                        <div className="p-1">
-                          <p className="font-bold text-emerald-900">{farm.name}</p>
-                          <p className="text-xs text-slate-500">{farm.address}</p>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  </MapContainer>
+                <div className="space-y-4">
+                  <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
+                    <MapContainer 
+                      center={[farm.latitude, farm.longitude]} 
+                      zoom={13} 
+                      scrollWheelZoom={false} 
+                      className="h-full w-full"
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker position={[farm.latitude, farm.longitude]}>
+                        <Popup>
+                          <div className="p-1">
+                            <p className="font-bold text-emerald-900">{farm.name}</p>
+                            <p className="text-xs text-slate-500">{farm.address}</p>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    </MapContainer>
+                  </div>
+                  {mapsUrl && (
+                    <Button 
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg rounded-2xl"
+                      onClick={() => window.open(mapsUrl, "_blank")}
+                    >
+                      <ExternalLink className="w-5 h-5 mr-2" />
+                      Open in Google Maps
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <Card className="border-dashed border-2 border-slate-200 bg-transparent py-12 text-center">
@@ -217,16 +228,6 @@ const FarmDetail = () => {
                     </Button>
                   </div>
                 </div>
-
-                {mapsUrl && (
-                  <Button 
-                    className="w-full bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => window.open(mapsUrl, "_blank")}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Open in Google Maps
-                  </Button>
-                )}
 
                 {producer && (
                   <ContactButtons 

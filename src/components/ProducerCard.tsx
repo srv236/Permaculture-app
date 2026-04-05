@@ -1,6 +1,6 @@
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { MapPin, CheckCircle2, ExternalLink, ArrowRight } from "lucide-react";
+import { MapPin, CheckCircle2, ExternalLink, ArrowRight, User } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
@@ -16,7 +16,7 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
     <Card className="overflow-hidden border-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 group">
       <CardHeader className="bg-emerald-50/50 pb-4">
         <div className="flex items-start gap-4">
-          <Link to={`/profile/${producer.id}`} className="shrink-0">
+          <Link to={`/farm/${producer.id}`} className="shrink-0">
             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm bg-white">
               <SecureImage 
                 path={producer.picture_url}
@@ -30,7 +30,7 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
           </Link>
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <Link to={`/profile/${producer.id}`} className="hover:underline decoration-emerald-300 underline-offset-4">
+              <Link to={`/farm/${producer.id}`} className="hover:underline decoration-emerald-300 underline-offset-4">
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-xl font-bold text-emerald-900">{producer.farm_name}</h3>
                   {producer.is_verified && (
@@ -38,14 +38,17 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
                   )}
                 </div>
               </Link>
-              <Link to={`/profile/${producer.id}`}>
+              <Link to={`/farm/${producer.id}`}>
                 <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100/50">
-                  Profile
+                  View Farm
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
             </div>
-            <p className="text-sm font-medium text-emerald-700">{producer.name}</p>
+            <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+              <User className="w-3 h-3" />
+              {producer.name}
+            </div>
             
             {producer.address && (
               <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
@@ -78,7 +81,7 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
           ))}
         </div>
         {producer.produce && producer.produce.length > 2 && (
-          <Link to={`/profile/${producer.id}`} className="block text-center mt-4 text-xs font-bold text-emerald-600 hover:underline">
+          <Link to={`/farm/${producer.id}`} className="block text-center mt-4 text-xs font-bold text-emerald-600 hover:underline">
             + {producer.produce.length - 2} more items
           </Link>
         )}

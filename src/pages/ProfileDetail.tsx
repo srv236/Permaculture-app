@@ -18,7 +18,8 @@ import {
   GraduationCap,
   Award,
   ChevronRight,
-  Lock
+  Lock,
+  Sprout
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -209,14 +210,17 @@ const ProfileDetail = () => {
 
           <div className="lg:col-span-2 space-y-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-slate-900">Farms</h2>
+              <h2 className="text-2xl font-bold text-emerald-900 flex items-center gap-2">
+                <Sprout className="w-6 h-6 text-emerald-600" />
+                Farms
+              </h2>
             </div>
 
             {farms.length > 0 ? (
               <div className="grid grid-cols-1 gap-6">
                 {farms.map((farm) => (
                   <Link key={farm.id} to={`/farm/${farm.id}`}>
-                    <Card className="group overflow-hidden border-slate-200 hover:border-emerald-300 hover:shadow-xl transition-all duration-300">
+                    <Card className="group overflow-hidden border-slate-200 hover:border-emerald-300 hover:shadow-xl transition-all duration-300 rounded-3xl">
                       <div className="flex flex-col md:flex-row">
                         <div className="md:w-1/3 aspect-video md:aspect-auto relative overflow-hidden">
                           <SecureImage 
