@@ -36,7 +36,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("farms");
   const [stats, setStats] = useState({
-    totalPermafolk: 0,
+    verifiedPermafolk: 0,
     totalFarms: 0,
     totalProduce: 0,
     totalFarmSize: "0"
@@ -46,10 +46,10 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Count all profiles (permafolk)
-        const { count: permafolkCount } = await supabase
+        const { count: verifiedCount } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true })
+          .eq('is_verified', true);
 
         const { count: farmsCount, data: farmsData } = await supabase
           .from('farms')
@@ -75,7 +75,7 @@ const Index = () => {
         }, 0) || 0;
 
         setStats({
-          totalPermafolk: permafolkCount || 0,
+          verifiedPermafolk: verifiedCount || 0,
           totalFarms: farmsCount || 0,
           totalProduce: produceCount || 0,
           totalFarmSize: totalSizeInHectares > 0 ? `${totalSizeInHectares.toFixed(1)} hectares` : "Varies"
@@ -90,7 +90,6 @@ const Index = () => {
           .select('*');
         if (profilesData) setPermafolk(profilesData as any);
 
-        // Fetch produce with farm details joined
         const { data: produceData } = await supabase
           .from('produce')
           .select('*, farms(name)');
@@ -166,13 +165,14 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
+        {/* Stats Section - Restored Icons and Colors */}
         <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 mb-16 py-8 border-y border-slate-200 bg-white/50 rounded-3xl shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
               <Users className="w-6 h-6 text-blue-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalPermafolk}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.verifiedPermafolk}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Permafolk</span>
             </div>
           </div>
@@ -205,6 +205,7 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Map View */}
         <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -226,6 +227,34 @@ const Index = () => {
           </div>
         </div>
 
+        {/* How to Use Section */}
+        <Card className="mb-16 border-none bg-emerald-50/50 rounded-[40px] overflow-hidden">
+          <CardContent className="p-10">
+            <h2 className="text-2xl font-bold text-emerald-900 mb-8 flex items-center gap-2">
+              <Sprout className="w-6 h-6" />
+              How to Use the Network
+            </h2>
+            <div className="grid md:grid-cols-3 gap-10 text-slate-700">
+              <div className="space-y-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">1</div>
+                <h3 className="font-bold text-lg text-emerald-800">Browse & Discover</h3>
+                <p className="text-sm leading-relaxed">Explore verified permaculture farms, view their current harvest, and connect with certified practitioners in your area.</p>
+              </div>
+              <div className="space-y-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">2</div>
+                <h3 className="font-bold text-lg text-emerald-800">Filter & Search</h3>
+                <p className="text-sm leading-relaxed">Use the search bar and category filters to find specific produce, farms, or permafolk matching your needs.</p>
+              </div>
+              <div className="space-y-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">3</div>
+                <h3 className="font-bold text-lg text-emerald-800">Connect & Trade</h3>
+                <p className="text-sm leading-relaxed">Log in to view full listings, contact farmers directly, and join our sustainable community network.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Listings Section (Auth Guarded) */}
         {!user ? (
           <Card className="border-dashed border-2 border-emerald-200 bg-white py-20 text-center rounded-[40px]">
             <CardContent className="space-y-6">
@@ -271,6 +300,7 @@ const Index = () => {
                 </TabsTrigger>
               </TabsList>
               
+              {/* Filtering moved below the tabs */}
               <div className="flex flex-wrap justify-center gap-2 max-w-4xl">
                 {CATEGORIES.map(cat => (
                   <Badge 
@@ -303,7 +333,7 @@ const Index = () => {
                         <ProducerCard 
                           key={farm.id} 
                           producer={{
-                            id: farm.id,
+                            id: farm.id, // Use farm ID for linking
                             name: (farm as any).profiles?.name || "Practitioner",
                             phone: (farm as any).profiles?.phone || "",
                             email: (farm as any).profiles?.email || "",

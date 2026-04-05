@@ -36,9 +36,12 @@ const ProfileDetail = () => {
       if (!id) return;
       setLoading(true);
       try {
-        // Use main tables since RLS allows public read for profiles and farms
+        // If user is logged in, fetch from the main table (protected by RLS)
+        // If guest, fetch from the public view (no PII)
+        const table = user ? 'profiles' : 'public_profiles';
+        
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
+          .from(table)
           .select('*')
           .eq('id', id)
           .single();
@@ -46,8 +49,10 @@ const ProfileDetail = () => {
         if (profileError) throw profileError;
         setProfile(profileData as any);
 
+        // Same logic for farms
+        const farmTable = user ? 'farms' : 'public_farms';
         const { data: farmsData, error: farmsError } = await supabase
-          .from('farms')
+          .from(farmTable)
           .select('*, produce (*)')
           .eq('user_id', id);
 
