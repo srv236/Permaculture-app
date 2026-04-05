@@ -59,16 +59,26 @@ const Index = () => {
           .from('produce')
           .select('*', { count: 'exact', head: true });
 
-        const totalSize = farmsData?.reduce((acc, farm) => {
-          const num = parseFloat(farm.size);
-          return acc + (isNaN(num) ? 0 : num);
+        // Calculate total size in Hectares (1 Hectare = 2.47105 Acres)
+        const totalSizeInHectares = farmsData?.reduce((acc, farm) => {
+          if (!farm.size) return acc;
+          const parts = farm.size.split(" ");
+          const value = parseFloat(parts[0]);
+          const unit = parts[1];
+          
+          if (isNaN(value)) return acc;
+          
+          if (unit === "Acre") {
+            return acc + (value / 2.47105);
+          }
+          return acc + value;
         }, 0) || 0;
 
         setStats({
           verifiedPermafolk: verifiedCount || 0,
           totalFarms: farmsCount || 0,
           totalProduce: produceCount || 0,
-          totalFarmSize: totalSize > 0 ? `${totalSize} hectares` : "Varies"
+          totalFarmSize: totalSizeInHectares > 0 ? `${totalSizeInHectares.toFixed(1)} hectares` : "Varies"
         });
 
         if (farmsData) {

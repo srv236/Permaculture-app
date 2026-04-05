@@ -7,12 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer } from "@/types/farm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, LayoutDashboard, CheckCircle2, Clock, MapPin, Ruler } from "lucide-react";
+import { Trash2, Loader2, LayoutDashboard, CheckCircle2, Clock, MapPin, Ruler, GraduationCap, Calendar } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
 import { AddFarmDialog } from "@/components/AddFarmDialog";
 import { AddProduceDialog } from "@/components/AddProduceDialog";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
+import { EditFarmDialog } from "@/components/EditFarmDialog";
 import { SecureImage } from "@/components/SecureImage";
 import { Badge } from "@/components/ui/badge";
 
@@ -145,10 +146,32 @@ const Dashboard = () => {
                   />
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase">Contact Info</label>
-                <p className="text-slate-700">{profile?.phone}</p>
-                <p className="text-slate-700">{profile?.email}</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contact Info</label>
+                  <p className="text-sm text-slate-700">{profile?.phone}</p>
+                  <p className="text-sm text-slate-700">{profile?.email}</p>
+                </div>
+                {profile?.about && (
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">About</label>
+                    <p className="text-xs text-slate-600 line-clamp-3">{profile.about}</p>
+                  </div>
+                )}
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500 flex items-center gap-1">
+                      <GraduationCap className="w-3 h-3" /> Basic
+                    </span>
+                    <span className="font-medium">{profile?.basic_course_date || "Completed"}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500 flex items-center gap-1">
+                      <GraduationCap className="w-3 h-3" /> Advanced
+                    </span>
+                    <span className="font-medium">{profile?.advanced_course_date || "Completed"}</span>
+                  </div>
+                </div>
               </div>
               {profile && (
                 <EditProfileDialog profile={profile} onSuccess={fetchData} />
@@ -173,7 +196,8 @@ const Dashboard = () => {
                           coordinates={farm.latitude ? { lat: farm.latitude, lng: farm.longitude } : undefined}
                           fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400"
                         />
-                        <div className="absolute top-2 right-2">
+                        <div className="absolute top-2 right-2 flex gap-2">
+                          <EditFarmDialog farm={farm} onSuccess={fetchData} />
                           <Button 
                             variant="destructive" 
                             size="icon" 

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { GraduationCap, AlertCircle, Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { GraduationCap, AlertCircle, Loader2, Calendar } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +22,9 @@ const Register = () => {
     email: "",
     phone: "",
     password: "",
+    about: "",
+    basicCourseDate: "",
+    advancedCourseDate: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +33,6 @@ const Register = () => {
 
     setLoading(true);
     try {
-      // 1. Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -38,7 +41,6 @@ const Register = () => {
       if (authError) throw authError;
 
       if (authData.user) {
-        // 2. Create the profile
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -47,13 +49,16 @@ const Register = () => {
             farm_name: formData.farmName,
             email: formData.email,
             phone: formData.phone,
+            about: formData.about,
+            basic_course_date: formData.basicCourseDate || null,
+            advanced_course_date: formData.advancedCourseDate || null,
             has_completed_course: true,
           });
 
         if (profileError) throw profileError;
 
         showSuccess("Registration successful! You can now list your produce.");
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       showError(error.message || "An error occurred during registration.");
@@ -69,7 +74,7 @@ const Register = () => {
         <Card className="border-emerald-100 shadow-xl">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center">
-              <GraduationCap className="w-8 h-8 text-emerald-600" />
+              < GraduationCap className="w-8 h-8 text-emerald-600" />
             </div>
             <div>
               <CardTitle className="text-2xl font-bold text-emerald-900">Join the Producer Network</CardTitle>
@@ -111,17 +116,43 @@ const Register = () => {
                     />
                   </div>
                 </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="john@example.com" 
-                    required 
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  <Label htmlFor="about">About You</Label>
+                  <Textarea 
+                    id="about" 
+                    placeholder="Tell the community about your permaculture journey..." 
+                    className="min-h-[100px]"
+                    value={formData.about}
+                    onChange={(e) => setFormData({...formData, about: e.target.value})}
                   />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="john@example.com" 
+                      required 
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+1 (555) 000-0000" 
+                      required 
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <Input 
@@ -133,36 +164,55 @@ const Register = () => {
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input 
-                    id="phone" 
-                    type="tel" 
-                    placeholder="+1 (555) 000-0000" 
-                    required 
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  />
-                </div>
               </div>
 
-              <div className="flex items-start space-x-3 p-4 bg-emerald-50/50 rounded-lg border border-emerald-100">
-                <Checkbox 
-                  id="course" 
-                  checked={hasCompletedCourse}
-                  onCheckedChange={(checked) => setHasCompletedCourse(checked as boolean)}
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <Label
-                    htmlFor="course"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-emerald-900"
-                  >
-                    I confirm I have completed the Basic and Advanced Permaculture courses.
-                  </Label>
-                  <p className="text-xs text-emerald-600">
-                    Your credentials will be verified by our department.
-                  </p>
+              <div className="space-y-4 p-4 bg-emerald-50/50 rounded-lg border border-emerald-100">
+                <div className="flex items-start space-x-3">
+                  <Checkbox 
+                    id="course" 
+                    checked={hasCompletedCourse}
+                    onCheckedChange={(checked) => setHasCompletedCourse(checked as boolean)}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label
+                      htmlFor="course"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-emerald-900"
+                    >
+                      I confirm I have completed the Basic and Advanced Permaculture courses.
+                    </Label>
+                  </div>
                 </div>
+
+                {hasCompletedCourse && (
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="basic_date" className="text-xs">Basic Course Date</Label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                        <Input 
+                          id="basic_date" 
+                          type="date" 
+                          className="pl-8 text-xs h-9"
+                          value={formData.basicCourseDate}
+                          onChange={(e) => setFormData({...formData, basicCourseDate: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="advanced_date" className="text-xs">Advanced Course Date</Label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                        <Input 
+                          id="advanced_date" 
+                          type="date" 
+                          className="pl-8 text-xs h-9"
+                          value={formData.advancedCourseDate}
+                          onChange={(e) => setFormData({...formData, advancedCourseDate: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <Button 

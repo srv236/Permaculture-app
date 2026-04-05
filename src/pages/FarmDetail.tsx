@@ -15,9 +15,25 @@ import {
   Sprout,
   ExternalLink,
   Ruler,
-  User
+  Map as MapIcon
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icons in Leaflet with React
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const FarmDetail = () => {
   const { id } = useParams();
@@ -121,7 +137,8 @@ const FarmDetail = () => {
 
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-12">
+            {/* Harvest Section */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <Sprout className="w-6 h-6 text-emerald-600" />
@@ -139,10 +156,45 @@ const FarmDetail = () => {
                 </Card>
               )}
             </div>
+
+            {/* Map Section */}
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <MapIcon className="w-6 h-6 text-emerald-600" />
+                Farm Location
+              </h2>
+              {farm.latitude && farm.longitude ? (
+                <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
+                  <MapContainer 
+                    center={[farm.latitude, farm.longitude]} 
+                    zoom={13} 
+                    scrollWheelZoom={false} 
+                    className="h-full w-full"
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={[farm.latitude, farm.longitude]}>
+                      <Popup>
+                        <div className="p-1">
+                          <p className="font-bold text-emerald-900">{farm.name}</p>
+                          <p className="text-xs text-slate-500">{farm.address}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+                </div>
+              ) : (
+                <Card className="border-dashed border-2 border-slate-200 bg-transparent py-12 text-center">
+                  <p className="text-slate-400">No coordinates provided for this farm.</p>
+                </Card>
+              )}
+            </div>
           </div>
 
           <div className="space-y-6">
-            <Card className="border-emerald-100 shadow-xl rounded-3xl overflow-hidden">
+            <Card className="border-emerald-100 shadow-xl rounded-3xl overflow-hidden sticky top-24">
               <CardContent className="p-6 space-y-6">
                 <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 shrink-0">

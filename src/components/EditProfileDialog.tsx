@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit2, Loader2, User, MapPin, Globe } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Edit2, Loader2, User, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
@@ -22,12 +23,10 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: profile.name,
-    farm_name: profile.farm_name,
     phone: profile.phone,
-    address: (profile as any).address || "",
-    latitude: (profile as any).latitude?.toString() || "",
-    longitude: (profile as any).longitude?.toString() || "",
-    google_maps_url: (profile as any).google_maps_url || "",
+    about: profile.about || "",
+    basic_course_date: profile.basic_course_date || "",
+    advanced_course_date: profile.advanced_course_date || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,12 +43,10 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
         .from('profiles')
         .update({
           name: formData.name,
-          farm_name: formData.farm_name,
           phone: formData.phone,
-          address: formData.address,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-          google_maps_url: formData.google_maps_url,
+          about: formData.about,
+          basic_course_date: formData.basic_course_date || null,
+          advanced_course_date: formData.advanced_course_date || null,
           picture_url: pictureUrl,
         })
         .eq('id', profile.id);
@@ -76,81 +73,17 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Farm Profile</DialogTitle>
+          <DialogTitle>Edit Practitioner Profile</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="farm_name">Farm Name</Label>
-              <Input 
-                id="farm_name" 
-                value={formData.farm_name}
-                onChange={(e) => setFormData({...formData, farm_name: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">Producer Name</Label>
-              <Input 
-                id="name" 
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required
-              />
-            </div>
-          </div>
-
           <div className="space-y-2">
-            <Label htmlFor="address">Farm Address</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                id="address" 
-                className="pl-10"
-                placeholder="123 Permaculture Way, Green Valley"
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">Latitude</Label>
-              <Input 
-                id="latitude" 
-                type="number" 
-                step="any"
-                placeholder="-23.5505"
-                value={formData.latitude}
-                onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">Longitude</Label>
-              <Input 
-                id="longitude" 
-                type="number" 
-                step="any"
-                placeholder="-46.6333"
-                value={formData.longitude}
-                onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="maps_url">Google Maps Link</Label>
-            <div className="relative">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                id="maps_url" 
-                className="pl-10"
-                placeholder="https://goo.gl/maps/..."
-                value={formData.google_maps_url}
-                onChange={(e) => setFormData({...formData, google_maps_url: e.target.value})}
-              />
-            </div>
+            <Label htmlFor="name">Full Name</Label>
+            <Input 
+              id="name" 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -164,7 +97,46 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="picture">Farm Picture (Optional)</Label>
+            <Label htmlFor="about">About You</Label>
+            <Textarea 
+              id="about" 
+              className="min-h-[100px]"
+              value={formData.about}
+              onChange={(e) => setFormData({...formData, about: e.target.value})}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="basic_date">Basic Course Date</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="basic_date" 
+                  type="date" 
+                  className="pl-10"
+                  value={formData.basic_course_date}
+                  onChange={(e) => setFormData({...formData, basic_course_date: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="advanced_date">Advanced Course Date</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="advanced_date" 
+                  type="date" 
+                  className="pl-10"
+                  value={formData.advanced_course_date}
+                  onChange={(e) => setFormData({...formData, advanced_course_date: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="picture">Profile Picture</Label>
             <div className="flex items-center gap-4">
               <Input 
                 id="picture" 
