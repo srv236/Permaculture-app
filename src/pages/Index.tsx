@@ -32,7 +32,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [farms, setFarms] = useState<Farm[]>([]);
   const [permafolk, setPermafolk] = useState<Producer[]>([]);
-  const [produce, setProduce] = useState<Produce[]>([]);
+  const [produce, setProduce] = useState<(Produce & { farms?: { name: string } })[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("farms");
   const [stats, setStats] = useState({
@@ -92,7 +92,7 @@ const Index = () => {
 
         const { data: produceData } = await supabase
           .from('produce')
-          .select('*');
+          .select('*, farms(name)');
         if (produceData) setProduce(produceData as any);
 
       } catch (error) {
@@ -359,7 +359,7 @@ const Index = () => {
                   {filteredProduce.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                       {filteredProduce.map(item => (
-                        <ProduceCard key={item.id} produce={item} />
+                        <ProduceCard key={item.id} produce={item} showFarm />
                       ))}
                     </div>
                   ) : (
