@@ -6,7 +6,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, Filter, LogIn, Users, MapPin, ShoppingBag, Ruler } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, ShoppingBag, Ruler, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -72,11 +72,7 @@ const Index = () => {
         });
 
         if (farmsData) {
-          const mappedFarms = farmsData.map(farm => ({
-            ...farm,
-            producer: farm.profiles
-          })) || [];
-          setFarms(mappedFarms);
+          setFarms(farmsData as any);
         }
 
         const { data: profilesData } = await supabase
@@ -159,45 +155,58 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          <Card className="border-emerald-100 bg-white">
-            <CardContent className="p-6 flex flex-col items-center text-center">
-              <Users className="w-8 h-8 text-emerald-600 mb-2" />
-              <span className="text-3xl font-bold text-slate-900">{stats.verifiedPermafolk}</span>
-              <span className="text-sm text-slate-500 font-medium">Verified Permafolk</span>
-            </CardContent>
-          </Card>
-          <Card className="border-emerald-100 bg-white">
-            <CardContent className="p-6 flex flex-col items-center text-center">
-              <MapPin className="w-8 h-8 text-emerald-600 mb-2" />
-              <span className="text-3xl font-bold text-slate-900">{stats.totalFarms}</span>
-              <span className="text-sm text-slate-500 font-medium">Active Farms</span>
-            </CardContent>
-          </Card>
-          <Card className="border-emerald-100 bg-white">
-            <CardContent className="p-6 flex flex-col items-center text-center">
-              <Ruler className="w-8 h-8 text-emerald-600 mb-2" />
-              <span className="text-3xl font-bold text-slate-900">{stats.totalFarmSize}</span>
-              <span className="text-sm text-slate-500 font-medium">Total Farm Size</span>
-            </CardContent>
-          </Card>
-          <Card className="border-emerald-100 bg-white">
-            <CardContent className="p-6 flex flex-col items-center text-center">
-              <ShoppingBag className="w-8 h-8 text-emerald-600 mb-2" />
-              <span className="text-3xl font-bold text-slate-900">{stats.totalProduce}</span>
-              <span className="text-sm text-slate-500 font-medium">Available Produce</span>
-            </CardContent>
-          </Card>
+        {/* Stats Section - Restored Icons and Colors */}
+        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 mb-16 py-8 border-y border-slate-200 bg-white/50 rounded-3xl shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+              <Users className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.verifiedPermafolk}</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Producers</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
+              <ShoppingBasket className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalProduce}</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Products</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-amber-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarms}</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Locations</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
+              <Ruler className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarmSize}</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Area</span>
+            </div>
+          </div>
         </div>
 
         {/* Map View */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <MapIcon className="w-6 h-6 text-emerald-600" />
-            Farm Locations
-          </h2>
-          <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <MapIcon className="w-6 h-6 text-emerald-600" />
+              Farm Network Map
+            </h2>
+            <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
+              {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
+            </Badge>
+          </div>
+          <div className="h-[500px] w-full rounded-[40px] overflow-hidden border-8 border-white shadow-2xl relative z-0">
             {loading ? (
               <div className="flex items-center justify-center h-full bg-slate-100">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
@@ -209,23 +218,26 @@ const Index = () => {
         </div>
 
         {/* How to Use Section */}
-        <Card className="mb-12 border-emerald-100 bg-emerald-50/50">
-          <CardContent className="p-8">
-            <h2 className="text-2xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+        <Card className="mb-16 border-none bg-emerald-50/50 rounded-[40px] overflow-hidden">
+          <CardContent className="p-10">
+            <h2 className="text-2xl font-bold text-emerald-900 mb-8 flex items-center gap-2">
               <Sprout className="w-6 h-6" />
               How to Use the Network
             </h2>
-            <div className="grid md:grid-cols-3 gap-6 text-slate-700">
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-emerald-800">1. Browse & Discover</h3>
+            <div className="grid md:grid-cols-3 gap-10 text-slate-700">
+              <div className="space-y-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">1</div>
+                <h3 className="font-bold text-lg text-emerald-800">Browse & Discover</h3>
                 <p className="text-sm leading-relaxed">Explore verified permaculture farms, view their current harvest, and connect with certified practitioners in your area.</p>
               </div>
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-emerald-800">2. Filter & Search</h3>
+              <div className="space-y-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">2</div>
+                <h3 className="font-bold text-lg text-emerald-800">Filter & Search</h3>
                 <p className="text-sm leading-relaxed">Use the search bar and category filters to find specific produce, farms, or permafolk matching your needs.</p>
               </div>
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-emerald-800">3. Connect & Trade</h3>
+              <div className="space-y-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">3</div>
+                <h3 className="font-bold text-lg text-emerald-800">Connect & Trade</h3>
                 <p className="text-sm leading-relaxed">Log in to view full listings, contact farmers directly, and join our sustainable community network.</p>
               </div>
             </div>
@@ -234,22 +246,26 @@ const Index = () => {
 
         {/* Listings Section (Auth Guarded) */}
         {!user ? (
-          <Card className="border-dashed border-2 border-emerald-200 bg-white py-16 text-center">
-            <CardContent className="space-y-4">
-              <LogIn className="w-12 h-12 text-emerald-600 mx-auto" />
-              <h2 className="text-2xl font-bold text-slate-900">View Full Listings</h2>
-              <p className="text-slate-500 max-w-md mx-auto">
-                To protect our community and ensure quality, detailed farm listings, produce availability, and practitioner profiles are only visible to verified members.
-              </p>
-              <div className="flex justify-center gap-4 pt-4">
+          <Card className="border-dashed border-2 border-emerald-200 bg-white py-20 text-center rounded-[40px]">
+            <CardContent className="space-y-6">
+              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
+                <LogIn className="w-10 h-10 text-emerald-600" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold text-slate-900">View Full Listings</h2>
+                <p className="text-slate-500 max-w-md mx-auto text-lg">
+                  Detailed farm listings, produce availability, and practitioner profiles are only visible to verified members.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
                 <Link to="/login">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700">
-                    <LogIn className="w-4 h-4 mr-2" />
+                  <Button className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 text-lg rounded-xl">
+                    <LogIn className="w-5 h-5 mr-2" />
                     Sign In
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                  <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-12 px-8 text-lg rounded-xl">
                     Join the Network
                   </Button>
                 </Link>
@@ -258,30 +274,31 @@ const Index = () => {
           </Card>
         ) : (
           <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
-            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
-              <TabsList className="bg-white p-1 h-auto rounded-2xl shadow-sm border border-emerald-100">
-                <TabsTrigger value="farms" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                  <MapIcon className="w-4 h-4 mr-2" />
+            <div className="flex flex-col items-center mb-12">
+              <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-md border border-emerald-100 mb-8">
+                <TabsTrigger value="farms" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
+                  <MapIcon className="w-5 h-5 mr-2" />
                   Featured Farms
                 </TabsTrigger>
-                <TabsTrigger value="produce" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                  <ShoppingBasket className="w-4 h-4 mr-2" />
+                <TabsTrigger value="produce" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
+                  <ShoppingBasket className="w-5 h-5 mr-2" />
                   Featured Produce
                 </TabsTrigger>
-                <TabsTrigger value="permafolk" className="rounded-xl px-6 py-3 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
-                  <User className="w-4 h-4 mr-2" />
+                <TabsTrigger value="permafolk" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
+                  <User className="w-5 h-5 mr-2" />
                   Featured Permafolk
                 </TabsTrigger>
               </TabsList>
               
-              <div className="flex flex-wrap gap-2">
+              {/* Filtering moved below the tabs */}
+              <div className="flex flex-wrap justify-center gap-2 max-w-4xl">
                 {CATEGORIES.map(cat => (
                   <Badge 
                     key={cat}
                     variant={selectedCategory === cat ? "default" : "outline"}
-                    className={`cursor-pointer px-4 py-2 rounded-full text-sm transition-all ${
+                    className={`cursor-pointer px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
                       selectedCategory === cat 
-                        ? "bg-emerald-600 hover:bg-emerald-700 border-none" 
+                        ? "bg-emerald-600 hover:bg-emerald-700 border-none shadow-lg shadow-emerald-200" 
                         : "bg-white hover:bg-emerald-50 border-emerald-100 text-slate-600"
                     }`}
                     onClick={() => setSelectedCategory(cat)}
@@ -298,8 +315,8 @@ const Index = () => {
                 <p className="text-slate-400 font-medium">Loading the network...</p>
               </div>
             ) : (
-              <>
-                <TabsContent value="farms" className="mt-0">
+              <div className="mt-8">
+                <TabsContent value="farms" className="mt-0 focus-visible:ring-0">
                   {filteredFarms.length > 0 ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       {filteredFarms.map(farm => (
@@ -307,12 +324,12 @@ const Index = () => {
                           key={farm.id} 
                           producer={{
                             id: farm.user_id,
-                            name: (farm as any).producer?.name || "Unknown",
-                            phone: (farm as any).producer?.phone || "",
-                            email: (farm as any).producer?.email || "",
+                            name: (farm as any).profiles?.name || "Practitioner",
+                            phone: (farm as any).profiles?.phone || "",
+                            email: (farm as any).profiles?.email || "",
                             farm_name: farm.name,
                             picture_url: farm.picture_url,
-                            is_verified: (farm as any).producer?.is_verified || false,
+                            is_verified: (farm as any).profiles?.is_verified || false,
                             has_completed_course: true,
                             produce: farm.produce,
                             latitude: farm.latitude,
@@ -328,7 +345,7 @@ const Index = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="produce" className="mt-0">
+                <TabsContent value="produce" className="mt-0 focus-visible:ring-0">
                   {filteredProduce.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                       {filteredProduce.map(item => (
@@ -340,7 +357,7 @@ const Index = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="permafolk" className="mt-0">
+                <TabsContent value="permafolk" className="mt-0 focus-visible:ring-0">
                   {filteredPermafolk.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {filteredPermafolk.map(person => (
@@ -351,22 +368,33 @@ const Index = () => {
                     <EmptyState message="No permafolk found matching your search." />
                   )}
                 </TabsContent>
-              </>
+              </div>
             )}
           </Tabs>
         )}
       </main>
 
-      <footer className="bg-white border-t py-16 mt-20">
+      <footer className="bg-white border-t py-20 mt-20">
         <div className="container mx-auto px-4 text-center">
           <div className="flex justify-center mb-8">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-100">
-              <Sprout className="w-6 h-6 text-emerald-600" />
+            <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center border border-emerald-100">
+              <Sprout className="w-8 h-8 text-emerald-600" />
             </div>
           </div>
-          <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
-            © 2024 Permaculture Department Market. All practitioners are verified graduates of our basic and advanced courses.
+          <h3 className="text-xl font-bold text-emerald-900 mb-4">The Art of Living Permaculture</h3>
+          <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed mb-8">
+            Empowering communities through regenerative agriculture and sustainable living practices.
           </p>
+          <div className="flex justify-center gap-8 text-slate-400 text-sm font-bold uppercase tracking-widest">
+            <Link to="/" className="hover:text-emerald-600 transition-colors">Home</Link>
+            <Link to="/register" className="hover:text-emerald-600 transition-colors">Join</Link>
+            <Link to="/login" className="hover:text-emerald-600 transition-colors">Login</Link>
+          </div>
+          <div className="mt-12 pt-8 border-t border-slate-100">
+            <p className="text-slate-400 text-xs">
+              © 2024 Permaculture Department Market. All practitioners are verified graduates.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
@@ -374,11 +402,14 @@ const Index = () => {
 };
 
 const EmptyState = ({ message }: { message: string }) => (
-  <div className="text-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-    <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-      <Search className="w-8 h-8 text-slate-300" />
+  <div className="text-center py-32 bg-white rounded-[40px] border-2 border-dashed border-slate-200">
+    <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+      <Search className="w-10 h-10 text-slate-300" />
     </div>
-    <p className="text-slate-400 text-lg font-medium">{message}</p>
+    <p className="text-slate-400 text-xl font-medium">{message}</p>
+    <Button variant="link" className="text-emerald-600 mt-4 font-bold" onClick={() => window.location.reload()}>
+      Clear all filters
+    </Button>
   </div>
 );
 
