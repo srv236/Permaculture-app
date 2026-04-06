@@ -4,6 +4,7 @@ export interface Produce {
   id: string;
   farm_id: string;
   name: string;
+  variety?: string; // e.g. "Heirloom", "Alphonso", etc.
   category: string; // seeds, fruit, etc.
   price_value: number;
   price_unit: string; // units, g, dozen, kg, tonne

@@ -4,7 +4,7 @@ import { Produce } from "../types/farm";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Link } from "react-router-dom";
-import { MapPin, ShoppingBag } from "lucide-react";
+import { MapPin, ShoppingBag, Tag } from "lucide-react";
 import { SecureImage } from "./SecureImage";
 
 interface ProduceCardProps {
@@ -23,10 +23,16 @@ export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => 
           className="object-cover w-full h-full transition-transform group-hover:scale-110 duration-700"
           fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
         />
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
           <Badge className="bg-white/90 hover:bg-white text-emerald-900 border-none backdrop-blur-md px-2.5 py-1 text-[10px] font-bold shadow-sm">
             {produce.category}
           </Badge>
+          {produce.variety && (
+            <Badge variant="secondary" className="bg-emerald-600/80 text-white border-none backdrop-blur-md px-2.5 py-1 text-[9px] font-bold shadow-sm w-fit">
+              <Tag className="w-2.5 h-2.5 mr-1" />
+              {produce.variety}
+            </Badge>
+          )}
         </div>
         {showFarm && produce.farms && (
           <Link 
@@ -42,7 +48,12 @@ export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => 
       </div>
       <CardContent className="p-4 flex-1 flex flex-col">
         <div className="flex justify-between items-start gap-2 mb-2">
-          <h4 className="font-bold text-emerald-900 truncate flex-1">{produce.name}</h4>
+          <div className="min-w-0">
+            <h4 className="font-bold text-emerald-900 truncate">{produce.name}</h4>
+            {produce.variety && (
+              <p className="text-[10px] text-slate-400 font-medium truncate italic">{produce.variety}</p>
+            )}
+          </div>
           <span className="text-xs font-bold text-emerald-600 whitespace-nowrap bg-emerald-50 px-2 py-0.5 rounded-lg">
             ₹{produce.price_value}
           </span>

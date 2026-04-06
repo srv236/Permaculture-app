@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Image as ImageIcon, Tag } from "lucide-react";
+import { Edit2, Loader2, Image as ImageIcon, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
+import { Produce } from "@/types/farm";
 
-interface AddProduceDialogProps {
-  farmId: string;
+interface EditProduceDialogProps {
+  produce: Produce;
   onSuccess: () => void;
 }
 
@@ -29,18 +30,18 @@ const CATEGORIES = [
 
 const UNITS = ["units", "g", "dozen", "kg", "tonne"];
 
-export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) => {
+export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
-    variety: "",
-    category: "Vegetables",
-    price_value: "",
-    price_unit: "kg",
-    quantity_value: "",
-    quantity_unit: "kg",
+    name: produce.name,
+    variety: produce.variety || "",
+    category: produce.category,
+    price_value: produce.price_value.toString(),
+    price_unit: produce.price_unit,
+    quantity_value: produce.quantity_value.toString(),
+    quantity_unit: produce.quantity_unit,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,15 +49,14 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
     setLoading(true);
 
     try {
-      let image_url = "";
+      let image_url = produce.image_url;
       if (imageFile) {
         image_url = await uploadImage(imageFile, "produce_images");
       }
 
       const { error } = await supabase
         .from('produce')
-        .insert({
-          farm_id: farmId,
+        .update({
           name: formData.name,
           variety: formData.variety || null,
           category: formData.category,
@@ -65,25 +65,16 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           quantity_value: parseFloat(formData.quantity_value),
           quantity_unit: formData.quantity_unit,
           image_url: image_url,
-        });
+        })
+        .eq('id', produce.id);
 
       if (error) throw error;
 
-      showSuccess("Produce added successfully!");
+      showSuccess("Produce updated successfully!");
       setOpen(false);
-      setFormData({ 
-        name: "", 
-        variety: "",
-        category: "Vegetables", 
-        price_value: "", 
-        price_unit: "kg", 
-        quantity_value: "", 
-        quantity_unit: "kg" 
-      });
-      setImageFile(null);
       onSuccess();
     } catch (error: any) {
-      showError(error.message || "Failed to add produce.");
+      showError(error.message || "Failed to update produce.");
     } finally {
       setLoading(false);
     }
@@ -92,21 +83,19 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-          <Plus className="w-3 h-3 mr-2" />
-          Add Produce
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-emerald-500 opacity-0 group-hover/item:opacity-100 transition-opacity mr-1">
+          <Edit2 className="w-3.5 h-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] rounded-3xl">
         <DialogHeader>
-          <DialogTitle>Add Produce to Harvest</DialogTitle>
+          <DialogTitle>Edit Produce</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Produce Name</Label>
+            <Label htmlFor="edit-name">Produce Name</Label>
             <Input 
-              id="name" 
-              placeholder="e.g. Tomatoes" 
+              id="edit-name" 
               required 
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -114,13 +103,13 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="variety">Variety</Label>
+            <Label htmlFor="edit-variety">Variety</Label>
             <div className="relative">
               <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input 
-                id="variety" 
+                id="edit-variety" 
                 className="pl-10"
-                placeholder="e.g. Heirloom Cherokee Purple" 
+                placeholder="e.g. Heirloom" 
                 value={formData.variety}
                 onChange={(e) => setFormData({...formData, variety: e.target.value})}
               />
@@ -128,7 +117,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="edit-category">Category</Label>
             <Select 
               value={formData.category} 
               onValueChange={(value) => setFormData({...formData, category: value})}
@@ -153,7 +142,6 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
                   type="number"
                   step="any"
                   className="pl-7"
-                  placeholder="0.00" 
                   required 
                   value={formData.price_value}
                   onChange={(e) => setFormData({...formData, price_value: e.target.value})}
@@ -182,7 +170,6 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
                 type="number"
                 step="any"
                 className="flex-1"
-                placeholder="0" 
                 required 
                 value={formData.quantity_value}
                 onChange={(e) => setFormData({...formData, quantity_value: e.target.value})}
@@ -204,10 +191,10 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">Produce Image</Label>
+            <Label htmlFor="edit-image">Update Image</Label>
             <div className="flex items-center gap-4">
               <Input 
-                id="image" 
+                id="edit-image" 
                 type="file" 
                 accept="image/*"
                 className="hidden"
@@ -217,15 +204,15 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
                 type="button" 
                 variant="outline" 
                 className="w-full rounded-xl border-dashed"
-                onClick={() => document.getElementById('image')?.click()}
+                onClick={() => document.getElementById('edit-image')?.click()}
               >
                 <ImageIcon className="w-4 h-4 mr-2" />
-                {imageFile ? imageFile.name : "Upload Image"}
+                {imageFile ? imageFile.name : "Change Image"}
               </Button>
             </div>
           </div>
           <Button type="submit" className="w-full bg-emerald-600 rounded-xl h-12" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Produce"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
           </Button>
         </form>
       </DialogContent>

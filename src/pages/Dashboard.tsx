@@ -14,6 +14,7 @@ import { AddFarmDialog } from "@/components/AddFarmDialog";
 import { AddProduceDialog } from "@/components/AddProduceDialog";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { EditFarmDialog } from "@/components/EditFarmDialog";
+import { EditProduceDialog } from "@/components/EditProduceDialog";
 import { SecureImage } from "@/components/SecureImage";
 import { Badge } from "@/components/ui/badge";
 
@@ -257,16 +258,22 @@ const Dashboard = () => {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-slate-800 truncate">{item.name}</p>
+                                    {item.variety && (
+                                      <p className="text-[10px] text-slate-400 truncate italic">{item.variety}</p>
+                                    )}
                                     <p className="text-xs text-emerald-600 font-medium">₹{item.price_value}/{item.price_unit} • {item.quantity_value} {item.quantity_unit}</p>
                                   </div>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 text-slate-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity"
-                                    onClick={() => handleDeleteProduce(item.id)}
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </Button>
+                                  <div className="flex items-center">
+                                    <EditProduceDialog produce={item} onSuccess={fetchData} />
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 text-slate-300 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                      onClick={() => handleDeleteProduce(item.id)}
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
