@@ -17,7 +17,9 @@ import {
   Ruler,
   Map as MapIcon,
   Info,
-  Tag
+  Tag,
+  Globe,
+  Navigation
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -199,7 +201,7 @@ const FarmDetail = () => {
                 Farm Location
               </h2>
               {farm.latitude && farm.longitude ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
                     <MapContainer 
                       center={[farm.latitude, farm.longitude]} 
@@ -221,9 +223,56 @@ const FarmDetail = () => {
                       </Marker>
                     </MapContainer>
                   </div>
+
+                  {/* Explicit Location Details Card */}
+                  <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <MapPin className="w-3 h-3" /> Manual Address
+                          </p>
+                          <p className="text-slate-700 font-medium text-sm leading-relaxed">
+                            {farm.address || "No address provided"}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <Navigation className="w-3 h-3" /> Coordinates
+                          </p>
+                          <div className="flex gap-4">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] text-slate-400">Latitude</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.latitude}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[10px] text-slate-400">Longitude</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.longitude}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {farm.google_maps_url && (
+                          <div className="space-y-1 md:col-span-2 pt-4 border-t border-slate-50">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                              <Globe className="w-3 h-3" /> Google Maps Link
+                            </p>
+                            <a 
+                              href={farm.google_maps_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-emerald-600 hover:text-emerald-700 hover:underline break-all text-xs font-medium flex items-center gap-1 mt-1"
+                            >
+                              {farm.google_maps_url} <ExternalLink className="w-3 h-3 shrink-0" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {mapsUrl && (
                     <Button 
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg rounded-2xl"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 h-14 text-lg rounded-2xl shadow-lg shadow-emerald-100"
                       onClick={() => window.open(mapsUrl, "_blank")}
                     >
                       <ExternalLink className="w-5 h-5 mr-2" />
@@ -232,7 +281,7 @@ const FarmDetail = () => {
                   )}
                 </div>
               ) : (
-                <Card className="border-dashed border-2 border-slate-200 bg-transparent py-12 text-center">
+                <Card className="border-dashed border-2 border-slate-200 bg-transparent py-12 text-center rounded-[32px]">
                   <p className="text-slate-400">No coordinates provided for this farm.</p>
                 </Card>
               )}
