@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -17,51 +19,101 @@ import {
   Loader2, 
   GraduationCap,
   Award,
-  ChevronRight,
   Lock,
-  Sprout
+  Sprout,
+  ShieldCheck,
+  UserCog,
+  UserCheck,
+  UserX,
+  ShieldAlert,
+  EyeOff,
+  Eye,
+  Trash2,
+  ChevronRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { showSuccess, showError } from "@/utils/toast";
 
 const ProfileDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useSession();
+  const { user, profile: adminProfile } = useSession();
   const [profile, setProfile] = useState<Producer | null>(null);
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfileData = async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (profileError) throw profileError;
+      setProfile(profileData as any);
+
+      const { data: farmsData, error: farmsError } = await supabase
+        .from('farms')
+        .select('*, produce (*)')
+        .eq('user_id', id);
+
+      if (farmsError) throw farmsError;
+      setFarms(farmsData || []);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfileData = async () => {
-      if (!id) return;
-      setLoading(true);
-      try {
-        // Use main tables since RLS allows public read for profiles and farms
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (profileError) throw profileError;
-        setProfile(profileData as any);
-
-        const { data: farmsData, error: farmsError } = await supabase
-          .from('farms')
-          .select('*, produce (*)')
-          .eq('user_id', id);
-
-        if (farmsError) throw farmsError;
-        setFarms(farmsData || []);
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProfileData();
-  }, [id, user]);
+  }, [id]);
+
+  const handleAdminAction = async (updates: any, actionName: string) => {
+    if (!profile) return;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', profile.id);
+
+      if (error) throw error;
+      showSuccess(`${actionName} updated successfully.`);
+      fetchProfileData();
+    } catch (err: any) {
+      showError(`Failed to update ${actionName}: ${err.message}`);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!profile) return;
+    if (!confirm("Are you sure? This will delete the user profile and all their associated data. This cannot be undone.")) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', profile.id);
+
+      if (error) throw error;
+      showSuccess("Member deleted successfully.");
+      navigate("/");
+    } catch (err: any) {
+      showError(`Failed to delete member: ${err.message}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -87,14 +139,47 @@ const ProfileDetail = () => {
         </div>
         
         <div className="container mx-auto relative z-10">
-          <Button 
-            variant="ghost" 
-            className="text-emerald-100 hover:bg-white/10 mb-8 -ml-2"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Network
-          </Button>
+          <div className="flex justify-between items-start mb-8">
+            <Button 
+              variant="ghost" 
+              className="text-emerald-100 hover:bg-white/10 -ml-2"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Network
+            </Button>
+
+            {adminProfile?.is_admin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl">
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    Management
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                  <DropdownMenuLabel>Admin Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleAdminAction({ is_verified: !profile.is_verified }, "Verification")}>
+                    {profile.is_verified ? <><UserX className="w-4 h-4 mr-2" /> Unverify</> : <><UserCheck className="w-4 h-4 mr-2" /> Verify Member</>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdminAction({ is_admin: !profile.is_admin }, "Admin Rights")}>
+                    {profile.is_admin ? <><ShieldAlert className="w-4 h-4 mr-2 text-amber-600" /> Remove Admin</> : <><ShieldCheck className="w-4 h-4 mr-2 text-emerald-600" /> Make Admin</>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdminAction({ is_hidden: !(profile as any).is_hidden }, "Visibility")}>
+                    {(profile as any).is_hidden ? <><Eye className="w-4 h-4 mr-2" /> Show Member</> : <><EyeOff className="w-4 h-4 mr-2" /> Suppress Member</>}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="text-red-600 focus:bg-red-50 focus:text-red-700" 
+                    onClick={handleDeleteUser}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete Account
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           
           <div className="flex flex-col md:flex-row items-center gap-8 md:items-end">
             <div className="w-40 h-40 rounded-[40px] overflow-hidden border-4 border-emerald-800 shadow-2xl bg-white shrink-0">
@@ -118,6 +203,11 @@ const ProfileDetail = () => {
                   <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-700 px-3 py-1 flex items-center gap-1.5">
                     <XCircle className="w-4 h-4" />
                     Verification Pending
+                  </Badge>
+                )}
+                {(profile as any).is_hidden && (
+                  <Badge variant="destructive" className="bg-red-500 text-white border-none px-3 py-1">
+                    Suppressed
                   </Badge>
                 )}
               </div>
@@ -173,7 +263,7 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Basic Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.basic_course_date ? `Completed: ${profile.basic_course_date}` : "Completed"}
+                      {profile.basic_completion_date ? `Completed: ${profile.basic_completion_date}` : "Completed"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -184,20 +274,9 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Advanced Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.advanced_course_date ? `Completed: ${profile.advanced_course_date}` : "Completed"}
+                      {profile.advanced_completion_date ? `Completed: ${profile.advanced_completion_date}` : "Completed"}
                     </Badge>
                   </div>
-                  {profile.practitioner_since && (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                          <Calendar className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <span className="text-sm font-medium text-slate-700">Practicing Since</span>
-                      </div>
-                      <span className="text-sm font-bold text-slate-900">{profile.practitioner_since}</span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -239,22 +318,6 @@ const ProfileDetail = () => {
                                 {farm.address || "Location specified"}
                               </span>
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                            <div className="flex -space-x-2">
-                              {farm.produce?.slice(0, 4).map((item, i) => (
-                                <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-slate-100">
-                                  <SecureImage 
-                                    path={item.image_url}
-                                    bucket="produce_images"
-                                    alt={item.name}
-                                    className="w-full h-full"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">View Harvest</span>
                           </div>
                         </div>
                       </div>
