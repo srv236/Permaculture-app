@@ -13,6 +13,11 @@ interface ProduceCardProps {
 }
 
 export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => {
+  // Ensure the price string has the Rupee symbol if it's missing
+  const displayPrice = produce.price?.startsWith('₹') || produce.price?.startsWith('$') 
+    ? produce.price 
+    : `₹${produce.price}`;
+
   return (
     <Card className="overflow-hidden border-none shadow-sm bg-white rounded-3xl group h-full flex flex-col">
       <div className="aspect-square relative overflow-hidden">
@@ -55,7 +60,7 @@ export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => 
             )}
           </div>
           <span className="text-xs font-bold text-emerald-600 whitespace-nowrap bg-emerald-50 px-2 py-0.5 rounded-lg">
-            {produce.price}
+            {displayPrice}
           </span>
         </div>
         

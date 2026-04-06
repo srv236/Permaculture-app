@@ -263,7 +263,9 @@ const Dashboard = () => {
                                     {item.variety && (
                                       <p className="text-[10px] text-slate-400 truncate italic">{item.variety}</p>
                                     )}
-                                    <p className="text-xs text-emerald-600 font-medium">{item.price} • {item.quantity}</p>
+                                    <p className="text-xs text-emerald-600 font-medium">
+                                      {item.price?.startsWith('₹') ? item.price : `₹${item.price}`} • {item.quantity}
+                                    </p>
                                   </div>
                                   <div className="flex items-center">
                                     <EditProduceDialog produce={item} onSuccess={fetchData} />
