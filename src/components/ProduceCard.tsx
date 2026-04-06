@@ -55,16 +55,15 @@ export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => 
             )}
           </div>
           <span className="text-xs font-bold text-emerald-600 whitespace-nowrap bg-emerald-50 px-2 py-0.5 rounded-lg">
-            ₹{produce.price_value}
+            {produce.price}
           </span>
         </div>
         
         <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-slate-500">
             <ShoppingBag className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">{produce.quantity_value} {produce.quantity_unit} left</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{produce.quantity} left</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-medium">per {produce.price_unit}</span>
         </div>
       </CardContent>
     </Card>

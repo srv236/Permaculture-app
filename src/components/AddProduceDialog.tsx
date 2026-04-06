@@ -53,6 +53,10 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         image_url = await uploadImage(imageFile, "produce_images");
       }
 
+      // Combine values for text columns
+      const priceText = `₹${formData.price_value} per ${formData.price_unit}`;
+      const quantityText = `${formData.quantity_value} ${formData.quantity_unit}`;
+
       const { error } = await supabase
         .from('produce')
         .insert({
@@ -60,10 +64,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           name: formData.name,
           variety: formData.variety || null,
           category: formData.category,
-          price_value: parseFloat(formData.price_value),
-          price_unit: formData.price_unit,
-          quantity_value: parseFloat(formData.quantity_value),
-          quantity_unit: formData.quantity_unit,
+          price: priceText,
+          quantity: quantityText,
           image_url: image_url,
         });
 
@@ -145,7 +147,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           </div>
           
           <div className="space-y-2">
-            <Label>Price (Rs)</Label>
+            <Label>Price</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>

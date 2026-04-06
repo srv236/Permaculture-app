@@ -34,14 +34,29 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Helper to parse "₹10 per kg" or "10 kg"
+  const parsePrice = (priceStr: string) => {
+    const parts = priceStr.replace('₹', '').split(' per ');
+    return { val: parts[0] || "", unit: parts[1] || "kg" };
+  };
+  
+  const parseQuantity = (quantStr: string) => {
+    const parts = quantStr.split(' ');
+    return { val: parts[0] || "", unit: parts[1] || "kg" };
+  };
+
+  const initialPrice = parsePrice(produce.price || "");
+  const initialQuant = parseQuantity(produce.quantity || "");
+
   const [formData, setFormData] = useState({
     name: produce.name,
     variety: produce.variety || "",
     category: produce.category,
-    price_value: produce.price_value.toString(),
-    price_unit: produce.price_unit,
-    quantity_value: produce.quantity_value.toString(),
-    quantity_unit: produce.quantity_unit,
+    price_value: initialPrice.val,
+    price_unit: initialPrice.unit,
+    quantity_value: initialQuant.val,
+    quantity_unit: initialQuant.unit,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,16 +69,17 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
         image_url = await uploadImage(imageFile, "produce_images");
       }
 
+      const priceText = `₹${formData.price_value} per ${formData.price_unit}`;
+      const quantityText = `${formData.quantity_value} ${formData.quantity_unit}`;
+
       const { error } = await supabase
         .from('produce')
         .update({
           name: formData.name,
           variety: formData.variety || null,
           category: formData.category,
-          price_value: parseFloat(formData.price_value),
-          price_unit: formData.price_unit,
-          quantity_value: parseFloat(formData.quantity_value),
-          quantity_unit: formData.quantity_unit,
+          price: priceText,
+          quantity: quantityText,
           image_url: image_url,
         })
         .eq('id', produce.id);
@@ -134,7 +150,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
           </div>
           
           <div className="space-y-2">
-            <Label>Price (Rs)</Label>
+            <Label>Price</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>

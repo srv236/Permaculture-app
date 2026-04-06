@@ -43,6 +43,9 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
         picture_url = await uploadImage(imageFile, "profile_pictures");
       }
 
+      // Combine size for DB text column
+      const sizeText = `${formData.size_value} ${formData.size_unit}`;
+
       const { error } = await supabase
         .from('farms')
         .insert({
@@ -52,8 +55,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
           latitude: formData.latitude ? parseFloat(formData.latitude) : null,
           longitude: formData.longitude ? parseFloat(formData.longitude) : null,
           google_maps_url: formData.google_maps_url,
-          size_value: parseFloat(formData.size_value),
-          size_unit: formData.size_unit,
+          size: sizeText,
           picture_url: picture_url,
         });
 
@@ -126,6 +128,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
             </div>
           </div>
 
+          {/* ... Rest of the form ... */}
           <div className="space-y-4 border-t pt-4">
             <p className="text-sm font-medium text-emerald-900">Location Details</p>
             
