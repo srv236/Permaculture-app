@@ -1,26 +1,30 @@
+"use client";
+
 export interface Produce {
   id: string;
   farm_id: string;
   name: string;
-  variety: string;
-  description?: string;
-  price: string;
-  quantity: string;
+  category: string; // seeds, fruit, etc.
+  price_value: number;
+  price_unit: string; // units, g, dozen, kg, tonne
+  quantity_value: number;
+  quantity_unit: string;
   image_url: string;
-  category?: string;
+  created_at?: string;
 }
 
 export interface Farm {
   id: string;
   user_id: string;
   name: string;
-  size: string;
-  picture_url?: string;
+  address?: string;
   latitude?: number;
   longitude?: number;
   google_maps_url?: string;
-  address?: string;
-  produce: Produce[];
+  size_value: number;
+  size_unit: "Acre" | "Hectare";
+  picture_url?: string;
+  produce?: Produce[];
   created_at: string;
 }
 
@@ -29,19 +33,14 @@ export interface Producer {
   name: string;
   phone: string;
   email: string;
-  farm_name: string;
-  picture_url?: string;
-  is_verified: boolean;
-  has_completed_course: boolean;
   about?: string;
-  basic_course_date?: string;
-  advanced_course_date?: string;
-  practitioner_since?: string;
+  has_completed_basic: boolean;
+  basic_completion_date?: string;
+  has_completed_advanced: boolean;
+  advanced_completion_date?: string;
+  is_verified: boolean;
+  is_admin: boolean;
+  picture_url?: string;
   farms?: Farm[];
-  latitude?: number;
-  longitude?: number;
-  google_maps_url?: string;
-  address?: string;
-  produce?: Produce[];
-  locations?: string[];
+  created_at?: string;
 }

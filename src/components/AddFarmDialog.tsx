@@ -23,8 +23,8 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    sizeValue: "",
-    sizeUnit: "Hectare",
+    size_value: "",
+    size_unit: "Hectare",
     address: "",
     latitude: "",
     longitude: "",
@@ -35,41 +35,33 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
     e.preventDefault();
     if (!user) return;
 
-    const hasLocation = formData.address || (formData.latitude && formData.longitude) || formData.google_maps_url;
-    
-    if (!hasLocation) {
-      showError("Please provide at least one location: Address, Coordinates, or Google Maps link.");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      let pictureUrl = "";
+      let picture_url = "";
       if (imageFile) {
-        pictureUrl = await uploadImage(imageFile, "profile_pictures");
+        picture_url = await uploadImage(imageFile, "profile_pictures");
       }
-
-      const formattedSize = `${formData.sizeValue} ${formData.sizeUnit}`;
 
       const { error } = await supabase
         .from('farms')
         .insert({
           user_id: user.id,
           name: formData.name,
-          size: formattedSize,
           address: formData.address,
           latitude: formData.latitude ? parseFloat(formData.latitude) : null,
           longitude: formData.longitude ? parseFloat(formData.longitude) : null,
           google_maps_url: formData.google_maps_url,
-          picture_url: pictureUrl,
+          size_value: parseFloat(formData.size_value),
+          size_unit: formData.size_unit,
+          picture_url: picture_url,
         });
 
       if (error) throw error;
 
       showSuccess("Farm added successfully!");
       setOpen(false);
-      setFormData({ name: "", sizeValue: "", sizeUnit: "Hectare", address: "", latitude: "", longitude: "", google_maps_url: "" });
+      setFormData({ name: "", size_value: "", size_unit: "Hectare", address: "", latitude: "", longitude: "", google_maps_url: "" });
       setImageFile(null);
       onSuccess();
     } catch (error: any) {
@@ -82,70 +74,69 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-emerald-600 hover:bg-emerald-700">
+        <Button className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-11">
           <Plus className="w-4 h-4 mr-2" />
           Add New Farm
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-3xl">
         <DialogHeader>
           <DialogTitle>Add New Farm</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Farm Name</Label>
-              <Input 
-                id="name" 
-                placeholder="e.g. Green Valley" 
-                required 
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="size">Farm Size</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input 
-                    id="size" 
-                    type="number"
-                    step="any"
-                    className="pl-10"
-                    placeholder="e.g. 2" 
-                    required
-                    value={formData.sizeValue}
-                    onChange={(e) => setFormData({...formData, sizeValue: e.target.value})}
-                  />
-                </div>
-                <Select 
-                  value={formData.sizeUnit} 
-                  onValueChange={(value) => setFormData({...formData, sizeUnit: value})}
-                >
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="Unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Acre">Acre</SelectItem>
-                    <SelectItem value="Hectare">Hectare</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="space-y-2">
+            <Label htmlFor="name">Farm Name</Label>
+            <Input 
+              id="name" 
+              placeholder="e.g. Green Valley Sanctuary" 
+              required 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="size">Farm Size</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="size" 
+                  type="number"
+                  step="any"
+                  className="pl-10"
+                  placeholder="e.g. 2.5" 
+                  required
+                  value={formData.size_value}
+                  onChange={(e) => setFormData({...formData, size_value: e.target.value})}
+                />
               </div>
+              <Select 
+                value={formData.size_unit} 
+                onValueChange={(value: any) => setFormData({...formData, size_unit: value})}
+              >
+                <SelectTrigger className="w-[120px] rounded-xl">
+                  <SelectValue placeholder="Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Acre">Acre</SelectItem>
+                  <SelectItem value="Hectare">Hectare</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-4 border-t pt-4">
-            <p className="text-sm font-medium text-slate-500">Location (Provide at least one)</p>
+            <p className="text-sm font-medium text-emerald-900">Location Details</p>
             
             <div className="space-y-2">
-              <Label htmlFor="address">Manual Address</Label>
+              <Label htmlFor="address">Address</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
                   id="address" 
                   className="pl-10"
-                  placeholder="123 Permaculture Way" 
+                  placeholder="Street, City, District" 
                   value={formData.address}
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
                 />
@@ -159,7 +150,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
                   id="latitude" 
                   type="number" 
                   step="any"
-                  placeholder="-23.5505"
+                  placeholder="e.g. 12.8765"
                   value={formData.latitude}
                   onChange={(e) => setFormData({...formData, latitude: e.target.value})}
                 />
@@ -170,7 +161,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
                   id="longitude" 
                   type="number" 
                   step="any"
-                  placeholder="-46.6333"
+                  placeholder="e.g. 77.4321"
                   value={formData.longitude}
                   onChange={(e) => setFormData({...formData, longitude: e.target.value})}
                 />
@@ -184,7 +175,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
                 <Input 
                   id="maps_url" 
                   className="pl-10"
-                  placeholder="https://goo.gl/maps/..."
+                  placeholder="https://maps.app.goo.gl/..."
                   value={formData.google_maps_url}
                   onChange={(e) => setFormData({...formData, google_maps_url: e.target.value})}
                 />
@@ -193,7 +184,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
           </div>
 
           <div className="space-y-2 border-t pt-4">
-            <Label htmlFor="image">Farm Picture (Optional)</Label>
+            <Label htmlFor="image">Farm Picture</Label>
             <div className="flex items-center gap-4">
               <Input 
                 id="image" 
@@ -205,7 +196,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
               <Button 
                 type="button" 
                 variant="outline" 
-                className="w-full"
+                className="w-full rounded-xl border-dashed"
                 onClick={() => document.getElementById('image')?.click()}
               >
                 <ImageIcon className="w-4 h-4 mr-2" />
@@ -214,7 +205,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-emerald-600" disabled={loading}>
+          <Button type="submit" className="w-full bg-emerald-600 rounded-xl h-12" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Farm"}
           </Button>
         </form>

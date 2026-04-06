@@ -1,8 +1,11 @@
+"use client";
+
 import { Produce } from "../types/farm";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { MapPin, ShoppingBag } from "lucide-react";
+import { SecureImage } from "./SecureImage";
 
 interface ProduceCardProps {
   produce: Produce & { farms?: { name: string } };
@@ -11,39 +14,47 @@ interface ProduceCardProps {
 
 export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => {
   return (
-    <Card className="overflow-hidden border-none shadow-sm bg-slate-50/50 group">
-      <div className="aspect-video relative overflow-hidden">
-        <img 
-          src={produce.image_url || "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"} 
+    <Card className="overflow-hidden border-none shadow-sm bg-white rounded-3xl group h-full flex flex-col">
+      <div className="aspect-square relative overflow-hidden">
+        <SecureImage 
+          path={produce.image_url} 
+          bucket="produce_images"
           alt={produce.name}
-          className="object-cover w-full h-full transition-transform group-hover:scale-105 duration-300"
+          className="object-cover w-full h-full transition-transform group-hover:scale-110 duration-700"
+          fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
         />
+        <div className="absolute top-3 left-3">
+          <Badge className="bg-white/90 hover:bg-white text-emerald-900 border-none backdrop-blur-md px-2.5 py-1 text-[10px] font-bold shadow-sm">
+            {produce.category}
+          </Badge>
+        </div>
         {showFarm && produce.farms && (
           <Link 
             to={`/farm/${produce.farm_id}`}
-            className="absolute bottom-2 left-2 right-2"
+            className="absolute bottom-3 left-3 right-3"
           >
-            <Badge className="w-full justify-start bg-white/90 hover:bg-white text-emerald-800 border-none backdrop-blur-sm py-1 shadow-sm transition-colors">
-              <MapPin className="w-3 h-3 mr-1.5 text-emerald-600" />
-              <span className="truncate">From {produce.farms.name}</span>
+            <Badge className="w-full justify-start bg-emerald-900/80 hover:bg-emerald-900 text-white border-none backdrop-blur-md py-1.5 shadow-lg transition-colors">
+              <MapPin className="w-3 h-3 mr-1.5 text-emerald-400" />
+              <span className="truncate text-[10px]">{produce.farms.name}</span>
             </Badge>
           </Link>
         )}
       </div>
-      <CardContent className="p-3">
-        <div className="flex justify-between items-start mb-1">
-          <h4 className="font-bold text-sm truncate pr-2">{produce.name}</h4>
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 whitespace-nowrap bg-emerald-100 text-emerald-800 border-none">
-            {produce.price}
-          </Badge>
+      <CardContent className="p-4 flex-1 flex flex-col">
+        <div className="flex justify-between items-start gap-2 mb-2">
+          <h4 className="font-bold text-emerald-900 truncate flex-1">{produce.name}</h4>
+          <span className="text-xs font-bold text-emerald-600 whitespace-nowrap bg-emerald-50 px-2 py-0.5 rounded-lg">
+            ₹{produce.price_value}
+          </span>
         </div>
-        <p className="text-xs text-muted-foreground italic mb-1 truncate">{produce.variety}</p>
-        {produce.description && (
-          <p className="text-[11px] text-slate-600 line-clamp-2 mb-2 leading-tight min-h-[2.4em]">
-            {produce.description}
-          </p>
-        )}
-        <p className="text-[10px] font-bold text-emerald-600">{produce.quantity}</p>
+        
+        <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-slate-500">
+            <ShoppingBag className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">{produce.quantity_value} {produce.quantity_unit} left</span>
+          </div>
+          <span className="text-[10px] text-slate-400 font-medium">per {produce.price_unit}</span>
+        </div>
       </CardContent>
     </Card>
   );
