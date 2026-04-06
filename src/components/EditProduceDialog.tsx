@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit2, Loader2, Image as ImageIcon, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +36,6 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  // Helper to parse "₹10 per kg" or "10 kg"
   const parsePrice = (priceStr: string) => {
     const parts = priceStr.replace('₹', '').split(' per ');
     return { val: parts[0] || "", unit: parts[1] || "kg" };
@@ -53,6 +53,8 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
     name: produce.name,
     variety: produce.variety || "",
     category: produce.category,
+    description: produce.description || "",
+    tags: produce.tags?.join(", ") || "",
     price_value: initialPrice.val,
     price_unit: initialPrice.unit,
     quantity_value: initialQuant.val,
@@ -71,6 +73,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
 
       const priceText = `₹${formData.price_value} per ${formData.price_unit}`;
       const quantityText = `${formData.quantity_value} ${formData.quantity_unit}`;
+      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
 
       const { error } = await supabase
         .from('produce')
@@ -78,6 +81,8 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
           name: formData.name,
           variety: formData.variety || null,
           category: formData.category,
+          description: formData.description,
+          tags: tagsArray,
           price: priceText,
           quantity: quantityText,
           image_url: image_url,
@@ -103,15 +108,15 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
           <Edit2 className="w-3.5 h-3.5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] rounded-3xl">
+      <DialogContent className="sm:max-w-[425px] rounded-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Produce</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Produce Name</Label>
+            <Label htmlFor="edit-produce-name">Produce Name</Label>
             <Input 
-              id="edit-name" 
+              id="edit-produce-name" 
               required 
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -119,11 +124,11 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-variety">Variety</Label>
+            <Label htmlFor="edit-produce-variety">Variety</Label>
             <div className="relative">
               <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input 
-                id="edit-variety" 
+                id="edit-produce-variety" 
                 className="pl-10"
                 placeholder="e.g. Heirloom" 
                 value={formData.variety}
@@ -133,7 +138,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-category">Category</Label>
+            <Label htmlFor="edit-produce-category">Category</Label>
             <Select 
               value={formData.category} 
               onValueChange={(value) => setFormData({...formData, category: value})}
@@ -147,6 +152,25 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-produce-description">Description</Label>
+            <Textarea 
+              id="edit-produce-description" 
+              className="min-h-[80px] rounded-xl"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-produce-tags">Produce Tags (comma separated)</Label>
+            <Input 
+              id="edit-produce-tags" 
+              value={formData.tags}
+              onChange={(e) => setFormData({...formData, tags: e.target.value})}
+            />
           </div>
           
           <div className="space-y-2">
@@ -207,10 +231,10 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-image">Update Image</Label>
+            <Label htmlFor="edit-produce-image">Update Image</Label>
             <div className="flex items-center gap-4">
               <Input 
-                id="edit-image" 
+                id="edit-produce-image" 
                 type="file" 
                 accept="image/*"
                 className="hidden"
@@ -220,7 +244,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
                 type="button" 
                 variant="outline" 
                 className="w-full rounded-xl border-dashed"
-                onClick={() => document.getElementById('edit-image')?.click()}
+                onClick={() => document.getElementById('edit-produce-image')?.click()}
               >
                 <ImageIcon className="w-4 h-4 mr-2" />
                 {imageFile ? imageFile.name : "Change Image"}

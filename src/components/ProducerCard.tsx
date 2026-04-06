@@ -1,16 +1,21 @@
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { MapPin, CheckCircle2, ExternalLink, ArrowRight, User } from "lucide-react";
+import { MapPin, CheckCircle2, ExternalLink, ArrowRight, User, Tag } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 
 export const ProducerCard = ({ producer }: { producer: Producer }) => {
   const mapsUrl = producer.google_maps_url || 
     (producer.latitude && producer.longitude 
       ? `https://www.google.com/maps/search/?api=1&query=${producer.latitude},${producer.longitude}`
       : null);
+
+  // Note: For simplicity in the Index view, we pass 'producer' which sometimes maps to a farm's data
+  // Let's check for tags if it's acting as a farm card
+  const tags = (producer as any).tags || [];
 
   return (
     <Card className="overflow-hidden border-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 group">
@@ -57,17 +62,15 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
               </p>
             )}
 
-            <div className="flex flex-wrap gap-2 mt-2">
-              {mapsUrl && (
-                <a 
-                  href={mapsUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center text-[10px] bg-emerald-600 px-2 py-0.5 rounded-full text-white hover:bg-emerald-700 transition-colors"
-                >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  View Map
-                </a>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {tags.slice(0, 3).map((tag: string) => (
+                <Badge key={tag} variant="secondary" className="bg-emerald-100 text-emerald-700 border-none text-[9px] font-bold px-2 py-0.5">
+                  <Tag className="w-2 h-2 mr-1" />
+                  {tag}
+                </Badge>
+              ))}
+              {tags.length > 3 && (
+                <span className="text-[9px] text-slate-400 font-bold">+{tags.length - 3}</span>
               )}
             </div>
           </div>

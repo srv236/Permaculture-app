@@ -15,14 +15,15 @@ import {
   Sprout,
   ExternalLink,
   Ruler,
-  Map as MapIcon
+  Map as MapIcon,
+  Info,
+  Tag
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for default marker icons in Leaflet with React
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -116,20 +117,32 @@ const FarmDetail = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{farm.name}</h1>
-            <div className="flex flex-wrap gap-4 text-emerald-50">
-              {farm.address && (
-                <span className="flex items-center gap-1.5 text-sm">
-                  <MapPin className="w-4 h-4" />
-                  {farm.address}
-                </span>
-              )}
-              {farm.size && (
-                <span className="flex items-center gap-1.5 text-sm">
-                  <Ruler className="w-4 h-4" />
-                  {farm.size}
-                </span>
-              )}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{farm.name}</h1>
+                <div className="flex flex-wrap gap-4 text-emerald-50">
+                  {farm.address && (
+                    <span className="flex items-center gap-1.5 text-sm">
+                      <MapPin className="w-4 h-4 text-emerald-400" />
+                      {farm.address}
+                    </span>
+                  )}
+                  {farm.size && (
+                    <span className="flex items-center gap-1.5 text-sm">
+                      <Ruler className="w-4 h-4 text-emerald-400" />
+                      {farm.size}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {farm.tags?.map(tag => (
+                  <Badge key={tag} className="bg-emerald-500/20 text-emerald-100 border-emerald-500/30 backdrop-blur-md px-3 py-1">
+                    <Tag className="w-3 h-3 mr-1.5" />
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -138,6 +151,23 @@ const FarmDetail = () => {
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-12">
+            {/* About Section */}
+            {farm.about && (
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <Info className="w-6 h-6 text-emerald-600" />
+                  About the Farm
+                </h2>
+                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
+                  <CardContent className="p-8">
+                    <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                      {farm.about}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Harvest Section */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
@@ -147,7 +177,12 @@ const FarmDetail = () => {
               {farm.produce && farm.produce.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {farm.produce.map((item) => (
-                    <ProduceCard key={item.id} produce={item} />
+                    <div key={item.id} className="space-y-2">
+                      <ProduceCard produce={item} />
+                      {item.description && (
+                        <p className="text-xs text-slate-500 px-4 line-clamp-2">{item.description}</p>
+                      )}
+                    </div>
                   ))}
                 </div>
               ) : (

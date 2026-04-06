@@ -5,8 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit2, Loader2, Image as ImageIcon, MapPin, Globe, Ruler } from "lucide-react";
+import { Edit2, Loader2, Image as ImageIcon, MapPin, Globe, Ruler, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
@@ -22,13 +23,14 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   
-  // Parse size string "Value Unit"
   const sizeParts = farm.size?.split(" ") || ["", "Hectare"];
   const initialValue = sizeParts[0];
   const initialUnit = sizeParts[1] || "Hectare";
 
   const [formData, setFormData] = useState({
     name: farm.name,
+    about: farm.about || "",
+    tags: farm.tags?.join(", ") || "",
     sizeValue: initialValue,
     sizeUnit: initialUnit,
     address: farm.address || "",
@@ -48,11 +50,14 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
       }
 
       const formattedSize = `${formData.sizeValue} ${formData.sizeUnit}`;
+      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
 
       const { error } = await supabase
         .from('farms')
         .update({
           name: formData.name,
+          about: formData.about,
+          tags: tagsArray,
           size: formattedSize,
           address: formData.address,
           latitude: formData.latitude ? parseFloat(formData.latitude) : null,
@@ -88,9 +93,9 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Farm Name</Label>
+            <Label htmlFor="edit-name">Farm Name</Label>
             <Input 
-              id="name" 
+              id="edit-name" 
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
               required
@@ -98,12 +103,36 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="size">Farm Size</Label>
+            <Label htmlFor="edit-about">About the Farm</Label>
+            <Textarea 
+              id="edit-about" 
+              className="min-h-[100px] rounded-xl"
+              value={formData.about}
+              onChange={(e) => setFormData({...formData, about: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-tags">Farm Tags (comma separated)</Label>
+            <div className="relative">
+              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input 
+                id="edit-tags" 
+                className="pl-10"
+                placeholder="e.g. Organic, Forest Garden" 
+                value={formData.tags}
+                onChange={(e) => setFormData({...formData, tags: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-size">Farm Size</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
-                  id="size" 
+                  id="edit-size" 
                   type="number"
                   step="any"
                   className="pl-10"
@@ -129,11 +158,11 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
 
           <div className="space-y-4 border-t border-slate-100 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="address">Manual Address</Label>
+              <Label htmlFor="edit-address">Manual Address</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
-                  id="address" 
+                  id="edit-address" 
                   className="pl-10"
                   value={formData.address}
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
@@ -143,9 +172,9 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude</Label>
+                <Label htmlFor="edit-latitude">Latitude</Label>
                 <Input 
-                  id="latitude" 
+                  id="edit-latitude" 
                   type="number" 
                   step="any"
                   value={formData.latitude}
@@ -153,9 +182,9 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude</Label>
+                <Label htmlFor="edit-longitude">Longitude</Label>
                 <Input 
-                  id="longitude" 
+                  id="edit-longitude" 
                   type="number" 
                   step="any"
                   value={formData.longitude}
@@ -165,11 +194,11 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="maps_url">Google Maps Link</Label>
+              <Label htmlFor="edit-maps_url">Google Maps Link</Label>
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
-                  id="maps_url" 
+                  id="edit-maps_url" 
                   className="pl-10"
                   value={formData.google_maps_url}
                   onChange={(e) => setFormData({...formData, google_maps_url: e.target.value})}
@@ -179,10 +208,10 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
           </div>
 
           <div className="space-y-2 border-t border-slate-100 pt-4">
-            <Label htmlFor="image">Farm Picture</Label>
+            <Label htmlFor="edit-image">Farm Picture</Label>
             <div className="flex items-center gap-4">
               <Input 
-                id="image" 
+                id="edit-image" 
                 type="file" 
                 accept="image/*"
                 className="hidden"
@@ -192,7 +221,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
                 type="button" 
                 variant="outline" 
                 className="w-full rounded-xl border-dashed"
-                onClick={() => document.getElementById('image')?.click()}
+                onClick={() => document.getElementById('edit-image')?.click()}
               >
                 <ImageIcon className="w-4 h-4 mr-2" />
                 {imageFile ? imageFile.name : "Change Picture"}

@@ -13,7 +13,6 @@ interface ProduceCardProps {
 }
 
 export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => {
-  // Ensure the price string has the Rupee symbol if it's missing
   const displayPrice = produce.price?.startsWith('₹') || produce.price?.startsWith('$') 
     ? produce.price 
     : `₹${produce.price}`;
@@ -55,13 +54,18 @@ export const ProduceCard = ({ produce, showFarm = false }: ProduceCardProps) => 
         <div className="flex justify-between items-start gap-2 mb-2">
           <div className="min-w-0">
             <h4 className="font-bold text-emerald-900 truncate">{produce.name}</h4>
-            {produce.variety && (
-              <p className="text-[10px] text-slate-400 font-medium truncate italic">{produce.variety}</p>
-            )}
           </div>
           <span className="text-xs font-bold text-emerald-600 whitespace-nowrap bg-emerald-50 px-2 py-0.5 rounded-lg">
             {displayPrice}
           </span>
+        </div>
+
+        <div className="flex flex-wrap gap-1 mb-4">
+          {produce.tags?.slice(0, 2).map(tag => (
+            <Badge key={tag} variant="outline" className="text-[8px] px-1.5 py-0 border-slate-200 text-slate-400 font-medium">
+              #{tag}
+            </Badge>
+          ))}
         </div>
         
         <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">

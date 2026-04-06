@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Loader2, Image as ImageIcon, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +38,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
     name: "",
     variety: "",
     category: "Vegetables",
+    description: "",
+    tags: "",
     price_value: "",
     price_unit: "kg",
     quantity_value: "",
@@ -53,9 +56,9 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         image_url = await uploadImage(imageFile, "produce_images");
       }
 
-      // Combine values for text columns
       const priceText = `₹${formData.price_value} per ${formData.price_unit}`;
       const quantityText = `${formData.quantity_value} ${formData.quantity_unit}`;
+      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
 
       const { error } = await supabase
         .from('produce')
@@ -64,6 +67,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           name: formData.name,
           variety: formData.variety || null,
           category: formData.category,
+          description: formData.description,
+          tags: tagsArray,
           price: priceText,
           quantity: quantityText,
           image_url: image_url,
@@ -77,6 +82,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         name: "", 
         variety: "",
         category: "Vegetables", 
+        description: "",
+        tags: "",
         price_value: "", 
         price_unit: "kg", 
         quantity_value: "", 
@@ -99,7 +106,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
           Add Produce
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] rounded-3xl">
+      <DialogContent className="sm:max-w-[425px] rounded-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Produce to Harvest</DialogTitle>
         </DialogHeader>
@@ -144,6 +151,27 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea 
+              id="description" 
+              placeholder="Flavor profile, nutrition, or growth details..." 
+              className="min-h-[80px] rounded-xl"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">Produce Tags (comma separated)</Label>
+            <Input 
+              id="tags" 
+              placeholder="e.g. Organic, Freshly Picked, Local" 
+              value={formData.tags}
+              onChange={(e) => setFormData({...formData, tags: e.target.value})}
+            />
           </div>
           
           <div className="space-y-2">

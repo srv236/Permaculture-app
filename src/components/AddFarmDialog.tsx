@@ -5,8 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Image as ImageIcon, MapPin, Globe, Ruler } from "lucide-react";
+import { Plus, Loader2, Image as ImageIcon, MapPin, Globe, Ruler, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
@@ -23,6 +24,8 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    about: "",
+    tags: "",
     size_value: "",
     size_unit: "Hectare",
     address: "",
@@ -43,14 +46,16 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
         picture_url = await uploadImage(imageFile, "profile_pictures");
       }
 
-      // Combine size for DB text column
       const sizeText = `${formData.size_value} ${formData.size_unit}`;
+      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
 
       const { error } = await supabase
         .from('farms')
         .insert({
           user_id: user.id,
           name: formData.name,
+          about: formData.about,
+          tags: tagsArray,
           address: formData.address,
           latitude: formData.latitude ? parseFloat(formData.latitude) : null,
           longitude: formData.longitude ? parseFloat(formData.longitude) : null,
@@ -63,7 +68,17 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
 
       showSuccess("Farm added successfully!");
       setOpen(false);
-      setFormData({ name: "", size_value: "", size_unit: "Hectare", address: "", latitude: "", longitude: "", google_maps_url: "" });
+      setFormData({ 
+        name: "", 
+        about: "", 
+        tags: "", 
+        size_value: "", 
+        size_unit: "Hectare", 
+        address: "", 
+        latitude: "", 
+        longitude: "", 
+        google_maps_url: "" 
+      });
       setImageFile(null);
       onSuccess();
     } catch (error: any) {
@@ -98,6 +113,31 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="about">About the Farm</Label>
+            <Textarea 
+              id="about" 
+              placeholder="Describe your regenerative practices, the farm's history, and your vision..." 
+              className="min-h-[100px] rounded-xl"
+              value={formData.about}
+              onChange={(e) => setFormData({...formData, about: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">Farm Tags (comma separated)</Label>
+            <div className="relative">
+              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input 
+                id="tags" 
+                className="pl-10"
+                placeholder="e.g. Organic, Forest Garden, Livestock" 
+                value={formData.tags}
+                onChange={(e) => setFormData({...formData, tags: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="size">Farm Size</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -128,10 +168,8 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
             </div>
           </div>
 
-          {/* ... Rest of the form ... */}
           <div className="space-y-4 border-t pt-4">
             <p className="text-sm font-medium text-emerald-900">Location Details</p>
-            
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
               <div className="relative">

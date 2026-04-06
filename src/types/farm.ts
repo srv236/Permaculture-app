@@ -6,9 +6,11 @@ export interface Produce {
   name: string;
   variety?: string;
   category: string;
-  price: string; // Maps to 'price' column in DB
-  quantity: string; // Maps to 'quantity' column in DB
+  description?: string;
+  price: string;
+  quantity: string;
   image_url: string;
+  tags?: string[];
   created_at?: string;
 }
 
@@ -16,12 +18,14 @@ export interface Farm {
   id: string;
   user_id: string;
   name: string;
+  about?: string;
   address?: string;
   latitude?: number;
   longitude?: number;
   google_maps_url?: string;
-  size?: string; // Maps to 'size' column in DB
+  size?: string;
   picture_url?: string;
+  tags?: string[];
   produce?: Produce[];
   created_at: string;
 }
