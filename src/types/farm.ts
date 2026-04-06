@@ -45,4 +45,5 @@ export interface Producer {
   picture_url?: string;
   farms?: Farm[];
   created_at?: string;
+  is_hidden?: boolean;
 }
