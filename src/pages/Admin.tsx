@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,15 +17,28 @@ import {
   Mail, 
   Phone,
   Users,
-  Clock
+  Clock,
+  Trash2,
+  EyeOff,
+  Eye,
+  ShieldAlert,
+  UserCog
 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { SecureImage } from "@/components/SecureImage";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 const Admin = () => {
-  const { profile, loading: sessionLoading } = useSession();
+  const { profile: adminProfile, loading: sessionLoading } = useSession();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,13 +46,13 @@ const Admin = () => {
 
   useEffect(() => {
     if (!sessionLoading) {
-      if (!profile?.is_admin) {
+      if (!adminProfile?.is_admin) {
         navigate("/");
         return;
       }
       fetchUsers();
     }
-  }, [profile, sessionLoading]);
+  }, [adminProfile, sessionLoading]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -58,19 +71,38 @@ const Admin = () => {
     }
   };
 
-  const toggleVerification = async (userId: string, currentStatus: boolean) => {
+  const updateProfile = async (userId: string, updates: any, actionName: string) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ is_verified: !currentStatus })
+        .update(updates)
         .eq('id', userId);
 
       if (error) throw error;
       
-      showSuccess(`User ${!currentStatus ? 'verified' : 'unverified'} successfully.`);
+      showSuccess(`${actionName} updated successfully.`);
       fetchUsers();
     } catch (error) {
-      showError("Failed to update verification status.");
+      showError(`Failed to update ${actionName}.`);
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm("Are you sure? This will delete the user profile and all their associated data (farms, produce).")) return;
+    
+    try {
+      // Deleting profile usually cascades to farms/produce if DB is set up that way
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+      
+      showSuccess("Member deleted successfully.");
+      fetchUsers();
+    } catch (error) {
+      showError("Failed to delete member.");
     }
   };
 
@@ -79,8 +111,9 @@ const Admin = () => {
     u.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const pendingUsers = filteredUsers.filter(u => !u.is_verified);
-  const verifiedUsers = filteredUsers.filter(u => u.is_verified);
+  const pendingUsers = filteredUsers.filter(u => !u.is_verified && !u.is_hidden);
+  const hiddenUsers = filteredUsers.filter(u => u.is_hidden);
+  const activeUsers = filteredUsers.filter(u => !u.is_hidden);
 
   if (sessionLoading || loading) {
     return (
@@ -97,7 +130,7 @@ const Admin = () => {
     <div className="grid grid-cols-1 gap-4">
       {usersList.length > 0 ? (
         usersList.map((user) => (
-          <Card key={user.id} className="overflow-hidden border-slate-200 hover:border-emerald-200 transition-all">
+          <Card key={user.id} className={`overflow-hidden border-slate-200 hover:border-emerald-200 transition-all ${user.is_hidden ? 'opacity-60 bg-slate-50' : ''}`}>
             <CardContent className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4 w-full md:w-auto">
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 shrink-0">
@@ -114,10 +147,13 @@ const Admin = () => {
                     {user.is_verified ? (
                       <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200">Verified</Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 animate-pulse">Pending</Badge>
+                      <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Pending</Badge>
                     )}
                     {user.is_admin && (
                       <Badge variant="secondary" className="bg-purple-100 text-purple-700">Admin</Badge>
+                    )}
+                    {user.is_hidden && (
+                      <Badge variant="destructive" className="bg-red-50 text-red-600 border-red-100">Suppressed</Badge>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
@@ -132,20 +168,37 @@ const Admin = () => {
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto">
-                <Button 
-                  variant={user.is_verified ? "outline" : "default"}
-                  className={user.is_verified ? "text-red-600 border-red-200 hover:bg-red-50" : "bg-emerald-600 hover:bg-emerald-700"}
-                  onClick={() => toggleVerification(user.id, user.is_verified)}
-                >
-                  {user.is_verified ? (
-                    <><UserX className="w-4 h-4 mr-2" /> Revoke</>
-                  ) : (
-                    <><UserCheck className="w-4 h-4 mr-2" /> Verify Member</>
-                  )}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate(`/profile/${user.id}`)}>
-                  View Profile
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <UserCog className="w-4 h-4 mr-2" />
+                      Actions
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                    <DropdownMenuLabel>Member Management</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => navigate(`/profile/${user.id}`)}>
+                      View Public Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => updateProfile(user.id, { is_verified: !user.is_verified }, "Verification")}>
+                      {user.is_verified ? <><UserX className="w-4 h-4 mr-2" /> Unverify</> : <><UserCheck className="w-4 h-4 mr-2" /> Verify</>}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateProfile(user.id, { is_admin: !user.is_admin }, "Admin Rights")}>
+                      {user.is_admin ? <><ShieldAlert className="w-4 h-4 mr-2 text-amber-600" /> Remove Admin</> : <><ShieldCheck className="w-4 h-4 mr-2 text-emerald-600" /> Make Admin</>}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateProfile(user.id, { is_hidden: !user.is_hidden }, "Visibility")}>
+                      {user.is_hidden ? <><Eye className="w-4 h-4 mr-2" /> Show Member</> : <><EyeOff className="w-4 h-4 mr-2" /> Suppress Member</>}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-red-600 focus:bg-red-50 focus:text-red-700" 
+                      onClick={() => deleteUser(user.id)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete Account
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardContent>
           </Card>
@@ -168,12 +221,12 @@ const Admin = () => {
               <ShieldCheck className="w-8 h-8" />
               Admin Dashboard
             </h1>
-            <p className="text-slate-500">Manage practitioner verifications and network members.</p>
+            <p className="text-slate-500">Full management of practitioner accounts and verifications.</p>
           </div>
           <div className="relative w-full md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
-              placeholder="Search users..." 
+              placeholder="Search by name or email..." 
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -182,14 +235,18 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="bg-white p-1 h-auto mb-8 border border-slate-200 rounded-xl">
+          <TabsList className="bg-white p-1 h-auto mb-8 border border-slate-200 rounded-xl overflow-x-auto flex-nowrap">
             <TabsTrigger value="pending" className="px-6 py-2.5 rounded-lg data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700">
               <Clock className="w-4 h-4 mr-2" />
-              Pending Verifications ({pendingUsers.length})
+              Pending ({pendingUsers.length})
             </TabsTrigger>
-            <TabsTrigger value="all" className="px-6 py-2.5 rounded-lg data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
+            <TabsTrigger value="active" className="px-6 py-2.5 rounded-lg data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
               <Users className="w-4 h-4 mr-2" />
-              All Members ({filteredUsers.length})
+              Active Members ({activeUsers.length})
+            </TabsTrigger>
+            <TabsTrigger value="hidden" className="px-6 py-2.5 rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-700">
+              <EyeOff className="w-4 h-4 mr-2" />
+              Suppressed ({hiddenUsers.length})
             </TabsTrigger>
           </TabsList>
 
@@ -197,8 +254,12 @@ const Admin = () => {
             <UserList usersList={pendingUsers} />
           </TabsContent>
 
-          <TabsContent value="all">
-            <UserList usersList={filteredUsers} />
+          <TabsContent value="active">
+            <UserList usersList={activeUsers} />
+          </TabsContent>
+
+          <TabsContent value="hidden">
+            <UserList usersList={hiddenUsers} />
           </TabsContent>
         </Tabs>
       </main>
