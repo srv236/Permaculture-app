@@ -226,10 +226,12 @@ const Dashboard = () => {
                           <div>
                             <h3 className="text-2xl font-bold text-emerald-900">{farm.name}</h3>
                             <div className="flex flex-wrap gap-4 mt-2">
-                              <span className="text-sm text-slate-500 flex items-center gap-1.5">
-                                <Ruler className="w-4 h-4 text-emerald-500" />
-                                {farm.size_value} {farm.size_unit}
-                              </span>
+                              {farm.size && (
+                                <span className="text-sm text-slate-500 flex items-center gap-1.5">
+                                  <Ruler className="w-4 h-4 text-emerald-500" />
+                                  {farm.size}
+                                </span>
+                              )}
                               {farm.address && (
                                 <span className="text-sm text-slate-500 flex items-center gap-1.5">
                                   <MapPin className="w-4 h-4 text-emerald-500" />
@@ -261,7 +263,7 @@ const Dashboard = () => {
                                     {item.variety && (
                                       <p className="text-[10px] text-slate-400 truncate italic">{item.variety}</p>
                                     )}
-                                    <p className="text-xs text-emerald-600 font-medium">₹{item.price_value}/{item.price_unit} • {item.quantity_value} {item.quantity_unit}</p>
+                                    <p className="text-xs text-emerald-600 font-medium">{item.price} • {item.quantity}</p>
                                   </div>
                                   <div className="flex items-center">
                                     <EditProduceDialog produce={item} onSuccess={fetchData} />

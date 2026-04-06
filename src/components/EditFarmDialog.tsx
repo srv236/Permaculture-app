@@ -82,7 +82,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
           Edit Farm
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-3xl">
         <DialogHeader>
           <DialogTitle>Edit Farm Details</DialogTitle>
         </DialogHeader>
@@ -116,7 +116,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
                 value={formData.sizeUnit} 
                 onValueChange={(value) => setFormData({...formData, sizeUnit: value})}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[120px] rounded-xl">
                   <SelectValue placeholder="Unit" />
                 </SelectTrigger>
                 <SelectContent>
@@ -127,7 +127,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
             </div>
           </div>
 
-          <div className="space-y-4 border-t pt-4">
+          <div className="space-y-4 border-t border-slate-100 pt-4">
             <div className="space-y-2">
               <Label htmlFor="address">Manual Address</Label>
               <div className="relative">
@@ -178,7 +178,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
             </div>
           </div>
 
-          <div className="space-y-2 border-t pt-4">
+          <div className="space-y-2 border-t border-slate-100 pt-4">
             <Label htmlFor="image">Farm Picture</Label>
             <div className="flex items-center gap-4">
               <Input 
@@ -191,7 +191,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
               <Button 
                 type="button" 
                 variant="outline" 
-                className="w-full"
+                className="w-full rounded-xl border-dashed"
                 onClick={() => document.getElementById('image')?.click()}
               >
                 <ImageIcon className="w-4 h-4 mr-2" />
@@ -200,7 +200,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-emerald-600" disabled={loading}>
+          <Button type="submit" className="w-full bg-emerald-600 rounded-xl h-12" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
           </Button>
         </form>
