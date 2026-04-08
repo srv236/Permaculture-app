@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit2, Loader2, User, Calendar } from "lucide-react";
+import { Edit2, Loader2, User, Calendar, Facebook, Instagram, Youtube, Globe, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
@@ -24,9 +24,14 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
   const [formData, setFormData] = useState({
     name: profile.name,
     phone: profile.phone,
+    alt_phone: profile.alt_phone || "",
     about: profile.about || "",
-    basic_course_date: profile.basic_course_date || "",
-    advanced_course_date: profile.advanced_course_date || "",
+    facebook_url: profile.facebook_url || "",
+    instagram_url: profile.instagram_url || "",
+    youtube_url: profile.youtube_url || "",
+    website_url: profile.website_url || "",
+    basic_course_date: profile.basic_completion_date || profile.basic_course_date || "",
+    advanced_course_date: profile.advanced_completion_date || profile.advanced_course_date || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,9 +49,14 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
         .update({
           name: formData.name,
           phone: formData.phone,
+          alt_phone: formData.alt_phone || null,
           about: formData.about,
-          basic_course_date: formData.basic_course_date || null,
-          advanced_course_date: formData.advanced_course_date || null,
+          facebook_url: formData.facebook_url || null,
+          instagram_url: formData.instagram_url || null,
+          youtube_url: formData.youtube_url || null,
+          website_url: formData.website_url || null,
+          basic_completion_date: formData.basic_course_date || null,
+          advanced_completion_date: formData.advanced_course_date || null,
           picture_url: pictureUrl,
         })
         .eq('id', profile.id);
@@ -71,39 +81,130 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
           Edit Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-3xl">
         <DialogHeader>
           <DialogTitle>Edit Practitioner Profile</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input 
-              id="name" 
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input 
+                id="name" 
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input 
-              id="phone" 
-              value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              required
-            />
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input 
+                id="phone" 
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="alt_phone">Alternate Phone (Optional)</Label>
+              <div className="relative">
+                <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="alt_phone" 
+                  className="pl-10"
+                  value={formData.alt_phone}
+                  onChange={(e) => setFormData({...formData, alt_phone: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="picture">Profile Picture</Label>
+              <div className="flex items-center gap-4">
+                <Input 
+                  id="picture" 
+                  type="file" 
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => document.getElementById('picture')?.click()}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  {imageFile ? imageFile.name : "Change Picture"}
+                </Button>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="about">About You</Label>
             <Textarea 
               id="about" 
-              className="min-h-[100px]"
+              className="min-h-[100px] rounded-xl"
               value={formData.about}
               onChange={(e) => setFormData({...formData, about: e.target.value})}
             />
+          </div>
+
+          <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <p className="text-sm font-bold text-slate-700">Social Media & Links</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="facebook">Facebook URL</Label>
+                <div className="relative">
+                  <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
+                  <Input 
+                    id="facebook" 
+                    className="pl-10"
+                    value={formData.facebook_url}
+                    onChange={(e) => setFormData({...formData, facebook_url: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="instagram">Instagram URL</Label>
+                <div className="relative">
+                  <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-600" />
+                  <Input 
+                    id="instagram" 
+                    className="pl-10"
+                    value={formData.instagram_url}
+                    onChange={(e) => setFormData({...formData, instagram_url: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="youtube">YouTube URL</Label>
+                <div className="relative">
+                  <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
+                  <Input 
+                    id="youtube" 
+                    className="pl-10"
+                    value={formData.youtube_url}
+                    onChange={(e) => setFormData({...formData, youtube_url: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="website">Website Link</Label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
+                  <Input 
+                    id="website" 
+                    className="pl-10"
+                    value={formData.website_url}
+                    onChange={(e) => setFormData({...formData, website_url: e.target.value})}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -135,29 +236,7 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="picture">Profile Picture</Label>
-            <div className="flex items-center gap-4">
-              <Input 
-                id="picture" 
-                type="file" 
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              />
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full"
-                onClick={() => document.getElementById('picture')?.click()}
-              >
-                <User className="w-4 h-4 mr-2" />
-                {imageFile ? imageFile.name : "Change Picture"}
-              </Button>
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full bg-emerald-600" disabled={loading}>
+          <Button type="submit" className="w-full bg-emerald-600 rounded-xl h-12" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
           </Button>
         </form>

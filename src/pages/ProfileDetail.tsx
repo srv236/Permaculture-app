@@ -29,7 +29,12 @@ import {
   EyeOff,
   Eye,
   Trash2,
-  ChevronRight
+  ChevronRight,
+  Facebook,
+  Instagram,
+  Youtube,
+  Globe,
+  Smartphone
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -129,6 +134,13 @@ const ProfileDetail = () => {
 
   if (!profile) return null;
 
+  const socialLinks = [
+    { id: 'website', url: profile.website_url, icon: Globe, label: 'Website', color: 'text-emerald-600' },
+    { id: 'facebook', url: profile.facebook_url, icon: Facebook, label: 'Facebook', color: 'text-blue-600' },
+    { id: 'instagram', url: profile.instagram_url, icon: Instagram, label: 'Instagram', color: 'text-pink-600' },
+    { id: 'youtube', url: profile.youtube_url, icon: Youtube, label: 'YouTube', color: 'text-red-600' },
+  ].filter(link => link.url);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -212,14 +224,43 @@ const ProfileDetail = () => {
                 )}
               </div>
               <p className="text-emerald-300 text-xl font-medium mb-4">Certified Permaculture Practitioner</p>
+              
+              {/* Profile Social Links in Header */}
+              {socialLinks.length > 0 && (
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4">
+                  {socialLinks.map(link => (
+                    <a 
+                      key={link.id} 
+                      href={link.url?.startsWith('http') ? link.url : `https://${link.url}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all border border-white/10 flex items-center gap-2 text-sm"
+                    >
+                      <link.icon className={`w-4 h-4 ${link.color}`} />
+                      <span className="text-emerald-50 hidden sm:inline">{link.label}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="shrink-0 w-full md:w-auto">
               {user ? (
-                <ContactButtons 
-                  phone={profile.phone} 
-                  email={profile.email} 
-                  name={profile.name} 
-                />
+                <div className="space-y-4">
+                  <ContactButtons 
+                    phone={profile.phone} 
+                    email={profile.email} 
+                    name={profile.name} 
+                  />
+                  {profile.alt_phone && (
+                    <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 flex items-center gap-3">
+                      <Smartphone className="w-4 h-4 text-emerald-300" />
+                      <div className="text-left">
+                        <p className="text-[10px] uppercase tracking-widest text-emerald-200">Alternate Phone</p>
+                        <a href={`tel:${profile.alt_phone}`} className="text-sm font-bold text-white hover:underline">{profile.alt_phone}</a>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center">
                   <Lock className="w-5 h-5 mx-auto mb-2 text-emerald-300" />
@@ -263,7 +304,7 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Basic Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.basic_completion_date ? `Completed: ${profile.basic_completion_date}` : "Completed"}
+                      {profile.basic_completion_date || profile.basic_course_date ? `Completed: ${profile.basic_completion_date || profile.basic_course_date}` : "Completed"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -274,7 +315,7 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Advanced Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.advanced_completion_date ? `Completed: ${profile.advanced_completion_date}` : "Completed"}
+                      {profile.advanced_completion_date || profile.advanced_course_date ? `Completed: ${profile.advanced_completion_date || profile.advanced_course_date}` : "Completed"}
                     </Badge>
                   </div>
                 </div>

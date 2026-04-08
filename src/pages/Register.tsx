@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { GraduationCap, AlertCircle, Loader2, Calendar } from "lucide-react";
+import { GraduationCap, AlertCircle, Loader2, Calendar, Facebook, Instagram, Youtube, Globe, Smartphone } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -21,8 +21,13 @@ const Register = () => {
     name: "",
     email: "",
     phone: "",
+    alt_phone: "",
     password: "",
     about: "",
+    facebook_url: "",
+    instagram_url: "",
+    youtube_url: "",
+    website_url: "",
     has_completed_basic: false,
     basic_completion_date: "",
     has_completed_advanced: false,
@@ -53,7 +58,12 @@ const Register = () => {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
+            alt_phone: formData.alt_phone || null,
             about: formData.about,
+            facebook_url: formData.facebook_url || null,
+            instagram_url: formData.instagram_url || null,
+            youtube_url: formData.youtube_url || null,
+            website_url: formData.website_url || null,
             has_completed_basic: formData.has_completed_basic,
             basic_completion_date: formData.basic_completion_date || null,
             has_completed_advanced: formData.has_completed_advanced,
@@ -136,6 +146,20 @@ const Register = () => {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      placeholder="••••••••" 
+                      required 
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input 
                       id="phone" 
@@ -146,18 +170,79 @@ const Register = () => {
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="alt_phone">Alternate Phone (Optional)</Label>
+                    <div className="relative">
+                      <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input 
+                        id="alt_phone" 
+                        type="tel" 
+                        className="pl-10"
+                        placeholder="+91 00000 00000" 
+                        value={formData.alt_phone}
+                        onChange={(e) => setFormData({...formData, alt_phone: e.target.value})}
+                      />
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    placeholder="••••••••" 
-                    required 
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  />
+              {/* Social Media Section */}
+              <div className="space-y-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-sm font-bold text-slate-700">Social Media & Links (Optional)</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="facebook">Facebook URL</Label>
+                    <div className="relative">
+                      <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
+                      <Input 
+                        id="facebook" 
+                        className="pl-10"
+                        placeholder="facebook.com/yourprofile" 
+                        value={formData.facebook_url}
+                        onChange={(e) => setFormData({...formData, facebook_url: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram">Instagram URL</Label>
+                    <div className="relative">
+                      <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-600" />
+                      <Input 
+                        id="instagram" 
+                        className="pl-10"
+                        placeholder="instagram.com/yourprofile" 
+                        value={formData.instagram_url}
+                        onChange={(e) => setFormData({...formData, instagram_url: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="youtube">YouTube URL</Label>
+                    <div className="relative">
+                      <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
+                      <Input 
+                        id="youtube" 
+                        className="pl-10"
+                        placeholder="youtube.com/@yourchannel" 
+                        value={formData.youtube_url}
+                        onChange={(e) => setFormData({...formData, youtube_url: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website Link</Label>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
+                      <Input 
+                        id="website" 
+                        className="pl-10"
+                        placeholder="www.yourfarm.com" 
+                        value={formData.website_url}
+                        onChange={(e) => setFormData({...formData, website_url: e.target.value})}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

@@ -34,8 +34,13 @@ export interface Producer {
   id: string;
   name: string;
   phone: string;
+  alt_phone?: string;
   email: string;
   about?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
+  website_url?: string;
   has_completed_basic: boolean;
   basic_completion_date?: string;
   has_completed_advanced: boolean;
