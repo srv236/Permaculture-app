@@ -11,6 +11,7 @@ import { Plus, Loader2, Image as ImageIcon, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
+import { useSession } from "./SessionProvider";
 
 interface AddProduceDialogProps {
   farmId: string;
@@ -31,6 +32,7 @@ const CATEGORIES = [
 const UNITS = ["units", "g", "dozen", "kg", "tonne"];
 
 export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) => {
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -48,6 +50,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setLoading(true);
 
     try {
@@ -64,6 +68,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         .from('produce')
         .insert({
           farm_id: farmId,
+          producer_id: user.id, // Explicitly set producer_id for RLS
           name: formData.name,
           variety: formData.variety || null,
           category: formData.category,
