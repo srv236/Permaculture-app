@@ -65,9 +65,9 @@ const Register = () => {
             youtube_url: formData.youtube_url || null,
             website_url: formData.website_url || null,
             has_completed_basic: formData.has_completed_basic,
-            basic_completion_date: formData.basic_completion_date || null,
+            basic_course_date: formData.basic_completion_date || null,
             has_completed_advanced: formData.has_completed_advanced,
-            advanced_completion_date: formData.advanced_completion_date || null,
+            advanced_course_date: formData.advanced_completion_date || null,
             is_verified: false,
             is_admin: false,
           });

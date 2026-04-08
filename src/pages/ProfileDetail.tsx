@@ -304,7 +304,7 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Basic Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.basic_completion_date || profile.basic_course_date ? `Completed: ${profile.basic_completion_date || profile.basic_course_date}` : "Completed"}
+                      {profile.basic_course_date ? `Completed: ${profile.basic_course_date}` : "Completed"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -315,7 +315,7 @@ const ProfileDetail = () => {
                       <span className="text-sm font-medium text-slate-700">Advanced Course</span>
                     </div>
                     <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100">
-                      {profile.advanced_completion_date || profile.advanced_course_date ? `Completed: ${profile.advanced_completion_date || profile.advanced_course_date}` : "Completed"}
+                      {profile.advanced_course_date ? `Completed: ${profile.advanced_course_date}` : "Completed"}
                     </Badge>
                   </div>
                 </div>

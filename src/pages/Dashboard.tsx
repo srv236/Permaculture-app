@@ -175,14 +175,14 @@ const Dashboard = () => {
                         <GraduationCap className="w-4 h-4 text-emerald-600" />
                         <span className="text-xs font-bold text-emerald-900">Basic</span>
                       </div>
-                      <span className="text-[10px] text-emerald-700">{profile?.basic_completion_date || "Yes"}</span>
+                      <span className="text-[10px] text-emerald-700">{profile?.basic_course_date || "Yes"}</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
                       <div className="flex items-center gap-2">
                         <GraduationCap className="w-4 h-4 text-emerald-600" />
                         <span className="text-xs font-bold text-emerald-900">Advanced</span>
                       </div>
-                      <span className="text-[10px] text-emerald-700">{profile?.advanced_completion_date || "Yes"}</span>
+                      <span className="text-[10px] text-emerald-700">{profile?.advanced_course_date || "Yes"}</span>
                     </div>
                   </div>
                 </div>

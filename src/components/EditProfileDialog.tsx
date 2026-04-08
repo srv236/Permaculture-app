@@ -30,8 +30,8 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
     instagram_url: profile.instagram_url || "",
     youtube_url: profile.youtube_url || "",
     website_url: profile.website_url || "",
-    basic_course_date: profile.basic_completion_date || profile.basic_course_date || "",
-    advanced_course_date: profile.advanced_completion_date || profile.advanced_course_date || "",
+    basic_course_date: profile.basic_course_date || "",
+    advanced_course_date: profile.advanced_course_date || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,8 +55,8 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
           instagram_url: formData.instagram_url || null,
           youtube_url: formData.youtube_url || null,
           website_url: formData.website_url || null,
-          basic_completion_date: formData.basic_course_date || null,
-          advanced_completion_date: formData.advanced_course_date || null,
+          basic_course_date: formData.basic_course_date || null,
+          advanced_course_date: formData.advanced_course_date || null,
           picture_url: pictureUrl,
         })
         .eq('id', profile.id);
