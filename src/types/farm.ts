@@ -42,9 +42,9 @@ export interface Producer {
   youtube_url?: string;
   website_url?: string;
   has_completed_basic: boolean;
-  basic_completion_date?: string;
+  basic_course_date?: string;
   has_completed_advanced: boolean;
-  advanced_completion_date?: string;
+  advanced_course_date?: string;
   is_verified: boolean;
   is_admin: boolean;
   picture_url?: string;
