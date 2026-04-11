@@ -1,6 +1,6 @@
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { MapPin, CheckCircle2, ExternalLink, ArrowRight, User, Tag } from "lucide-react";
+import { MapPin, CheckCircle2, ArrowRight, User, Tag } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
@@ -13,9 +13,7 @@ export const ProducerCard = ({ producer }: { producer: Producer }) => {
       ? `https://www.google.com/maps/search/?api=1&query=${producer.latitude},${producer.longitude}`
       : null);
 
-  // Note: For simplicity in the Index view, we pass 'producer' which sometimes maps to a farm's data
-  // Let's check for tags if it's acting as a farm card
-  const tags = (producer as any).tags || [];
+  const tags = producer.tags || [];
 
   return (
     <Card className="overflow-hidden border-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 group">

@@ -51,4 +51,14 @@ export interface Producer {
   farms?: Farm[];
   created_at?: string;
   is_hidden?: boolean;
+  // Flattened properties for UI components and mock data
+  farm_name?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
+  produce?: Produce[];
+  locations?: string[];
+  tags?: string[];
+  has_completed_course?: boolean;
 }
