@@ -223,7 +223,7 @@ const ProfileDetail = () => {
                   </Badge>
                 )}
               </div>
-              <p className="text-emerald-300 text-xl font-medium mb-4">Certified Permaculture Practitioner</p>
+              <p className="text-emerald-300 text-xl font-medium mb-4">Permaculture Practitioner</p>
               
               {/* Profile Social Links in Header */}
               {socialLinks.length > 0 && (
