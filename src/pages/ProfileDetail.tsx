@@ -325,8 +325,8 @@ const ProfileDetail = () => {
 
           <div className="lg:col-span-2 space-y-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-emerald-900 flex items-center gap-2">
-                <Sprout className="w-6 h-6 text-emerald-600" />
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Sprout className="w-6 h-6 text-emerald-400" />
                 Farms
               </h2>
             </div>
