@@ -90,12 +90,39 @@ const FarmDetail = () => {
 
   if (!farm) return null;
 
+  // Helper to extract coordinates from a Google Maps URL
+  const extractCoordsFromUrl = (url: string) => {
+    if (!url) return null;
+    // Match @lat,lng or query=lat,lng
+    const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)|query=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match = url.match(regex);
+    if (match) {
+      const lat = parseFloat(match[1] || match[3]);
+      const lng = parseFloat(match[2] || match[4]);
+      if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+    }
+    return null;
+  };
+
+  const urlCoords = extractCoordsFromUrl(farm.google_maps_url || "");
+  const displayLat = farm.latitude || urlCoords?.lat;
+  const displayLng = farm.longitude || urlCoords?.lng;
+
   const mapsUrl = farm.google_maps_url || 
-    (farm.latitude && farm.longitude 
-      ? `https://www.google.com/maps/search/?api=1&query=${farm.latitude},${farm.longitude}`
+    (displayLat && displayLng 
+      ? `https://www.google.com/maps/search/?api=1&query=${displayLat},${displayLng}`
       : null);
 
-  const hasLocationInfo = farm.address || farm.latitude || farm.longitude || farm.google_maps_url;
+  const hasLocationInfo = farm.address || displayLat || displayLng || farm.google_maps_url;
+
+  // Construct an embed URL for the iframe fallback
+  const getEmbedUrl = () => {
+    if (farm.google_maps_url && farm.google_maps_url.includes('google.com/maps/embed')) {
+      return farm.google_maps_url;
+    }
+    const query = farm.address || farm.name;
+    return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -107,7 +134,7 @@ const FarmDetail = () => {
           bucket="profile_pictures"
           alt={farm.name}
           className="w-full h-full object-cover"
-          coordinates={farm.latitude ? { lat: farm.latitude, lng: farm.longitude } : undefined}
+          coordinates={displayLat ? { lat: displayLat, lng: displayLng } : undefined}
           fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1200"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -204,10 +231,10 @@ const FarmDetail = () => {
               </h2>
               {hasLocationInfo ? (
                 <div className="space-y-6">
-                  {farm.latitude && farm.longitude ? (
+                  {displayLat && displayLng ? (
                     <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
                       <MapContainer 
-                        center={[farm.latitude, farm.longitude]} 
+                        center={[displayLat, displayLng]} 
                         zoom={13} 
                         scrollWheelZoom={false} 
                         className="h-full w-full"
@@ -216,7 +243,7 @@ const FarmDetail = () => {
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        <Marker position={[farm.latitude, farm.longitude]}>
+                        <Marker position={[displayLat, displayLng]}>
                           <Popup>
                             <div className="p-1">
                               <p className="font-bold text-emerald-900">{farm.name}</p>
@@ -227,9 +254,19 @@ const FarmDetail = () => {
                       </MapContainer>
                     </div>
                   ) : (
-                    <Card className="border-dashed border-2 border-slate-200 bg-transparent py-8 text-center rounded-[32px]">
-                      <p className="text-slate-400 text-sm">Interactive map unavailable (no coordinates provided).</p>
-                    </Card>
+                    <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0 bg-slate-100">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        marginHeight={0}
+                        marginWidth={0}
+                        src={getEmbedUrl()}
+                        title="Farm Location Map"
+                        className="grayscale-[0.2] contrast-[1.1]"
+                      />
+                    </div>
                   )}
 
                   {/* Explicit Location Details Card */}
@@ -251,11 +288,11 @@ const FarmDetail = () => {
                           <div className="flex gap-4">
                             <div className="flex flex-col">
                               <span className="text-[10px] text-slate-400">Latitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.latitude || "N/A"}</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{displayLat || "N/A"}</span>
                             </div>
                             <div className="flex flex-col">
                               <span className="text-[10px] text-slate-400">Longitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.longitude || "N/A"}</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{displayLng || "N/A"}</span>
                             </div>
                           </div>
                         </div>
