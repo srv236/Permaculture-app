@@ -20,15 +20,6 @@ export const SecureImage = ({ path, bucket, alt, className, fallback, coordinate
 
   useEffect(() => {
     const fetchUrl = async () => {
-      // If no path but we have coordinates, use Google Static Maps
-      if (!path && coordinates?.lat && coordinates?.lng) {
-        const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${coordinates.lat},${coordinates.lng}&zoom=15&size=400x400&markers=color:red%7C${coordinates.lat},${coordinates.lng}&key=YOUR_API_KEY_HERE`;
-        // Note: Without an API key, this might fail, so we'll use a generic map placeholder if it fails
-        setUrl(mapUrl);
-        setLoading(false);
-        return;
-      }
-
       if (!path) {
         setUrl(fallback || "");
         setLoading(false);
@@ -43,19 +34,24 @@ export const SecureImage = ({ path, bucket, alt, className, fallback, coordinate
 
       setLoading(true);
       
-      if (bucket === 'assets') {
-        const publicUrl = getPublicUrl(bucket, path);
-        setUrl(publicUrl || fallback || "");
-      } else {
-        const signedUrl = await getSignedUrl(bucket, path);
-        setUrl(signedUrl || fallback || "");
+      try {
+        if (bucket === 'assets') {
+          const publicUrl = getPublicUrl(bucket, path);
+          setUrl(publicUrl || fallback || "");
+        } else {
+          const signedUrl = await getSignedUrl(bucket, path);
+          setUrl(signedUrl || fallback || "");
+        }
+      } catch (err) {
+        console.error("Error fetching image URL:", err);
+        setUrl(fallback || "");
       }
       
       setLoading(false);
     };
 
     fetchUrl();
-  }, [path, bucket, fallback, coordinates]);
+  }, [path, bucket, fallback]);
 
   if (loading) {
     return <Skeleton className={cn("w-full h-full", className)} />;
@@ -66,8 +62,7 @@ export const SecureImage = ({ path, bucket, alt, className, fallback, coordinate
       src={url || fallback} 
       alt={alt} 
       className={cn("object-cover", className)}
-      onError={(e) => {
-        // If map fails or image fails, use fallback
+      onError={() => {
         if (fallback && url !== fallback) {
           setUrl(fallback);
         }

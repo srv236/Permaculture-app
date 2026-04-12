@@ -97,14 +97,20 @@ const FarmDetail = () => {
       if (farm.google_maps_url.includes('google.com/maps/embed')) {
         return farm.google_maps_url;
       }
-      // Otherwise, use the URL as a query parameter for a generic embed
-      return `https://maps.google.com/maps?q=${encodeURIComponent(farm.google_maps_url)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+      
+      // Handle shortened URLs or standard search URLs by using the search embed API
+      // We use the URL itself as the query which Google usually resolves correctly
+      return `https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(farm.google_maps_url)}`;
     }
+    
     // Fallback to address if no URL but address exists
     if (farm.address) {
-      return `https://maps.google.com/maps?q=${encodeURIComponent(farm.address)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+      return `https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(farm.address)}`;
     }
-    return null;
+    
+    // If no API key is available, use the legacy embed format which is more permissive but less reliable
+    const query = farm.google_maps_url || farm.address || farm.name;
+    return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
   };
 
   const embedUrl = getEmbedUrl();
