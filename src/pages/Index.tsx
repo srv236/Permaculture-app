@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
@@ -6,7 +8,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, ShoppingBag, Ruler, ChevronRight } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -44,9 +46,14 @@ const Index = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // If no user, we can't fetch restricted data due to RLS
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        // Count all profiles (permafolk)
         const { count: permafolkCount } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
@@ -59,18 +66,13 @@ const Index = () => {
           .from('produce')
           .select('*', { count: 'exact', head: true });
 
-        // Calculate total size in Hectares (1 Hectare = 2.47105 Acres)
         const totalSizeInHectares = farmsData?.reduce((acc, farm) => {
           if (!farm.size) return acc;
           const parts = farm.size.split(" ");
           const value = parseFloat(parts[0]);
           const unit = parts[1];
-          
           if (isNaN(value)) return acc;
-          
-          if (unit === "Acre") {
-            return acc + (value / 2.47105);
-          }
+          if (unit === "Acre") return acc + (value / 2.47105);
           return acc + value;
         }, 0) || 0;
 
@@ -81,19 +83,12 @@ const Index = () => {
           totalFarmSize: totalSizeInHectares > 0 ? `${totalSizeInHectares.toFixed(1)} hectares` : "Varies"
         });
 
-        if (farmsData) {
-          setFarms(farmsData as any);
-        }
+        if (farmsData) setFarms(farmsData as any);
 
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('*');
+        const { data: profilesData } = await supabase.from('profiles').select('*');
         if (profilesData) setPermafolk(profilesData as any);
 
-        // Fetch produce with farm details joined
-        const { data: produceData } = await supabase
-          .from('produce')
-          .select('*, farms(name)');
+        const { data: produceData } = await supabase.from('produce').select('*, farms(name)');
         if (produceData) setProduce(produceData as any);
 
       } catch (error) {
@@ -104,29 +99,21 @@ const Index = () => {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
   const filteredFarms = farms.filter(farm => {
     const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       farm.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       farm.produce?.some(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === "All" || 
-      farm.produce?.some(p => p.category === selectedCategory);
-      
+    const matchesCategory = selectedCategory === "All" || farm.produce?.some(p => p.category === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
-  const filteredPermafolk = permafolk.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPermafolk = permafolk.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const filteredProduce = produce.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      p.variety?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.variety?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
-    
     return matchesSearch && matchesCategory;
   });
 
@@ -172,7 +159,7 @@ const Index = () => {
               <Users className="w-6 h-6 text-blue-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalPermafolk}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalPermafolk : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Permafolk</span>
             </div>
           </div>
@@ -181,7 +168,7 @@ const Index = () => {
               <ShoppingBasket className="w-6 h-6 text-emerald-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalProduce}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalProduce : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Products</span>
             </div>
           </div>
@@ -190,7 +177,7 @@ const Index = () => {
               <MapPin className="w-6 h-6 text-amber-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarms}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalFarms : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Locations</span>
             </div>
           </div>
@@ -199,7 +186,7 @@ const Index = () => {
               <Ruler className="w-6 h-6 text-purple-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarmSize}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalFarmSize : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Area</span>
             </div>
           </div>
@@ -211,12 +198,27 @@ const Index = () => {
               <MapIcon className="w-6 h-6 text-emerald-600" />
               Farm Network Map
             </h2>
-            <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
-              {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
-            </Badge>
+            {user && (
+              <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
+                {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
+              </Badge>
+            )}
           </div>
           <div className="h-[500px] w-full rounded-[40px] overflow-hidden border-8 border-white shadow-2xl relative z-0">
-            {loading ? (
+            {!user ? (
+              <div className="flex flex-col items-center justify-center h-full bg-slate-100 gap-4 p-8 text-center">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+                  <Lock className="w-8 h-8 text-slate-400" />
+                </div>
+                <div>
+                  <p className="text-slate-600 font-bold">Map Access Restricted</p>
+                  <p className="text-slate-400 text-sm max-w-xs mx-auto">Please sign in to view the interactive farm network map and locations.</p>
+                </div>
+                <Link to="/login">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">Sign In to View</Button>
+                </Link>
+              </div>
+            ) : loading ? (
               <div className="flex items-center justify-center h-full bg-slate-100">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>

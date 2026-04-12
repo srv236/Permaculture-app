@@ -12,7 +12,6 @@ import { ContactButtons } from "@/components/ContactButtons";
 import { useSession } from "@/components/SessionProvider";
 import { 
   MapPin, 
-  Calendar, 
   CheckCircle2, 
   XCircle,
   ArrowLeft, 
@@ -22,7 +21,6 @@ import {
   Lock,
   Sprout,
   ShieldCheck,
-  UserCog,
   UserCheck,
   UserX,
   ShieldAlert,
@@ -34,7 +32,8 @@ import {
   Instagram,
   Youtube,
   Globe,
-  Smartphone
+  Smartphone,
+  LogIn
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -57,6 +56,11 @@ const ProfileDetail = () => {
 
   const fetchProfileData = async () => {
     if (!id) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     try {
       const { data: profileData, error: profileError } = await supabase
@@ -84,7 +88,7 @@ const ProfileDetail = () => {
 
   useEffect(() => {
     fetchProfileData();
-  }, [id]);
+  }, [id, user]);
 
   const handleAdminAction = async (updates: any, actionName: string) => {
     if (!profile) return;
@@ -132,7 +136,47 @@ const ProfileDetail = () => {
     );
   }
 
-  if (!profile) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navbar />
+        <main className="container mx-auto px-4 py-20 flex justify-center">
+          <Card className="max-w-md w-full border-dashed border-2 border-emerald-200 bg-white py-12 text-center rounded-[40px]">
+            <CardContent className="space-y-6">
+              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
+                <Lock className="w-10 h-10 text-emerald-600" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-slate-900">Access Restricted</h2>
+                <p className="text-slate-500 text-sm">
+                  Practitioner profiles and contact details are only visible to registered members of the network.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 pt-4">
+                <Link to="/login">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 rounded-xl">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    Sign In to View
+                  </Button>
+                </Link>
+                <Button variant="ghost" onClick={() => navigate(-1)}>Go Back</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  if (!profile) return (
+    <div className="min-h-screen bg-slate-50">
+      <Navbar />
+      <div className="container mx-auto px-4 py-20 text-center">
+        <p className="text-slate-500">Profile not found or access denied.</p>
+        <Button variant="link" onClick={() => navigate("/")}>Return Home</Button>
+      </div>
+    </div>
+  );
 
   const socialLinks = [
     { id: 'website', url: profile.website_url, icon: Globe, label: 'Website', color: 'text-emerald-600' },
@@ -225,7 +269,6 @@ const ProfileDetail = () => {
               </div>
               <p className="text-emerald-300 text-xl font-medium mb-4">Permaculture Practitioner</p>
               
-              {/* Profile Social Links in Header */}
               {socialLinks.length > 0 && (
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4">
                   {socialLinks.map(link => (
@@ -244,34 +287,22 @@ const ProfileDetail = () => {
               )}
             </div>
             <div className="shrink-0 w-full md:w-auto">
-              {user ? (
-                <div className="space-y-4">
-                  <ContactButtons 
-                    phone={profile.phone} 
-                    email={profile.email} 
-                    name={profile.name} 
-                  />
-                  {profile.alt_phone && (
-                    <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 flex items-center gap-3">
-                      <Smartphone className="w-4 h-4 text-emerald-300" />
-                      <div className="text-left">
-                        <p className="text-[10px] uppercase tracking-widest text-emerald-200">Alternate Phone</p>
-                        <a href={`tel:${profile.alt_phone}`} className="text-sm font-bold text-white hover:underline">{profile.alt_phone}</a>
-                      </div>
+              <div className="space-y-4">
+                <ContactButtons 
+                  phone={profile.phone} 
+                  email={profile.email} 
+                  name={profile.name} 
+                />
+                {profile.alt_phone && (
+                  <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 flex items-center gap-3">
+                    <Smartphone className="w-4 h-4 text-emerald-300" />
+                    <div className="text-left">
+                      <p className="text-[10px] uppercase tracking-widest text-emerald-200">Alternate Phone</p>
+                      <a href={`tel:${profile.alt_phone}`} className="text-sm font-bold text-white hover:underline">{profile.alt_phone}</a>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-center">
-                  <Lock className="w-5 h-5 mx-auto mb-2 text-emerald-300" />
-                  <p className="text-xs font-medium text-emerald-100 mb-3">Login to view contact details</p>
-                  <Link to="/login">
-                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white border-none">
-                      Sign In
-                    </Button>
-                  </Link>
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
