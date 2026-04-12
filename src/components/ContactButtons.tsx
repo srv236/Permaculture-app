@@ -16,10 +16,10 @@ export const ContactButtons = ({ phone, email, name }: ContactButtonsProps) => {
       <Button
         variant="secondary"
         size="sm"
-        className="flex-1 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 font-semibold min-w-[100px]"
+        className="flex-1 bg-white hover:bg-slate-50 border-slate-200 text-slate-700 font-semibold min-w-[80px]"
         onClick={() => window.open(whatsappUrl, "_blank")}
       >
-        <MessageCircle className="w-4 h-4 mr-2" />
+        <MessageCircle className="w-4 h-4 mr-2 text-emerald-600" />
         WhatsApp
       </Button>
       <Button
@@ -28,7 +28,7 @@ export const ContactButtons = ({ phone, email, name }: ContactButtonsProps) => {
         className="flex-1 bg-white hover:bg-slate-50 border-slate-200 text-slate-700 font-semibold min-w-[80px]"
         onClick={() => window.location.href = `tel:${phone}`}
       >
-        <Phone className="w-4 h-4 mr-2" />
+        <Phone className="w-4 h-4 mr-2 text-blue-600" />
         Call
       </Button>
       <Button
@@ -37,7 +37,7 @@ export const ContactButtons = ({ phone, email, name }: ContactButtonsProps) => {
         className="flex-1 bg-white hover:bg-slate-50 border-slate-200 text-slate-700 font-semibold min-w-[80px]"
         onClick={() => window.location.href = `mailto:${email}`}
       >
-        <Mail className="w-4 h-4 mr-2" />
+        <Mail className="w-4 h-4 mr-2 text-amber-600" />
         Email
       </Button>
     </div>
