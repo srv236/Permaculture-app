@@ -90,39 +90,31 @@ const FarmDetail = () => {
 
   if (!farm) return null;
 
-  // Helper to extract coordinates from a Google Maps URL
-  const extractCoordsFromUrl = (url: string) => {
-    if (!url) return null;
-    // Match @lat,lng or query=lat,lng
-    const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)|query=(-?\d+\.\d+),(-?\d+\.\d+)/;
-    const match = url.match(regex);
-    if (match) {
-      const lat = parseFloat(match[1] || match[3]);
-      const lng = parseFloat(match[2] || match[4]);
-      if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+  // Helper to construct an embed URL from a Google Maps link or address
+  const getEmbedUrl = () => {
+    if (farm.google_maps_url) {
+      // If it's already an embed URL, use it
+      if (farm.google_maps_url.includes('google.com/maps/embed')) {
+        return farm.google_maps_url;
+      }
+      // Otherwise, use the URL as a query parameter for a generic embed
+      return `https://maps.google.com/maps?q=${encodeURIComponent(farm.google_maps_url)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+    }
+    // Fallback to address if no URL but address exists
+    if (farm.address) {
+      return `https://maps.google.com/maps?q=${encodeURIComponent(farm.address)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
     }
     return null;
   };
 
-  const urlCoords = extractCoordsFromUrl(farm.google_maps_url || "");
-  const displayLat = farm.latitude || urlCoords?.lat;
-  const displayLng = farm.longitude || urlCoords?.lng;
+  const embedUrl = getEmbedUrl();
+  const hasManualCoords = farm.latitude && farm.longitude;
+  const hasLocationInfo = farm.address || hasManualCoords || farm.google_maps_url;
 
   const mapsUrl = farm.google_maps_url || 
-    (displayLat && displayLng 
-      ? `https://www.google.com/maps/search/?api=1&query=${displayLat},${displayLng}`
+    (hasManualCoords 
+      ? `https://www.google.com/maps/search/?api=1&query=${farm.latitude},${farm.longitude}`
       : null);
-
-  const hasLocationInfo = farm.address || displayLat || displayLng || farm.google_maps_url;
-
-  // Construct an embed URL for the iframe fallback
-  const getEmbedUrl = () => {
-    if (farm.google_maps_url && farm.google_maps_url.includes('google.com/maps/embed')) {
-      return farm.google_maps_url;
-    }
-    const query = farm.address || farm.name;
-    return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -134,7 +126,7 @@ const FarmDetail = () => {
           bucket="profile_pictures"
           alt={farm.name}
           className="w-full h-full object-cover"
-          coordinates={displayLat ? { lat: displayLat, lng: displayLng } : undefined}
+          coordinates={farm.latitude ? { lat: farm.latitude, lng: farm.longitude } : undefined}
           fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1200"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -231,10 +223,26 @@ const FarmDetail = () => {
               </h2>
               {hasLocationInfo ? (
                 <div className="space-y-6">
-                  {displayLat && displayLng ? (
+                  {/* Priority 1: Google Maps URL Embed */}
+                  {farm.google_maps_url ? (
+                    <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0 bg-slate-100">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        marginHeight={0}
+                        marginWidth={0}
+                        src={embedUrl || ""}
+                        title="Farm Location Map"
+                        className="grayscale-[0.2] contrast-[1.1]"
+                      />
+                    </div>
+                  ) : hasManualCoords ? (
+                    /* Priority 2: Manual Coordinates with Leaflet */
                     <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
                       <MapContainer 
-                        center={[displayLat, displayLng]} 
+                        center={[farm.latitude!, farm.longitude!]} 
                         zoom={13} 
                         scrollWheelZoom={false} 
                         className="h-full w-full"
@@ -243,7 +251,7 @@ const FarmDetail = () => {
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        <Marker position={[displayLat, displayLng]}>
+                        <Marker position={[farm.latitude!, farm.longitude!]}>
                           <Popup>
                             <div className="p-1">
                               <p className="font-bold text-emerald-900">{farm.name}</p>
@@ -254,6 +262,7 @@ const FarmDetail = () => {
                       </MapContainer>
                     </div>
                   ) : (
+                    /* Fallback: Address Embed */
                     <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0 bg-slate-100">
                       <iframe
                         width="100%"
@@ -262,7 +271,7 @@ const FarmDetail = () => {
                         scrolling="no"
                         marginHeight={0}
                         marginWidth={0}
-                        src={getEmbedUrl()}
+                        src={embedUrl || ""}
                         title="Farm Location Map"
                         className="grayscale-[0.2] contrast-[1.1]"
                       />
@@ -288,11 +297,11 @@ const FarmDetail = () => {
                           <div className="flex gap-4">
                             <div className="flex flex-col">
                               <span className="text-[10px] text-slate-400">Latitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{displayLat || "N/A"}</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.latitude || "N/A"}</span>
                             </div>
                             <div className="flex flex-col">
                               <span className="text-[10px] text-slate-400">Longitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{displayLng || "N/A"}</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.longitude || "N/A"}</span>
                             </div>
                           </div>
                         </div>
