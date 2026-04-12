@@ -151,7 +151,7 @@ const Admin = () => {
                     {user.is_verified ? (
                       <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200">Verified</Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Pending</Badge>
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">Pending</Badge>
                     )}
                     {user.is_admin && (
                       <Badge variant="secondary" className="bg-purple-100 text-purple-700">Admin</Badge>
