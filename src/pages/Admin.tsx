@@ -60,7 +60,6 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      // Note: profiles table uses 'updated_at' instead of 'created_at' in your schema
       const { data, error: fetchError } = await supabase
         .from('profiles')
         .select('*')

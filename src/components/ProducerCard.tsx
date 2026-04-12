@@ -1,20 +1,28 @@
-import { Producer } from "../types/farm";
+import { Producer, Produce } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { MapPin, CheckCircle2, ExternalLink, ArrowRight, User, Tag } from "lucide-react";
+import { MapPin, CheckCircle2, ArrowRight, User, Tag } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 
-export const ProducerCard = ({ producer }: { producer: Producer }) => {
+// Extended type for when ProducerCard is used to display farm-related data in Index
+interface ExtendedProducer extends Producer {
+  farm_name?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
+  produce?: Produce[];
+}
+
+export const ProducerCard = ({ producer }: { producer: ExtendedProducer }) => {
   const mapsUrl = producer.google_maps_url || 
     (producer.latitude && producer.longitude 
       ? `https://www.google.com/maps/search/?api=1&query=${producer.latitude},${producer.longitude}`
       : null);
 
-  // Note: For simplicity in the Index view, we pass 'producer' which sometimes maps to a farm's data
-  // Let's check for tags if it's acting as a farm card
   const tags = (producer as any).tags || [];
 
   return (
