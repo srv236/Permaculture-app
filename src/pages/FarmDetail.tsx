@@ -95,6 +95,8 @@ const FarmDetail = () => {
       ? `https://www.google.com/maps/search/?api=1&query=${farm.latitude},${farm.longitude}`
       : null);
 
+  const hasLocationInfo = farm.address || farm.latitude || farm.longitude || farm.google_maps_url;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -200,29 +202,35 @@ const FarmDetail = () => {
                 <MapIcon className="w-6 h-6 text-emerald-600" />
                 Farm Location
               </h2>
-              {farm.latitude && farm.longitude ? (
+              {hasLocationInfo ? (
                 <div className="space-y-6">
-                  <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
-                    <MapContainer 
-                      center={[farm.latitude, farm.longitude]} 
-                      zoom={13} 
-                      scrollWheelZoom={false} 
-                      className="h-full w-full"
-                    >
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      <Marker position={[farm.latitude, farm.longitude]}>
-                        <Popup>
-                          <div className="p-1">
-                            <p className="font-bold text-emerald-900">{farm.name}</p>
-                            <p className="text-xs text-slate-500">{farm.address}</p>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    </MapContainer>
-                  </div>
+                  {farm.latitude && farm.longitude ? (
+                    <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
+                      <MapContainer 
+                        center={[farm.latitude, farm.longitude]} 
+                        zoom={13} 
+                        scrollWheelZoom={false} 
+                        className="h-full w-full"
+                      >
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <Marker position={[farm.latitude, farm.longitude]}>
+                          <Popup>
+                            <div className="p-1">
+                              <p className="font-bold text-emerald-900">{farm.name}</p>
+                              <p className="text-xs text-slate-500">{farm.address}</p>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      </MapContainer>
+                    </div>
+                  ) : (
+                    <Card className="border-dashed border-2 border-slate-200 bg-transparent py-8 text-center rounded-[32px]">
+                      <p className="text-slate-400 text-sm">Interactive map unavailable (no coordinates provided).</p>
+                    </Card>
+                  )}
 
                   {/* Explicit Location Details Card */}
                   <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
@@ -243,11 +251,11 @@ const FarmDetail = () => {
                           <div className="flex gap-4">
                             <div className="flex flex-col">
                               <span className="text-[10px] text-slate-400">Latitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.latitude}</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.latitude || "N/A"}</span>
                             </div>
                             <div className="flex flex-col">
                               <span className="text-[10px] text-slate-400">Longitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.longitude}</span>
+                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.longitude || "N/A"}</span>
                             </div>
                           </div>
                         </div>
@@ -282,7 +290,7 @@ const FarmDetail = () => {
                 </div>
               ) : (
                 <Card className="border-dashed border-2 border-slate-200 bg-transparent py-12 text-center rounded-[32px]">
-                  <p className="text-slate-400">No coordinates provided for this farm.</p>
+                  <p className="text-slate-400">No location information provided for this farm.</p>
                 </Card>
               )}
             </div>
