@@ -8,7 +8,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler, Lock } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ const CATEGORIES = [
 ];
 
 const Index = () => {
-  const { user } = useSession();
+  const { user, loading: sessionLoading } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -45,9 +45,14 @@ const Index = () => {
   });
 
   useEffect(() => {
+    // Only fetch data if we have a user (or session has finished loading)
+    // to align with the new RLS policies restricting read access to members.
+    if (sessionLoading) return;
+
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Fetch stats (will be 0 for guests due to RLS)
         const { count: permafolkCount } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
@@ -93,7 +98,7 @@ const Index = () => {
     };
 
     fetchData();
-  }, []); // Remove user dependency to fetch public data on load
+  }, [user, sessionLoading]);
 
   const filteredFarms = farms.filter(farm => {
     const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -201,8 +206,19 @@ const Index = () => {
               <div className="flex items-center justify-center h-full bg-slate-100">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>
-            ) : (
+            ) : user ? (
               <FarmMap farms={farms} />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full bg-slate-50 gap-4 p-8 text-center">
+                <MapPin className="w-12 h-12 text-slate-300" />
+                <div>
+                  <h3 className="font-bold text-slate-900">Map View Locked</h3>
+                  <p className="text-slate-500 text-sm max-w-xs mx-auto">Sign in to view exact farm locations and the network map.</p>
+                </div>
+                <Link to="/login">
+                  <Button variant="outline" size="sm" className="rounded-xl">Sign In</Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>
