@@ -7,42 +7,40 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  console.log("[get-public-stats] Fetching public stats...");
+  console.log("[get-public-stats] Calculating network statistics...");
 
   try {
-    // Create a Supabase client with the service role key to bypass RLS for counting
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // 1. Get Permafolk count (profiles)
+    // 1. Count total practitioners (profiles)
     const { count: permafolkCount, error: permafolkError } = await supabaseAdmin
       .from('profiles')
       .select('*', { count: 'exact', head: true })
 
     if (permafolkError) throw permafolkError;
 
-    // 2. Get Produce count
+    // 2. Count total harvest items (produce)
     const { count: produceCount, error: produceError } = await supabaseAdmin
       .from('produce')
       .select('*', { count: 'exact', head: true })
 
     if (produceError) throw produceError;
 
-    // 3. Get Farm count and area data
+    // 3. Count total farms and fetch size data for calculation
     const { data: farmsData, count: farmsCount, error: farmsError } = await supabaseAdmin
       .from('farms')
-      .select('size')
+      .select('size', { count: 'exact' })
 
     if (farmsError) throw farmsError;
 
-    // 4. Calculate total area in hectares
+    // 4. Compute total land area in hectares
     const totalSizeInHectares = farmsData?.reduce((acc, farm) => {
       if (!farm.size) return acc;
       const parts = farm.size.split(" ");
@@ -51,7 +49,7 @@ serve(async (req) => {
       
       if (isNaN(value)) return acc;
       
-      // Convert Acre to Hectare if needed (1 Hectare ≈ 2.47105 Acres)
+      // Conversion: 1 Hectare ≈ 2.47105 Acres
       if (unit === "Acre") return acc + (value / 2.47105);
       return acc + value;
     }, 0) || 0;
@@ -63,8 +61,6 @@ serve(async (req) => {
       totalFarmSize: totalSizeInHectares > 0 ? `${totalSizeInHectares.toFixed(1)} hectares` : "Varies"
     };
 
-    console.log("[get-public-stats] Stats calculated successfully:", stats);
-
     return new Response(
       JSON.stringify(stats),
       { 
@@ -73,7 +69,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error("[get-public-stats] Error:", error.message);
+    console.error("[get-public-stats] Calculation error:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
