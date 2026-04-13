@@ -36,6 +36,7 @@ const Index = () => {
   const [permafolk, setPermafolk] = useState<Producer[]>([]);
   const [produce, setProduce] = useState<(Produce & { farms?: { name: string } })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("farms");
   const [stats, setStats] = useState({
     totalPermafolk: 0,
@@ -44,43 +45,41 @@ const Index = () => {
     totalFarmSize: "0"
   });
 
+  // Fetch Public Stats (Independent of user session)
   useEffect(() => {
-    // Only fetch data if we have a user (or session has finished loading)
-    // to align with the new RLS policies restricting read access to members.
+    const fetchPublicStats = async () => {
+      setStatsLoading(true);
+      try {
+        // Fetching aggregate stats via Edge Function to bypass RLS securely
+        const response = await fetch('https://jhvybduaojbotojvxgvs.supabase.co/functions/v1/get-public-stats');
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error("Error fetching public stats:", error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchPublicStats();
+  }, []);
+
+  // Fetch Protected Data (Only for logged in users)
+  useEffect(() => {
     if (sessionLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch stats (will be 0 for guests due to RLS)
-        const { count: permafolkCount } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
-        const { count: farmsCount, data: farmsData } = await supabase
+        const { data: farmsData } = await supabase
           .from('farms')
-          .select(`*, produce (*), profiles (*)`, { count: 'exact' });
-
-        const { count: produceCount } = await supabase
-          .from('produce')
-          .select('*', { count: 'exact', head: true });
-
-        const totalSizeInHectares = farmsData?.reduce((acc, farm) => {
-          if (!farm.size) return acc;
-          const parts = farm.size.split(" ");
-          const value = parseFloat(parts[0]);
-          const unit = parts[1];
-          if (isNaN(value)) return acc;
-          if (unit === "Acre") return acc + (value / 2.47105);
-          return acc + value;
-        }, 0) || 0;
-
-        setStats({
-          totalPermafolk: permafolkCount || 0,
-          totalFarms: farmsCount || 0,
-          totalProduce: produceCount || 0,
-          totalFarmSize: totalSizeInHectares > 0 ? `${totalSizeInHectares.toFixed(1)} hectares` : "Varies"
-        });
+          .select(`*, produce (*), profiles (*)`);
 
         if (farmsData) setFarms(farmsData as any);
 
@@ -91,7 +90,7 @@ const Index = () => {
         if (produceData) setProduce(produceData as any);
 
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching network data:", error);
       } finally {
         setLoading(false);
       }
@@ -153,42 +152,51 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-12">
         <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 mb-16 py-8 border-y border-slate-200 bg-white/50 rounded-3xl shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-600" />
+          {statsLoading ? (
+            <div className="flex items-center gap-2 text-slate-400 animate-pulse">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm font-bold uppercase tracking-widest">Calculating Statistics...</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalPermafolk}</span>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Permafolk</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
-              <ShoppingBasket className="w-6 h-6 text-emerald-600" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalProduce}</span>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Products</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
-              <MapPin className="w-6 h-6 text-amber-600" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarms}</span>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Locations</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
-              <Ruler className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarmSize}</span>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Area</span>
-            </div>
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalPermafolk}</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Permafolk</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
+                  <ShoppingBasket className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalProduce}</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Products</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-amber-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarms}</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Locations</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
+                  <Ruler className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarmSize}</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Area</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="mb-16">
@@ -198,7 +206,7 @@ const Index = () => {
               Farm Network Map
             </h2>
             <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
-              {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
+              {user ? farms.filter(f => f.latitude && f.longitude).length : "Location Data Protected"}
             </Badge>
           </div>
           <div className="h-[500px] w-full rounded-[40px] overflow-hidden border-8 border-white shadow-2xl relative z-0">
