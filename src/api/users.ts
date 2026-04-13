@@ -9,14 +9,12 @@ const UserIdSchema = z.string().uuid();
  * Uses Supabase's parameterized query engine to prevent SQL injection.
  */
 export const getUserProfile = async (id: string) => {
-  // Solution 2: Explicit input validation
   const validation = UserIdSchema.safeParse(id);
   
   if (!validation.success) {
     throw new Error("Invalid User ID format.");
   }
 
-  // Solution 1: Use parameterized queries (PostgREST API does this by default)
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
