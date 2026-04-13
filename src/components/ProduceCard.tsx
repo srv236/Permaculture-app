@@ -8,8 +8,8 @@ import { MapPin, ShoppingBag, Tag, Info } from "lucide-react";
 import { SecureImage } from "./SecureImage";
 
 // Helper for clickable wrapper to farm harvest page
-const CardWrapper = ({ farmId, children }: { farmId: string; children: React.ReactNode }) => (
-  <Link to={`/farm/${farmId}`} className="block h-full">
+const CardWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Link to={`/farm/${produce.farm_id}`} className="block h-full">
     {children}
   </Link>
 );
@@ -27,7 +27,7 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
 
   if (layout === "list") {
     return (
-      <CardWrapper farmId={produce.farm_id}>
+      <CardWrapper>
         <Card className="overflow-hidden border-none shadow-sm bg-white rounded-2xl group flex flex-row h-40 hover:shadow-md transition-all">
           <div className="w-32 h-full relative overflow-hidden shrink-0">
             <SecureImage 
@@ -80,7 +80,7 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
 
   if (layout === "compact") {
     return (
-      <CardWrapper farmId={produce.farm_id}>
+      <CardWrapper>
         <Card className="overflow-hidden border-none shadow-sm bg-white rounded-xl group relative aspect-square hover:shadow-lg transition-all">
           <SecureImage 
             path={produce.image_url} 
@@ -105,7 +105,7 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
   }
 
   return (
-    <CardWrapper farmId={produce.farm_id}>
+    <CardWrapper>
       <Card className="overflow-hidden border-none shadow-sm bg-white rounded-3xl group h-full flex flex-col hover:shadow-md transition-all">
         <div className="aspect-square relative overflow-hidden">
           <SecureImage 
