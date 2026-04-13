@@ -7,6 +7,13 @@ import { Link } from "react-router-dom";
 import { MapPin, ShoppingBag, Tag, Info } from "lucide-react";
 import { SecureImage } from "./SecureImage";
 
+// Helper for clickable wrapper to farm harvest page
+const CardWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Link to={`/farm/${produce.farm_id}`} className="block h-full">
+    {children}
+  </Link>
+);
+
 interface ProduceCardProps {
   produce: Produce & { farms?: { name: string } };
   showFarm?: boolean;
@@ -18,18 +25,11 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
     ? produce.price 
     : `₹${produce.price}`;
 
-  // Helper for clickable wrapper to farm harvest page
-  const CardWrapper = ({ children }: { children: React.ReactNode }) => (
-    <Link to={`/farm/${produce.farm_id}`} className="block h-full">
-      {children}
-    </Link>
-  );
-
   if (layout === "list") {
     return (
       <CardWrapper>
         <Card className="overflow-hidden border-none shadow-sm bg-white rounded-2xl group flex flex-row h-40 hover:shadow-md transition-all">
-          <div className="w-40 h-full relative overflow-hidden shrink-0">
+          <div className="w-32 h-full relative overflow-hidden shrink-0">
             <SecureImage 
               path={produce.image_url} 
               bucket="produce_images"
