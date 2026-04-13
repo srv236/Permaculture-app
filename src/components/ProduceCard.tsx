@@ -78,7 +78,7 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
     );
   }
 
-  if (layout === "compact") {
+if (layout === "compact") {
     return (
       <CardWrapper>
         <Card className="overflow-hidden border-none shadow-sm bg-white rounded-xl group relative aspect-square hover:shadow-lg transition-all">
@@ -99,7 +99,7 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
               </Badge>
             </div>
           </div>
-        </CardWrapper>
+        </Card> {/* <--- FIXED: Closes the Card component */}
       </CardWrapper>
     );
   }
