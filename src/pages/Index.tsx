@@ -8,7 +8,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler, Warehouse } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -179,11 +179,11 @@ const Index = () => {
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-amber-600" />
+                  <Warehouse className="w-6 h-6 text-amber-600" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarms}</span>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Locations</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Farms</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
