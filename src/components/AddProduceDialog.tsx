@@ -57,7 +57,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
     try {
       let image_url = "";
       if (imageFile) {
-        image_url = await uploadImage(imageFile, "produce_images");
+        image_url = await uploadImage(imageFile, "produce_images", user.id);
       }
 
       const priceText = `₹${formData.price_value} per ${formData.price_unit}`;

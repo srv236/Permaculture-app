@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Produce } from "@/types/farm";
+import { useSession } from "./SessionProvider";
 
 interface EditProduceDialogProps {
   produce: Produce;
@@ -32,6 +33,7 @@ const CATEGORIES = [
 const UNITS = ["units", "g", "dozen", "kg", "tonne"];
 
 export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps) => {
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -63,12 +65,14 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setLoading(true);
 
     try {
       let image_url = produce.image_url;
       if (imageFile) {
-        image_url = await uploadImage(imageFile, "produce_images");
+        image_url = await uploadImage(imageFile, "produce_images", user.id);
       }
 
       const priceText = `₹${formData.price_value} per ${formData.price_unit}`;

@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Producer } from "@/types/farm";
+import { useSession } from "./SessionProvider";
 
 interface EditProfileDialogProps {
   profile: Producer;
@@ -18,6 +19,7 @@ interface EditProfileDialogProps {
 }
 
 export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps) => {
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -36,12 +38,14 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setLoading(true);
 
     try {
       let pictureUrl = profile.picture_url;
       if (imageFile) {
-        pictureUrl = await uploadImage(imageFile, "profile_pictures");
+        pictureUrl = await uploadImage(imageFile, "profile_pictures", user.id);
       }
 
       const { error } = await supabase

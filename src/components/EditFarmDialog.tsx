@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadImage } from "@/utils/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Farm } from "@/types/farm";
+import { useSession } from "./SessionProvider";
 
 interface EditFarmDialogProps {
   farm: Farm;
@@ -19,6 +20,7 @@ interface EditFarmDialogProps {
 }
 
 export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
+  const { user } = useSession();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -41,12 +43,14 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setLoading(true);
 
     try {
       let pictureUrl = farm.picture_url;
       if (imageFile) {
-        pictureUrl = await uploadImage(imageFile, "profile_pictures");
+        pictureUrl = await uploadImage(imageFile, "profile_pictures", user.id);
       }
 
       const formattedSize = `${formData.sizeValue} ${formData.sizeUnit}`;

@@ -43,7 +43,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
     try {
       let picture_url = "";
       if (imageFile) {
-        picture_url = await uploadImage(imageFile, "profile_pictures");
+        picture_url = await uploadImage(imageFile, "profile_pictures", user.id);
       }
 
       const sizeText = `${formData.size_value} ${formData.size_unit}`;

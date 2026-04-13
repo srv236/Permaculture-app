@@ -1,9 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const uploadImage = async (file: File, bucket: string) => {
+/**
+ * Uploads an image to a specific bucket using a user-specific folder path.
+ * Path structure: bucket/userId/filename.ext
+ */
+export const uploadImage = async (file: File, bucket: string, userId: string) => {
+  if (!userId) {
+    throw new Error("User ID is required for secure uploads.");
+  }
+
   const fileExt = file.name.split('.').pop();
-  const fileName = `${Math.random()}.${fileExt}`;
-  const filePath = `${fileName}`;
+  // Using a cleaner timestamp-based name with random string
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+  const filePath = `${userId}/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)
