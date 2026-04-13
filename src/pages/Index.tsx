@@ -46,12 +46,6 @@ const Index = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // If no user, we can't fetch restricted data due to RLS
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       try {
         const { count: permafolkCount } = await supabase
@@ -99,7 +93,7 @@ const Index = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, []); // Remove user dependency to fetch public data on load
 
   const filteredFarms = farms.filter(farm => {
     const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -159,7 +153,7 @@ const Index = () => {
               <Users className="w-6 h-6 text-blue-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalPermafolk : "—"}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalPermafolk}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Permafolk</span>
             </div>
           </div>
@@ -168,7 +162,7 @@ const Index = () => {
               <ShoppingBasket className="w-6 h-6 text-emerald-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalProduce : "—"}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalProduce}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Products</span>
             </div>
           </div>
@@ -177,7 +171,7 @@ const Index = () => {
               <MapPin className="w-6 h-6 text-amber-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalFarms : "—"}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarms}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Locations</span>
             </div>
           </div>
@@ -186,7 +180,7 @@ const Index = () => {
               <Ruler className="w-6 h-6 text-purple-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalFarmSize : "—"}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarmSize}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Area</span>
             </div>
           </div>
@@ -198,27 +192,12 @@ const Index = () => {
               <MapIcon className="w-6 h-6 text-emerald-600" />
               Farm Network Map
             </h2>
-            {user && (
-              <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
-                {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
-              </Badge>
-            )}
+            <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
+              {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
+            </Badge>
           </div>
           <div className="h-[500px] w-full rounded-[40px] overflow-hidden border-8 border-white shadow-2xl relative z-0">
-            {!user ? (
-              <div className="flex flex-col items-center justify-center h-full bg-slate-100 gap-4 p-8 text-center">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
-                  <Lock className="w-8 h-8 text-slate-400" />
-                </div>
-                <div>
-                  <p className="text-slate-600 font-bold">Map Access Restricted</p>
-                  <p className="text-slate-400 text-sm max-w-xs mx-auto">Please sign in to view the interactive farm network map and locations.</p>
-                </div>
-                <Link to="/login">
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">Sign In to View</Button>
-                </Link>
-              </div>
-            ) : loading ? (
+            {loading ? (
               <div className="flex items-center justify-center h-full bg-slate-100">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>
