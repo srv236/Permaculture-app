@@ -23,7 +23,7 @@ export const ProducerCard = ({ producer }: { producer: ExtendedProducer }) => {
       ? `https://www.google.com/maps/search/?api=1&query=${producer.latitude},${producer.longitude}`
       : null);
 
-  const tags = (producer as any).tags || [];
+  const tags = producer.tags || [];
 
   return (
     <Card className="overflow-hidden border-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 group">
