@@ -8,7 +8,7 @@ import { ProduceCard } from "@/components/ProduceCard";
 import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler } from "lucide-react";
+import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,12 @@ const Index = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // If no user, we can't fetch restricted data due to RLS
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const { count: permafolkCount } = await supabase
@@ -153,7 +159,7 @@ const Index = () => {
               <Users className="w-6 h-6 text-blue-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalPermafolk}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalPermafolk : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Permafolk</span>
             </div>
           </div>
@@ -162,7 +168,7 @@ const Index = () => {
               <ShoppingBasket className="w-6 h-6 text-emerald-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalProduce}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalProduce : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Products</span>
             </div>
           </div>
@@ -171,7 +177,7 @@ const Index = () => {
               <MapPin className="w-6 h-6 text-amber-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarms}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalFarms : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Locations</span>
             </div>
           </div>
@@ -180,7 +186,7 @@ const Index = () => {
               <Ruler className="w-6 h-6 text-purple-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold text-slate-900 leading-none">{stats.totalFarmSize}</span>
+              <span className="text-2xl font-bold text-slate-900 leading-none">{user ? stats.totalFarmSize : "—"}</span>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Area</span>
             </div>
           </div>
@@ -192,12 +198,27 @@ const Index = () => {
               <MapIcon className="w-6 h-6 text-emerald-600" />
               Farm Network Map
             </h2>
-            <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
-              {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
-            </Badge>
+            {user && (
+              <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
+                {farms.filter(f => f.latitude && f.longitude).length} Farms Mapped
+              </Badge>
+            )}
           </div>
           <div className="h-[500px] w-full rounded-[40px] overflow-hidden border-8 border-white shadow-2xl relative z-0">
-            {loading ? (
+            {!user ? (
+              <div className="flex flex-col items-center justify-center h-full bg-slate-100 gap-4 p-8 text-center">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+                  <Lock className="w-8 h-8 text-slate-400" />
+                </div>
+                <div>
+                  <p className="text-slate-600 font-bold">Map Access Restricted</p>
+                  <p className="text-slate-400 text-sm max-w-xs mx-auto">Please sign in to view the interactive farm network map and locations.</p>
+                </div>
+                <Link to="/login">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">Sign In to View</Button>
+                </Link>
+              </div>
+            ) : loading ? (
               <div className="flex items-center justify-center h-full bg-slate-100">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>
@@ -207,103 +228,132 @@ const Index = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
-          <div className="flex flex-col items-center mb-12">
-            <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-md border border-emerald-100 mb-8">
-              <TabsTrigger value="farms" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
-                <MapIcon className="w-5 h-5 mr-2" />
-                Featured Farms
-              </TabsTrigger>
-              <TabsTrigger value="produce" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
-                <ShoppingBasket className="w-5 h-5 mr-2" />
-                Featured Produce
-              </TabsTrigger>
-              <TabsTrigger value="permafolk" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
-                <User className="w-5 h-5 mr-2" />
-                Featured Permafolk
-              </TabsTrigger>
-            </TabsList>
-            
-            <div className="flex flex-wrap justify-center gap-2 max-w-4xl">
-              {CATEGORIES.map(cat => (
-                <Badge 
-                  key={cat}
-                  variant={selectedCategory === cat ? "default" : "outline"}
-                  className={`cursor-pointer px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
-                    selectedCategory === cat 
-                      ? "bg-emerald-600 hover:bg-emerald-700 border-none shadow-lg shadow-emerald-200" 
-                      : "bg-white hover:bg-emerald-50 border-emerald-100 text-slate-600"
-                  }`}
-                  onClick={() => setSelectedCategory(cat)}
-                >
-                  {cat}
-                </Badge>
-              ))}
+        {!user ? (
+          <Card className="border-dashed border-2 border-emerald-200 bg-white py-20 text-center rounded-[40px]">
+            <CardContent className="space-y-6">
+              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
+                <LogIn className="w-10 h-10 text-emerald-600" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold text-slate-900">View Full Listings</h2>
+                <p className="text-slate-500 max-w-md mx-auto text-lg">
+                  Detailed farm listings, produce availability, and practitioner profiles are only visible to verified members.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+                <Link to="/login">
+                  <Button className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 text-lg rounded-xl">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-12 px-8 text-lg rounded-xl">
+                    Join the Network
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
+            <div className="flex flex-col items-center mb-12">
+              <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-md border border-emerald-100 mb-8">
+                <TabsTrigger value="farms" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
+                  <MapIcon className="w-5 h-5 mr-2" />
+                  Featured Farms
+                </TabsTrigger>
+                <TabsTrigger value="produce" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
+                  <ShoppingBasket className="w-5 h-5 mr-2" />
+                  Featured Produce
+                </TabsTrigger>
+                <TabsTrigger value="permafolk" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold">
+                  <User className="w-5 h-5 mr-2" />
+                  Featured Permafolk
+                </TabsTrigger>
+              </TabsList>
+              
+              <div className="flex flex-wrap justify-center gap-2 max-w-4xl">
+                {CATEGORIES.map(cat => (
+                  <Badge 
+                    key={cat}
+                    variant={selectedCategory === cat ? "default" : "outline"}
+                    className={`cursor-pointer px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+                      selectedCategory === cat 
+                        ? "bg-emerald-600 hover:bg-emerald-700 border-none shadow-lg shadow-emerald-200" 
+                        : "bg-white hover:bg-emerald-50 border-emerald-100 text-slate-600"
+                    }`}
+                    onClick={() => setSelectedCategory(cat)}
+                  >
+                    {cat}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-32 gap-4">
-              <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
-              <p className="text-slate-400 font-medium">Loading the network...</p>
-            </div>
-          ) : (
-            <div className="mt-8">
-              <TabsContent value="farms" className="mt-0 focus-visible:ring-0">
-                {filteredFarms.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {filteredFarms.map(farm => (
-                      <ProducerCard 
-                        key={farm.id} 
-                        producer={{
-                          id: farm.id,
-                          name: (farm as any).profiles?.name || "Practitioner",
-                          phone: (farm as any).profiles?.phone || "",
-                          email: (farm as any).profiles?.email || "",
-                          farm_name: farm.name,
-                          picture_url: farm.picture_url,
-                          is_verified: (farm as any).profiles?.is_verified || false,
-                          has_completed_course: true,
-                          produce: farm.produce,
-                          latitude: farm.latitude,
-                          longitude: farm.longitude,
-                          google_maps_url: farm.google_maps_url,
-                          address: farm.address
-                        } as any} 
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState message="No farms found matching your search." />
-                )}
-              </TabsContent>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-32 gap-4">
+                <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
+                <p className="text-slate-400 font-medium">Loading the network...</p>
+              </div>
+            ) : (
+              <div className="mt-8">
+                <TabsContent value="farms" className="mt-0 focus-visible:ring-0">
+                  {filteredFarms.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {filteredFarms.map(farm => (
+                        <ProducerCard 
+                          key={farm.id} 
+                          producer={{
+                            id: farm.id,
+                            name: (farm as any).profiles?.name || "Practitioner",
+                            phone: (farm as any).profiles?.phone || "",
+                            email: (farm as any).profiles?.email || "",
+                            farm_name: farm.name,
+                            picture_url: farm.picture_url,
+                            is_verified: (farm as any).profiles?.is_verified || false,
+                            has_completed_course: true,
+                            produce: farm.produce,
+                            latitude: farm.latitude,
+                            longitude: farm.longitude,
+                            google_maps_url: farm.google_maps_url,
+                            address: farm.address
+                          } as any} 
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState message="No farms found matching your search." />
+                  )}
+                </TabsContent>
 
-              <TabsContent value="produce" className="mt-0 focus-visible:ring-0">
-                {filteredProduce.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {filteredProduce.map(item => (
-                      <ProduceCard key={item.id} produce={item} showFarm />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState message="No produce found matching your search." />
-                )}
-              </TabsContent>
+                <TabsContent value="produce" className="mt-0 focus-visible:ring-0">
+                  {filteredProduce.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {filteredProduce.map(item => (
+                        <ProduceCard key={item.id} produce={item} showFarm />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState message="No produce found matching your search." />
+                  )}
+                </TabsContent>
 
-              <TabsContent value="permafolk" className="mt-0 focus-visible:ring-0">
-                {filteredPermafolk.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredPermafolk.map(person => (
-                      <PermafolkCard key={person.id} permafolk={person} />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState message="No permafolk found matching your search." />
-                )}
-              </TabsContent>
-            </div>
-          )}
-        </Tabs>
+                <TabsContent value="permafolk" className="mt-0 focus-visible:ring-0">
+                  {filteredPermafolk.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {filteredPermafolk.map(person => (
+                        <PermafolkCard key={person.id} permafolk={person} />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState message="No permafolk found matching your search." />
+                  )}
+                </TabsContent>
+              </div>
+            )}
+          </Tabs>
+        )}
       </main>
 
       <footer className="bg-white border-t py-20 mt-20">
