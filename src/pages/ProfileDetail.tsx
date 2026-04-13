@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ContactButtons } from "@/components/ContactButtons";
 import { useSession } from "@/components/SessionProvider";
+import { getUserProfile } from "@/api/users"; // Imported safe API
 import { 
   MapPin, 
   CheckCircle2, 
@@ -63,13 +64,8 @@ const ProfileDetail = () => {
     
     setLoading(true);
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (profileError) throw profileError;
+      // Using the validated and parameterized user lookup service
+      const profileData = await getUserProfile(id);
       setProfile(profileData as any);
 
       const { data: farmsData, error: farmsError } = await supabase
@@ -79,8 +75,9 @@ const ProfileDetail = () => {
 
       if (farmsError) throw farmsError;
       setFarms(farmsData || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching profile:", error);
+      showError(error.message || "Could not load profile.");
     } finally {
       setLoading(false);
     }
