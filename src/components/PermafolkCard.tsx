@@ -1,11 +1,65 @@
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { CheckCircle2, ArrowRight, User } from "lucide-react";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 
-export const PermafolkCard = ({ permafolk }: { permafolk: Producer }) => {
+interface PermafolkCardProps {
+  permafolk: Producer;
+  layout?: "grid" | "list" | "compact";
+}
+
+export const PermafolkCard = ({ permafolk, layout = "grid" }: PermafolkCardProps) => {
+  if (layout === "list") {
+    return (
+      <Card className="overflow-hidden border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 group flex flex-row items-center p-4 gap-6">
+        <Link to={`/profile/${permafolk.id}`} className="shrink-0">
+          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-emerald-50 bg-white">
+            <SecureImage 
+              path={permafolk.picture_url}
+              bucket="profile_pictures"
+              alt={permafolk.name}
+              className="w-full h-full"
+              fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=200"
+            />
+          </div>
+        </Link>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-emerald-900 truncate">{permafolk.name}</h3>
+            {permafolk.is_verified && <CheckCircle2 className="w-4 h-4 text-blue-500" />}
+          </div>
+          <p className="text-xs text-emerald-600 font-medium">Certified Practitioner</p>
+        </div>
+        <Link to={`/profile/${permafolk.id}`} className="shrink-0">
+          <Button variant="ghost" size="sm" className="text-emerald-600">
+            View <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
+        </Link>
+      </Card>
+    );
+  }
+
+  if (layout === "compact") {
+    return (
+      <Link to={`/profile/${permafolk.id}`} className="block group">
+        <div className="flex flex-col items-center gap-2 p-2">
+          <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-100 shadow-sm group-hover:scale-105 transition-transform">
+            <SecureImage 
+              path={permafolk.picture_url}
+              bucket="profile_pictures"
+              alt={permafolk.name}
+              className="w-full h-full"
+              fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=200"
+            />
+          </div>
+          <span className="text-[10px] font-bold text-emerald-900 text-center truncate w-full">{permafolk.name}</span>
+        </div>
+      </Link>
+    );
+  }
+
   return (
     <Card className="overflow-hidden border-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 group flex flex-col h-full">
       <Link to={`/profile/${permafolk.id}`}>

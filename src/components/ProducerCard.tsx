@@ -1,13 +1,12 @@
 import { Producer, Produce } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { MapPin, CheckCircle2, ArrowRight, User, Tag } from "lucide-react";
+import { MapPin, CheckCircle2, ArrowRight, User, Tag, Sprout } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 
-// Extended type for when ProducerCard is used to display farm-related data in Index
 interface ExtendedProducer extends Producer {
   farm_name?: string;
   address?: string;
@@ -17,13 +16,75 @@ interface ExtendedProducer extends Producer {
   produce?: Produce[];
 }
 
-export const ProducerCard = ({ producer }: { producer: ExtendedProducer }) => {
-  const mapsUrl = producer.google_maps_url || 
-    (producer.latitude && producer.longitude 
-      ? `https://www.google.com/maps/search/?api=1&query=${producer.latitude},${producer.longitude}`
-      : null);
+interface ProducerCardProps {
+  producer: ExtendedProducer;
+  layout?: "grid" | "list" | "compact";
+}
 
+export const ProducerCard = ({ producer, layout = "grid" }: ProducerCardProps) => {
   const tags = producer.tags || [];
+
+  if (layout === "list") {
+    return (
+      <Card className="overflow-hidden border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300 group flex flex-row items-center p-4 gap-6">
+        <Link to={`/farm/${producer.id}`} className="shrink-0">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-emerald-50 bg-white">
+            <SecureImage 
+              path={producer.picture_url}
+              bucket="profile_pictures"
+              alt={producer.name}
+              className="w-full h-full"
+              fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=200"
+            />
+          </div>
+        </Link>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-xl font-bold text-emerald-900 truncate">{producer.farm_name}</h3>
+            {producer.is_verified && <CheckCircle2 className="w-4 h-4 text-blue-500" />}
+          </div>
+          <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+            <span className="flex items-center gap-1"><User className="w-3 h-3" /> {producer.name}</span>
+            {producer.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-emerald-500" /> {producer.address}</span>}
+          </div>
+          <div className="flex gap-2 mt-3">
+             {tags.slice(0, 3).map(tag => (
+               <Badge key={tag} variant="secondary" className="bg-emerald-50 text-emerald-700 text-[8px] px-2 py-0">#{tag}</Badge>
+             ))}
+          </div>
+        </div>
+        <Link to={`/farm/${producer.id}`} className="shrink-0 hidden sm:block">
+          <Button variant="outline" className="border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-50">
+            Details <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </Link>
+      </Card>
+    );
+  }
+
+  if (layout === "compact") {
+    return (
+      <Link to={`/farm/${producer.id}`} className="block group">
+        <Card className="overflow-hidden border-emerald-100 shadow-sm group-hover:shadow-md transition-all rounded-2xl">
+          <div className="aspect-[4/3] relative overflow-hidden">
+            <SecureImage 
+              path={producer.picture_url}
+              bucket="profile_pictures"
+              alt={producer.name}
+              className="w-full h-full transition-transform group-hover:scale-110"
+              fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=200"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
+              <h3 className="text-white font-bold text-sm truncate">{producer.farm_name}</h3>
+              <p className="text-emerald-300 text-[10px] flex items-center gap-1">
+                <MapPin className="w-2.5 h-2.5" /> {producer.address?.split(',')[0]}
+              </p>
+            </div>
+          </div>
+        </Card>
+      </Link>
+    );
+  }
 
   return (
     <Card className="overflow-hidden border-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 group">
@@ -36,7 +97,6 @@ export const ProducerCard = ({ producer }: { producer: ExtendedProducer }) => {
                 bucket="profile_pictures"
                 alt={producer.name}
                 className="w-full h-full group-hover:scale-110 transition-transform duration-500"
-                coordinates={producer.latitude ? { lat: producer.latitude, lng: producer.longitude } : undefined}
                 fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=200"
               />
             </div>
@@ -62,14 +122,12 @@ export const ProducerCard = ({ producer }: { producer: ExtendedProducer }) => {
               <User className="w-3 h-3" />
               {producer.name}
             </div>
-            
             {producer.address && (
               <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-emerald-500" />
                 {producer.address}
               </p>
             )}
-
             <div className="flex flex-wrap gap-2 mt-3">
               {tags.slice(0, 3).map((tag: string) => (
                 <Badge key={tag} variant="secondary" className="bg-emerald-100 text-emerald-700 border-none text-[9px] font-bold px-2 py-0.5">
@@ -77,9 +135,6 @@ export const ProducerCard = ({ producer }: { producer: ExtendedProducer }) => {
                   {tag}
                 </Badge>
               ))}
-              {tags.length > 3 && (
-                <span className="text-[9px] text-slate-400 font-bold">+{tags.length - 3}</span>
-              )}
             </div>
           </div>
         </div>
@@ -91,11 +146,6 @@ export const ProducerCard = ({ producer }: { producer: ExtendedProducer }) => {
             <ProduceCard key={item.id} produce={item} />
           ))}
         </div>
-        {producer.produce && producer.produce.length > 2 && (
-          <Link to={`/farm/${producer.id}`} className="block text-center mt-4 text-xs font-bold text-emerald-600 hover:underline">
-            + {producer.produce.length - 2} more items
-          </Link>
-        )}
       </CardContent>
     </Card>
   );
