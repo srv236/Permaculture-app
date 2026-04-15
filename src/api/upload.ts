@@ -10,7 +10,6 @@ export const uploadImage = async (file: File, bucket: string, userId: string) =>
   }
 
   const fileExt = file.name.split('.').pop();
-  // Using a cleaner timestamp-based name with random string
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
   const filePath = `${userId}/${fileName}`;
 
@@ -42,7 +41,6 @@ export const getSignedUrl = async (bucket: string, path: string) => {
       .createSignedUrl(path, 3600);
 
     if (error) {
-      // Fallback to public URL if signed URL fails
       return getPublicUrl(bucket, path);
     }
 

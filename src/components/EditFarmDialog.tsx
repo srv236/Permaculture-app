@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit2, Loader2, Image as ImageIcon, MapPin, Globe, Ruler, Tag } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { uploadImage } from "@/utils/upload";
+import { updateFarm } from "@/api/farms";
+import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Farm } from "@/types/farm";
 import { useSession } from "./SessionProvider";
@@ -25,9 +25,8 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   
-  const sizeParts = farm.size?.split(" ") || ["", "Hectare"];
-  const initialValue = sizeParts[0];
-  const initialUnit = sizeParts[1] || "Hectare";
+  const initialValue = farm.size_value?.toString() || "";
+  const initialUnit = farm.size_unit || "Hectare";
 
   const [formData, setFormData] = useState({
     name: farm.name,
@@ -48,30 +47,25 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
     setLoading(true);
 
     try {
-      let pictureUrl = farm.picture_url;
+      let pictureUrl = farm.picture_url || "";
       if (imageFile) {
         pictureUrl = await uploadImage(imageFile, "profile_pictures", user.id);
       }
 
-      const formattedSize = `${formData.sizeValue} ${formData.sizeUnit}`;
       const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
 
-      const { error } = await supabase
-        .from('farms')
-        .update({
-          name: formData.name,
-          about: formData.about,
-          tags: tagsArray,
-          size: formattedSize,
-          address: formData.address,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-          google_maps_url: formData.google_maps_url,
-          picture_url: pictureUrl,
-        })
-        .eq('id', farm.id);
-
-      if (error) throw error;
+      await updateFarm(farm.id, {
+        name: formData.name,
+        about: formData.about,
+        tags: tagsArray,
+        size_value: formData.sizeValue ? parseFloat(formData.sizeValue) : undefined,
+        size_unit: formData.sizeUnit,
+        address: formData.address,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
+        google_maps_url: formData.google_maps_url,
+        picture_url: pictureUrl ? pictureUrl : undefined,
+      });
 
       showSuccess("Farm updated successfully!");
       setOpen(false);
@@ -94,6 +88,9 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-3xl">
         <DialogHeader>
           <DialogTitle>Edit Farm Details</DialogTitle>
+          <DialogDescription>
+            Modify the location, size, or about section of your farm.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">

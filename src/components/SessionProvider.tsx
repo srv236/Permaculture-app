@@ -2,24 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-
-interface Profile {
-  id: string;
-  name: string;
-  is_admin: boolean;
-  is_verified: boolean;
-  picture_url?: string;
-}
-
-interface SessionContextType {
-  session: Session | null;
-  user: User | null;
-  profile: Profile | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-}
+import { getSession, onAuthStateChange, signOut as apiSignOut } from '@/api/auth';
+import { getSessionProfile } from '@/api/profiles';
+import { Profile, SessionContextType } from '@/types/auth';
 
 const SessionContext = createContext<SessionContextType>({
   session: null,
@@ -38,13 +23,8 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name, is_admin, is_verified, picture_url')
-        .eq('id', userId)
-        .single();
-      
-      if (!error && data) {
+      const data = await getSessionProfile(userId);
+      if (data) {
         setProfile(data as Profile);
       }
     } catch (err) {
@@ -60,7 +40,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    getSession().then(({ session }) => {
       setSession(session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -72,7 +52,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const subscription = onAuthStateChange((_event, session) => {
       setSession(session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -88,7 +68,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await apiSignOut();
   };
 
   return (

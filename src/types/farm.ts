@@ -7,8 +7,10 @@ export interface Produce {
   variety?: string;
   category: string;
   description?: string;
-  price: string;
-  quantity: string;
+  price_value: number;
+  price_unit: string;
+  quantity_value: number;
+  quantity_unit: string;
   image_url: string;
   tags?: string[];
   created_at?: string;
@@ -23,7 +25,8 @@ export interface Farm {
   latitude?: number;
   longitude?: number;
   google_maps_url?: string;
-  size?: string;
+  size_value?: number;
+  size_unit?: string;
   picture_url?: string;
   tags?: string[];
   produce?: Produce[];

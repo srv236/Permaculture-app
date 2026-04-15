@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
-import { supabase } from "@/integrations/supabase/client";
+import { getFarmById } from "@/api/farms";
+import { getUserProfile } from "@/api/profiles";
 import { Farm, Producer } from "@/types/farm";
 import { SecureImage } from "@/components/SecureImage";
 import { Badge } from "@/components/ui/badge";
@@ -50,22 +51,13 @@ const FarmDetail = () => {
       if (!id) return;
       setLoading(true);
       try {
-        const { data: farmData, error: farmError } = await supabase
-          .from('farms')
-          .select('*, produce (*)')
-          .eq('id', id)
-          .single();
-
-        if (farmError) throw farmError;
+        const farmData = await getFarmById(id);
         setFarm(farmData);
 
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', farmData.user_id)
-          .single();
-
-        setProducer(profileData as any);
+        if (farmData.user_id) {
+          const profileData = await getUserProfile(farmData.user_id);
+          setProducer(profileData as any);
+        }
       } catch (error) {
         console.error("Error fetching farm:", error);
       } finally {
@@ -154,10 +146,10 @@ const FarmDetail = () => {
                       {farm.address}
                     </span>
                   )}
-                  {farm.size && (
+                  {farm.size_value && (
                     <span className="flex items-center gap-1.5 text-sm">
                       <Ruler className="w-4 h-4 text-emerald-400" />
-                      {farm.size}
+                      {farm.size_value} {farm.size_unit}
                     </span>
                   )}
                 </div>

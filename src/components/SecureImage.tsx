@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSignedUrl, getPublicUrl } from "@/utils/upload";
+import { getSignedUrl, getPublicUrl } from "@/api/upload";
 import { Skeleton } from "./ui/skeleton";
 import { cn } from "@/lib/utils";
 

@@ -20,8 +20,10 @@ export const MOCK_PRODUCERS: Producer[] = [
         name: "Tomatoes",
         variety: "Heirloom Cherokee Purple",
         category: "Vegetables",
-        price: "₹45.00 per kg",
-        quantity: "20 kg",
+        price_value: 45.00,
+        price_unit: "kg",
+        quantity_value: 20,
+        quantity_unit: "kg",
         image_url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
       },
       {
@@ -30,8 +32,10 @@ export const MOCK_PRODUCERS: Producer[] = [
         name: "Kale",
         variety: "Lacinato (Dino)",
         category: "Vegetables",
-        price: "₹30.00 per bunch",
-        quantity: "15 bunches",
+        price_value: 30.00,
+        price_unit: "bunch",
+        quantity_value: 15,
+        quantity_unit: "bunches",
         image_url: "https://images.unsplash.com/photo-1524179524541-1aa1ece28142?auto=format&fit=crop&q=80&w=400"
       }
     ]
@@ -55,8 +59,10 @@ export const MOCK_PRODUCERS: Producer[] = [
         name: "Honey",
         variety: "Wildflower Raw",
         category: "Honey & Preserves",
-        price: "₹120.00 per jar",
-        quantity: "10 jars",
+        price_value: 120.00,
+        price_unit: "jar",
+        quantity_value: 10,
+        quantity_unit: "jars",
         image_url: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=400"
       }
     ]

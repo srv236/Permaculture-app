@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
-import { supabase } from "@/integrations/supabase/client";
 import { Farm, Producer } from "@/types/farm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,9 @@ import { EditFarmDialog } from "@/components/EditFarmDialog";
 import { EditProduceDialog } from "@/components/EditProduceDialog";
 import { SecureImage } from "@/components/SecureImage";
 import { Badge } from "@/components/ui/badge";
+import { getSessionProfile } from "@/api/profiles";
+import { getFarmsByUser, deleteFarm as apiDeleteFarm } from "@/api/farms";
+import { deleteProduce as apiDeleteProduce } from "@/api/produce";
 
 const Dashboard = () => {
   const { user, loading: sessionLoading } = useSession();
@@ -39,19 +41,12 @@ const Dashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select(`*`)
-        .eq('id', user?.id)
-        .single();
-
-      const { data: farmsData } = await supabase
-        .from('farms')
-        .select(`*, produce (*)`)
-        .eq('user_id', user?.id);
-
-      setProfile(profileData);
-      setFarms(farmsData || []);
+      if (user?.id) {
+        const profileData = await getSessionProfile(user.id);
+        const farmsData = await getFarmsByUser(user.id);
+        setProfile(profileData as any);
+        setFarms(farmsData || []);
+      }
     } catch (error) {
       showError("Could not load dashboard data.");
     } finally {
@@ -61,33 +56,23 @@ const Dashboard = () => {
 
   const handleDeleteFarm = async (id: string) => {
     if (!confirm("Are you sure you want to remove this farm?")) return;
-
-    const { error } = await supabase
-      .from('farms')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      showError("Failed to delete farm.");
-    } else {
+    try {
+      await apiDeleteFarm(id);
       showSuccess("Farm removed.");
       fetchData();
+    } catch (error) {
+      showError("Failed to delete farm.");
     }
   };
 
   const handleDeleteProduce = async (id: string) => {
     if (!confirm("Are you sure you want to remove this produce?")) return;
-
-    const { error } = await supabase
-      .from('produce')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      showError("Failed to delete produce.");
-    } else {
+    try {
+      await apiDeleteProduce(id);
       showSuccess("Produce removed.");
       fetchData();
+    } catch (error) {
+      showError("Failed to delete produce.");
     }
   };
 
@@ -226,10 +211,10 @@ const Dashboard = () => {
                           <div>
                             <h3 className="text-2xl font-bold text-emerald-900">{farm.name}</h3>
                             <div className="flex flex-wrap gap-4 mt-2">
-                              {farm.size && (
+                              {farm.size_value && (
                                 <span className="text-sm text-slate-500 flex items-center gap-1.5">
                                   <Ruler className="w-4 h-4 text-emerald-500" />
-                                  {farm.size}
+                                  {farm.size_value} {farm.size_unit}
                                 </span>
                               )}
                               {farm.address && (
@@ -264,7 +249,7 @@ const Dashboard = () => {
                                       <p className="text-[10px] text-slate-400 truncate italic">{item.variety}</p>
                                     )}
                                     <p className="text-xs text-emerald-600 font-medium">
-                                      {item.price?.startsWith('₹') ? item.price : `₹${item.price}`} • {item.quantity}
+                                      ₹{item.price_value} per {item.price_unit} • {item.quantity_value} {item.quantity_unit}
                                     </p>
                                   </div>
                                   <div className="flex items-center">

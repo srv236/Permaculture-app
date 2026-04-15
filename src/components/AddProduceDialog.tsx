@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Loader2, Image as ImageIcon, Tag } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { uploadImage } from "@/utils/upload";
+import { createProduce } from "@/api/produce";
+import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { useSession } from "./SessionProvider";
 
@@ -60,26 +60,19 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         image_url = await uploadImage(imageFile, "produce_images", user.id);
       }
 
-      const priceText = `₹${formData.price_value} per ${formData.price_unit}`;
-      const quantityText = `${formData.quantity_value} ${formData.quantity_unit}`;
-      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
-
-      const { error } = await supabase
-        .from('produce')
-        .insert({
-          farm_id: farmId,
-          producer_id: user.id, // Explicitly set producer_id for RLS
-          name: formData.name,
-          variety: formData.variety || null,
-          category: formData.category,
-          description: formData.description,
-          tags: tagsArray,
-          price: priceText,
-          quantity: quantityText,
-          image_url: image_url,
-        });
-
-      if (error) throw error;
+      await createProduce({
+        farm_id: farmId,
+        name: formData.name,
+        variety: formData.variety || undefined,
+        category: formData.category,
+        description: formData.description,
+        tags: tagsArray,
+        price_value: formData.price_value ? parseFloat(formData.price_value) : 0,
+        price_unit: formData.price_unit,
+        quantity_value: formData.quantity_value ? parseFloat(formData.quantity_value) : 0,
+        quantity_unit: formData.quantity_unit,
+        image_url: image_url,
+      });
 
       showSuccess("Produce added successfully!");
       setOpen(false);
@@ -114,6 +107,9 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
       <DialogContent className="sm:max-w-[425px] rounded-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Produce to Harvest</DialogTitle>
+          <DialogDescription>
+            List your fresh produce available for the community.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">

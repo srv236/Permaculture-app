@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Loader2, Image as ImageIcon, MapPin, Globe, Ruler, Tag } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { uploadImage } from "@/utils/upload";
+import { createFarm } from "@/api/farms";
+import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { useSession } from "./SessionProvider";
 
@@ -46,25 +46,21 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
         picture_url = await uploadImage(imageFile, "profile_pictures", user.id);
       }
 
-      const sizeText = `${formData.size_value} ${formData.size_unit}`;
       const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
 
-      const { error } = await supabase
-        .from('farms')
-        .insert({
-          user_id: user.id,
-          name: formData.name,
-          about: formData.about,
-          tags: tagsArray,
-          address: formData.address,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-          google_maps_url: formData.google_maps_url,
-          size: sizeText,
-          picture_url: picture_url,
-        });
-
-      if (error) throw error;
+      await createFarm({
+        user_id: user.id,
+        name: formData.name,
+        about: formData.about,
+        tags: tagsArray,
+        address: formData.address,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
+        google_maps_url: formData.google_maps_url,
+        size_value: formData.size_value ? parseFloat(formData.size_value) : undefined,
+        size_unit: formData.size_unit,
+        picture_url: picture_url,
+      });
 
       showSuccess("Farm added successfully!");
       setOpen(false);
@@ -99,6 +95,9 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-3xl">
         <DialogHeader>
           <DialogTitle>Add New Farm</DialogTitle>
+          <DialogDescription>
+            Enter the details of your regenerative farm to showcase it to the community.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">

@@ -9,7 +9,9 @@ import { FarmMap } from "@/components/FarmMap";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler, LayoutGrid, List, Grid2X2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getNetworkFarms } from "@/api/farms";
+import { getAllProfiles } from "@/api/profiles";
+import { getAllProduce } from "@/api/produce";
 import { Farm, Producer, Produce } from "@/types/farm";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "@/components/SessionProvider";
@@ -48,6 +50,7 @@ const Index = () => {
     totalProduce: 0,
     totalFarmSize: "0"
   });
+  const [mapLocations, setMapLocations] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPublicStats = async () => {
@@ -56,7 +59,14 @@ const Index = () => {
         const response = await fetch('https://jhvybduaojbotojvxgvs.supabase.co/functions/v1/get-public-stats');
         if (response.ok) {
           const data = await response.json();
-          setStats(data);
+          // Handling the updated response format
+          if (data.stats) {
+            setStats(data.stats);
+            setMapLocations(data.locations || []);
+          } else {
+            // Fallback for older format during transition
+            setStats(data);
+          }
         }
       } catch (error) {
         console.error("Error fetching public stats:", error);
@@ -77,14 +87,11 @@ const Index = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const { data: farmsData } = await supabase
-          .from('farms')
-          .select(`*, produce (*), profiles (*)`);
-
+        const farmsData = await getNetworkFarms();
         if (farmsData) setFarms(farmsData as any);
-        const { data: profilesData } = await supabase.from('profiles').select('*');
+        const profilesData = await getAllProfiles();
         if (profilesData) setPermafolk(profilesData as any);
-        const { data: produceData } = await supabase.from('produce').select('*, farms(name)');
+        const produceData = await getAllProduce();
         if (produceData) setProduce(produceData as any);
       } catch (error) {
         console.error("Error fetching network data:", error);
@@ -170,15 +177,17 @@ const Index = () => {
         <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><MapIcon className="w-6 h-6 text-emerald-600" />Farm Network Map</h2>
-            <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">{user ? farms.filter(f => f.latitude && f.longitude).length : "Location Data Protected"}</Badge>
+            <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
+              {user ? farms.filter(f => f.latitude && f.longitude).length : mapLocations.length} Active Farms
+            </Badge>
           </div>
           <div className="h-[500px] w-full rounded-[40px] overflow-hidden border-8 border-white shadow-2xl relative z-0">
-            {loading ? <div className="flex items-center justify-center h-full bg-slate-100"><Loader2 className="w-8 h-8 text-emerald-600 animate-spin" /></div> : user ? <FarmMap farms={farms} /> : (
-              <div className="flex flex-col items-center justify-center h-full bg-slate-50 gap-4 p-8 text-center">
-                <MapPin className="w-12 h-12 text-slate-300" />
-                <div><h3 className="font-bold text-slate-900">Map View Locked</h3><p className="text-slate-500 text-sm max-w-xs mx-auto">Sign in to view exact farm locations and the network map.</p></div>
-                <Link to="/login"><Button variant="outline" size="sm" className="rounded-xl">Sign In</Button></Link>
+            {(loading || statsLoading) ? (
+              <div className="flex items-center justify-center h-full bg-slate-100">
+                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>
+            ) : (
+              <FarmMap farms={user ? farms : mapLocations} />
             )}
           </div>
         </div>

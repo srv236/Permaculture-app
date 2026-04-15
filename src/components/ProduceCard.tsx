@@ -14,9 +14,7 @@ interface ProduceCardProps {
 }
 
 export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: ProduceCardProps) => {
-  const displayPrice = produce.price?.startsWith('₹') || produce.price?.startsWith('$') 
-    ? produce.price 
-    : `₹${produce.price}`;
+  const displayPrice = `₹${produce.price_value || 0} per ${produce.price_unit || 'kg'}`;
 
   // Helper for clickable wrapper to farm harvest page
   const CardWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -69,7 +67,7 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                 <ShoppingBag className="w-3 h-3" />
-                {produce.quantity}
+                {produce.quantity_value} {produce.quantity_unit}
               </div>
             </div>
           </CardContent>
@@ -163,7 +161,7 @@ if (layout === "compact") {
           <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-slate-500">
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">{produce.quantity} left</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">{produce.quantity_value} {produce.quantity_unit} left</span>
             </div>
           </div>
         </CardContent>

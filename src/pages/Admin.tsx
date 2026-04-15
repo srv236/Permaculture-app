@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { getAllProfiles, updateProfile, deleteProfile as apiDeleteProfile } from "@/api/profiles";
+import { Profile } from "@/types/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +41,7 @@ import {
 
 const Admin = () => {
   const { profile: adminProfile, loading: sessionLoading } = useSession();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,12 +61,7 @@ const Admin = () => {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('updated_at', { ascending: false });
-
-      if (fetchError) throw fetchError;
+      const data = await getAllProfiles();
       setUsers(data || []);
     } catch (err: any) {
       console.error("Admin fetch error:", err);
@@ -76,15 +72,9 @@ const Admin = () => {
     }
   };
 
-  const updateProfile = async (userId: string, updates: any, actionName: string) => {
+  const handleUpdateProfile = async (userId: string, updates: any, actionName: string) => {
     try {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', userId);
-
-      if (updateError) throw updateError;
-      
+      await updateProfile(userId, updates);
       showSuccess(`${actionName} updated successfully.`);
       fetchUsers();
     } catch (err: any) {
@@ -96,13 +86,7 @@ const Admin = () => {
     if (!confirm("Are you sure? This will delete the user profile and all their associated data (farms, produce).")) return;
     
     try {
-      const { error: deleteError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-
-      if (deleteError) throw deleteError;
-      
+      await apiDeleteProfile(userId);
       showSuccess("Member deleted successfully.");
       fetchUsers();
     } catch (err: any) {
@@ -117,7 +101,7 @@ const Admin = () => {
 
   const pendingUsers = filteredUsers.filter(u => !u.is_verified && !u.is_hidden);
   const hiddenUsers = filteredUsers.filter(u => u.is_hidden);
-  const activeUsers = filteredUsers.filter(u => !u.is_hidden);
+  const activeUsers = filteredUsers.filter(u => u.is_verified && !u.is_hidden);
 
   if (sessionLoading) {
     return (
@@ -130,7 +114,7 @@ const Admin = () => {
     );
   }
 
-  const UserList = ({ usersList }: { usersList: any[] }) => (
+  const UserList = ({ usersList }: { usersList: Profile[] }) => (
     <div className="grid grid-cols-1 gap-4">
       {usersList.length > 0 ? (
         usersList.map((user) => (
@@ -185,13 +169,13 @@ const Admin = () => {
                       View Public Profile
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => updateProfile(user.id, { is_verified: !user.is_verified }, "Verification")}>
+                    <DropdownMenuItem onClick={() => handleUpdateProfile(user.id, { is_verified: !user.is_verified }, "Verification")}>
                       {user.is_verified ? <><UserX className="w-4 h-4 mr-2" /> Unverify</> : <><UserCheck className="w-4 h-4 mr-2" /> Verify</>}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateProfile(user.id, { is_admin: !user.is_admin }, "Admin Rights")}>
+                    <DropdownMenuItem onClick={() => handleUpdateProfile(user.id, { is_admin: !user.is_admin }, "Admin Rights")}>
                       {user.is_admin ? <><ShieldAlert className="w-4 h-4 mr-2 text-amber-600" /> Remove Admin</> : <><ShieldCheck className="w-4 h-4 mr-2 text-emerald-600" /> Make Admin</>}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateProfile(user.id, { is_hidden: !user.is_hidden }, "Visibility")}>
+                    <DropdownMenuItem onClick={() => handleUpdateProfile(user.id, { is_hidden: !user.is_hidden }, "Visibility")}>
                       {user.is_hidden ? <><Eye className="w-4 h-4 mr-2" /> Show Member</> : <><EyeOff className="w-4 h-4 mr-2" /> Suppress Member</>}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

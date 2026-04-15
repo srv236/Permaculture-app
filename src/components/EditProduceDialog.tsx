@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit2, Loader2, Image as ImageIcon, Tag } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { uploadImage } from "@/utils/upload";
+import { updateProduce } from "@/api/produce";
+import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Produce } from "@/types/farm";
 import { useSession } from "./SessionProvider";
@@ -38,29 +38,16 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const parsePrice = (priceStr: string) => {
-    const parts = priceStr.replace('₹', '').split(' per ');
-    return { val: parts[0] || "", unit: parts[1] || "kg" };
-  };
-  
-  const parseQuantity = (quantStr: string) => {
-    const parts = quantStr.split(' ');
-    return { val: parts[0] || "", unit: parts[1] || "kg" };
-  };
-
-  const initialPrice = parsePrice(produce.price || "");
-  const initialQuant = parseQuantity(produce.quantity || "");
-
   const [formData, setFormData] = useState({
     name: produce.name,
     variety: produce.variety || "",
     category: produce.category,
     description: produce.description || "",
     tags: produce.tags?.join(", ") || "",
-    price_value: initialPrice.val,
-    price_unit: initialPrice.unit,
-    quantity_value: initialQuant.val,
-    quantity_unit: initialQuant.unit,
+    price_value: produce.price_value?.toString() || "",
+    price_unit: produce.price_unit || "kg",
+    quantity_value: produce.quantity_value?.toString() || "",
+    quantity_unit: produce.quantity_unit || "kg",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,30 +57,25 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
     setLoading(true);
 
     try {
-      let image_url = produce.image_url;
+      let image_url = produce.image_url || "";
       if (imageFile) {
         image_url = await uploadImage(imageFile, "produce_images", user.id);
       }
 
-      const priceText = `₹${formData.price_value} per ${formData.price_unit}`;
-      const quantityText = `${formData.quantity_value} ${formData.quantity_unit}`;
       const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
 
-      const { error } = await supabase
-        .from('produce')
-        .update({
-          name: formData.name,
-          variety: formData.variety || null,
-          category: formData.category,
-          description: formData.description,
-          tags: tagsArray,
-          price: priceText,
-          quantity: quantityText,
-          image_url: image_url,
-        })
-        .eq('id', produce.id);
-
-      if (error) throw error;
+      await updateProduce(produce.id, {
+        name: formData.name,
+        variety: formData.variety || undefined,
+        category: formData.category,
+        description: formData.description,
+        tags: tagsArray,
+        price_value: formData.price_value ? parseFloat(formData.price_value) : 0,
+        price_unit: formData.price_unit,
+        quantity_value: formData.quantity_value ? parseFloat(formData.quantity_value) : 0,
+        quantity_unit: formData.quantity_unit,
+        image_url: image_url ? image_url : undefined,
+      });
 
       showSuccess("Produce updated successfully!");
       setOpen(false);
@@ -115,6 +97,9 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
       <DialogContent className="sm:max-w-[425px] rounded-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Produce</DialogTitle>
+          <DialogDescription>
+            Update the availability, price, or description of your produce.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">

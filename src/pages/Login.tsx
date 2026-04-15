@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { LogIn, Loader2 } from "lucide-react";
 import { showError } from "@/utils/toast";
-import { supabase } from "@/integrations/supabase/client";
+import { signIn } from "@/api/auth";
 import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
@@ -22,12 +22,7 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      await signIn(email, password);
       navigate("/dashboard");
     } catch (error: any) {
       showError(error.message || "Invalid login credentials.");

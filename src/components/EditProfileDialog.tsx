@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit2, Loader2, User, Calendar, Facebook, Instagram, Youtube, Globe, Smartphone } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { uploadImage } from "@/utils/upload";
+import { updateProfile } from "@/api/profiles";
+import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Producer } from "@/types/farm";
 import { useSession } from "./SessionProvider";
@@ -43,29 +43,24 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
     setLoading(true);
 
     try {
-      let pictureUrl = profile.picture_url;
+      let pictureUrl = profile.picture_url || "";
       if (imageFile) {
         pictureUrl = await uploadImage(imageFile, "profile_pictures", user.id);
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          name: formData.name,
-          phone: formData.phone,
-          alt_phone: formData.alt_phone || null,
-          about: formData.about,
-          facebook_url: formData.facebook_url || null,
-          instagram_url: formData.instagram_url || null,
-          youtube_url: formData.youtube_url || null,
-          website_url: formData.website_url || null,
-          basic_course_date: formData.basic_course_date || null,
-          advanced_course_date: formData.advanced_course_date || null,
-          picture_url: pictureUrl,
-        })
-        .eq('id', profile.id);
-
-      if (error) throw error;
+      await updateProfile(profile.id, {
+        name: formData.name,
+        phone: formData.phone,
+        alt_phone: formData.alt_phone || undefined,
+        about: formData.about || undefined,
+        facebook_url: formData.facebook_url || undefined,
+        instagram_url: formData.instagram_url || undefined,
+        youtube_url: formData.youtube_url || undefined,
+        website_url: formData.website_url || undefined,
+        basic_course_date: formData.basic_course_date || undefined,
+        advanced_course_date: formData.advanced_course_date || undefined,
+        picture_url: pictureUrl ? pictureUrl : undefined,
+      });
 
       showSuccess("Profile updated successfully!");
       setOpen(false);

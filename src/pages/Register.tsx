@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { GraduationCap, AlertCircle, Loader2, Calendar, Facebook, Instagram, Youtube, Globe, Smartphone } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
-import { supabase } from "@/integrations/supabase/client";
+import { signUp } from "@/api/auth";
+import { createProfile } from "@/api/profiles";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -43,17 +44,10 @@ const Register = () => {
 
     setLoading(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (authError) throw authError;
+      const authData = await signUp(formData.email, formData.password);
 
       if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
+        await createProfile({
             id: authData.user.id,
             name: formData.name,
             email: formData.email,
@@ -71,8 +65,6 @@ const Register = () => {
             is_verified: false,
             is_admin: false,
           });
-
-        if (profileError) throw profileError;
 
         showSuccess("Registration successful!");
         navigate("/dashboard");

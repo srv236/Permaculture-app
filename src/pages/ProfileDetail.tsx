@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
-import { supabase } from "@/integrations/supabase/client";
 import { Producer, Farm } from "@/types/farm";
 import { SecureImage } from "@/components/SecureImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ContactButtons } from "@/components/ContactButtons";
 import { useSession } from "@/components/SessionProvider";
-import { getUserProfile } from "@/api/users"; // Imported safe API
+import { getUserProfile, updateProfile, deleteProfile } from "@/api/profiles";
+import { getFarmsByUser } from "@/api/farms";
 import { 
   MapPin, 
   CheckCircle2, 
@@ -68,12 +68,7 @@ const ProfileDetail = () => {
       const profileData = await getUserProfile(id);
       setProfile(profileData as any);
 
-      const { data: farmsData, error: farmsError } = await supabase
-        .from('farms')
-        .select('*, produce (*)')
-        .eq('user_id', id);
-
-      if (farmsError) throw farmsError;
+      const farmsData = await getFarmsByUser(id);
       setFarms(farmsData || []);
     } catch (error: any) {
       console.error("Error fetching profile:", error);
@@ -90,12 +85,7 @@ const ProfileDetail = () => {
   const handleAdminAction = async (updates: any, actionName: string) => {
     if (!profile) return;
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', profile.id);
-
-      if (error) throw error;
+      await updateProfile(profile.id, updates);
       showSuccess(`${actionName} updated successfully.`);
       fetchProfileData();
     } catch (err: any) {
@@ -108,12 +98,7 @@ const ProfileDetail = () => {
     if (!confirm("Are you sure? This will delete the user profile and all their associated data. This cannot be undone.")) return;
     
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', profile.id);
-
-      if (error) throw error;
+      await deleteProfile(profile.id);
       showSuccess("Member deleted successfully.");
       navigate("/");
     } catch (err: any) {
