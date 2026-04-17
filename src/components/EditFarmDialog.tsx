@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit2, Loader2, Image as ImageIcon, MapPin, Globe, Ruler, Tag } from "lucide-react";
+import { Edit2, Loader2, Image as ImageIcon, Ruler, Tag } from "lucide-react";
 import { updateFarm } from "@/api/farms";
 import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Farm } from "@/types/farm";
 import { useSession } from "./SessionProvider";
+
 
 interface EditFarmDialogProps {
   farm: Farm;
@@ -37,7 +38,6 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
     address: farm.address || "",
     latitude: farm.latitude?.toString() || "",
     longitude: farm.longitude?.toString() || "",
-    google_maps_url: farm.google_maps_url || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,9 +61,8 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
         size_value: formData.sizeValue ? parseFloat(formData.sizeValue) : undefined,
         size_unit: formData.sizeUnit,
         address: formData.address,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-        google_maps_url: formData.google_maps_url,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : 0,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : 0,
         picture_url: pictureUrl ? pictureUrl : undefined,
       });
 
@@ -77,139 +76,111 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
     }
   };
 
+
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="h-10 px-4 rounded-xl border-slate-200">
           <Edit2 className="w-3 h-3 mr-2" />
           Edit Farm
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-3xl">
+      <DialogContent className="sm:max-w-[600px] max-h-[95vh] overflow-y-auto rounded-[32px] border-none shadow-2xl">
         <DialogHeader>
-          <DialogTitle>Edit Farm Details</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-emerald-900">Edit Farm Details</DialogTitle>
           <DialogDescription>
-            Modify the location, size, or about section of your farm.
+            Update your farm's vision and location details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit-name">Farm Name</Label>
-            <Input 
-              id="edit-name" 
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-about">About the Farm</Label>
-            <Textarea 
-              id="edit-about" 
-              className="min-h-[100px] rounded-xl"
-              value={formData.about}
-              onChange={(e) => setFormData({...formData, about: e.target.value})}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-tags">Farm Tags (comma separated)</Label>
-            <div className="relative">
-              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name" className="text-emerald-800 font-semibold ml-1">Farm Name</Label>
               <Input 
-                id="edit-tags" 
-                className="pl-10"
-                placeholder="e.g. Organic, Forest Garden" 
-                value={formData.tags}
-                onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                id="edit-name" 
+                className="h-12 rounded-2xl border-slate-200 focus:ring-emerald-500"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-about" className="text-emerald-800 font-semibold ml-1">About the Farm</Label>
+              <Textarea 
+                id="edit-about" 
+                className="min-h-[120px] rounded-[24px] border-slate-200 focus:ring-emerald-500"
+                value={formData.about}
+                onChange={(e) => setFormData({...formData, about: e.target.value})}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-size">Farm Size</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input 
-                  id="edit-size" 
-                  type="number"
-                  step="any"
-                  className="pl-10"
-                  value={formData.sizeValue}
-                  onChange={(e) => setFormData({...formData, sizeValue: e.target.value})}
-                  required
-                />
-              </div>
-              <Select 
-                value={formData.sizeUnit} 
-                onValueChange={(value) => setFormData({...formData, sizeUnit: value})}
-              >
-                <SelectTrigger className="w-[120px] rounded-xl">
-                  <SelectValue placeholder="Unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Acre">Acre</SelectItem>
-                  <SelectItem value="Hectare">Hectare</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-4 border-t border-slate-100 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-address">Manual Address</Label>
+              <Label htmlFor="edit-tags" className="text-emerald-800 font-semibold ml-1">Farm Tags</Label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
-                  id="edit-address" 
-                  className="pl-10"
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-latitude">Latitude</Label>
-                <Input 
-                  id="edit-latitude" 
-                  type="number" 
-                  step="any"
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-longitude">Longitude</Label>
-                <Input 
-                  id="edit-longitude" 
-                  type="number" 
-                  step="any"
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+                  id="edit-tags" 
+                  className="pl-10 h-12 rounded-2xl border-slate-200"
+                  placeholder="Organic, Forest Garden..." 
+                  value={formData.tags}
+                  onChange={(e) => setFormData({...formData, tags: e.target.value})}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-maps_url">Google Maps Link</Label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input 
-                  id="edit-maps_url" 
-                  className="pl-10"
-                  value={formData.google_maps_url}
-                  onChange={(e) => setFormData({...formData, google_maps_url: e.target.value})}
-                />
+              <Label htmlFor="edit-size" className="text-emerald-800 font-semibold ml-1">Farm Size</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input 
+                    id="edit-size" 
+                    type="number"
+                    step="any"
+                    className="pl-10 h-12 rounded-2xl border-slate-200"
+                    value={formData.sizeValue}
+                    onChange={(e) => setFormData({...formData, sizeValue: e.target.value})}
+                    required
+                  />
+                </div>
+                <Select 
+                  value={formData.sizeUnit} 
+                  onValueChange={(value) => setFormData({...formData, sizeUnit: value})}
+                >
+                  <SelectTrigger className="w-[120px] h-12 rounded-2xl border-slate-200 shadow-none">
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="Acre">Acre</SelectItem>
+                    <SelectItem value="Hectare">Hectare</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2 border-t border-slate-100 pt-4">
-            <Label htmlFor="edit-image">Farm Picture</Label>
+          {/* Section 3: Location */}
+          <div className="space-y-4 pt-2">
+            <Label htmlFor="edit-address" className="text-emerald-800 font-semibold ml-1">Farm Address</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              <Textarea 
+                id="edit-address" 
+                placeholder="Enter the full address or landmark of your farm..." 
+                className="pl-10 min-h-[80px] rounded-2xl border-slate-200 focus:ring-emerald-500"
+                value={formData.address}
+                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <Label htmlFor="edit-image" className="text-emerald-800 font-semibold ml-1">Farm Picture</Label>
             <div className="flex items-center gap-4">
               <Input 
                 id="edit-image" 
@@ -221,17 +192,17 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
               <Button 
                 type="button" 
                 variant="outline" 
-                className="w-full rounded-xl border-dashed"
+                className="w-full h-14 rounded-2xl border-dashed border-2 hover:bg-slate-50 border-slate-200 text-slate-500"
                 onClick={() => document.getElementById('edit-image')?.click()}
               >
-                <ImageIcon className="w-4 h-4 mr-2" />
-                {imageFile ? imageFile.name : "Change Picture"}
+                <ImageIcon className="w-5 h-5 mr-3" />
+                {imageFile ? imageFile.name : "Change Farm Picture"}
               </Button>
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-emerald-600 rounded-xl h-12" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+          <Button type="submit" className="w-full bg-emerald-600 rounded-[22px] h-14 text-lg font-bold shadow-lg shadow-emerald-200" disabled={loading}>
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
           </Button>
         </form>
       </DialogContent>

@@ -24,7 +24,6 @@ export interface Farm {
   address?: string;
   latitude?: number;
   longitude?: number;
-  google_maps_url?: string;
   size_value?: number;
   size_unit?: string;
   picture_url?: string;
@@ -59,7 +58,6 @@ export interface Producer {
   address?: string;
   latitude?: number;
   longitude?: number;
-  google_maps_url?: string;
   produce?: Produce[];
   locations?: string[];
   tags?: string[];

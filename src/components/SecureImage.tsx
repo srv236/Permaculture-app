@@ -11,10 +11,10 @@ interface SecureImageProps {
   alt: string;
   className?: string;
   fallback?: string;
-  coordinates?: { lat?: number; lng?: number };
+
 }
 
-export const SecureImage = ({ path, bucket, alt, className, fallback, coordinates }: SecureImageProps) => {
+export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureImageProps) => {
   const [url, setUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
 

@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
 import { PermafolkCard } from "@/components/PermafolkCard";
 import { ProduceCard } from "@/components/ProduceCard";
-import { FarmMap } from "@/components/FarmMap";
+
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Sprout, Loader2, Map as MapIcon, User, ShoppingBasket, LogIn, Users, MapPin, Ruler, LayoutGrid, List, Grid2X2 } from "lucide-react";
@@ -50,7 +50,6 @@ const Index = () => {
     totalProduce: 0,
     totalFarmSize: "0"
   });
-  const [mapLocations, setMapLocations] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPublicStats = async () => {
@@ -59,14 +58,7 @@ const Index = () => {
         const response = await fetch('https://jhvybduaojbotojvxgvs.supabase.co/functions/v1/get-public-stats');
         if (response.ok) {
           const data = await response.json();
-          // Handling the updated response format
-          if (data.stats) {
-            setStats(data.stats);
-            setMapLocations(data.locations || []);
-          } else {
-            // Fallback for older format during transition
-            setStats(data);
-          }
+          setStats(data);
         }
       } catch (error) {
         console.error("Error fetching public stats:", error);
@@ -174,23 +166,7 @@ const Index = () => {
           )}
         </div>
 
-        <div className="mb-16">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2"><MapIcon className="w-6 h-6 text-emerald-600" />Farm Network Map</h2>
-            <Badge variant="outline" className="bg-white border-emerald-100 text-emerald-700">
-              {user ? farms.filter(f => f.latitude && f.longitude).length : mapLocations.length} Active Farms
-            </Badge>
-          </div>
-          <div className="h-[500px] w-full rounded-[40px] overflow-hidden border-8 border-white shadow-2xl relative z-0">
-            {(loading || statsLoading) ? (
-              <div className="flex items-center justify-center h-full bg-slate-100">
-                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-              </div>
-            ) : (
-              <FarmMap farms={user ? farms : mapLocations} />
-            )}
-          </div>
-        </div>
+
 
         {!user ? (
           <Card className="border-dashed border-2 border-emerald-200 bg-white py-20 text-center rounded-[40px]">
@@ -243,9 +219,7 @@ const Index = () => {
                             is_verified: (farm as any).profiles?.is_verified || false,
                             has_completed_course: true,
                             produce: farm.produce,
-                            latitude: farm.latitude,
-                            longitude: farm.longitude,
-                            google_maps_url: farm.google_maps_url,
+
                             address: farm.address,
                             tags: farm.tags
                           } as any} 

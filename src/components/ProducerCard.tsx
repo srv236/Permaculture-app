@@ -10,9 +10,7 @@ import { Badge } from "./ui/badge";
 interface ExtendedProducer extends Producer {
   farm_name?: string;
   address?: string;
-  latitude?: number;
-  longitude?: number;
-  google_maps_url?: string;
+
   produce?: Produce[];
 }
 

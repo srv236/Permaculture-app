@@ -23,21 +23,7 @@ import {
   Navigation
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
 
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-const DefaultIcon = L.icon({
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
 
 const FarmDetail = () => {
   const { id } = useParams();
@@ -82,35 +68,7 @@ const FarmDetail = () => {
 
   if (!farm) return null;
 
-  // Helper to construct an embed URL from a Google Maps link or address
-  const getEmbedUrl = () => {
-    if (farm.google_maps_url) {
-      // If it's already an embed URL, use it
-      if (farm.google_maps_url.includes('google.com/maps/embed')) {
-        return farm.google_maps_url;
-      }
-      
-      // Use the standard embed format which doesn't require an API key
-      return `https://maps.google.com/maps?q=${encodeURIComponent(farm.google_maps_url)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
-    }
-    
-    // Fallback to address if no URL but address exists
-    if (farm.address) {
-      return `https://maps.google.com/maps?q=${encodeURIComponent(farm.address)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
-    }
-    
-    // Final fallback to farm name
-    return `https://maps.google.com/maps?q=${encodeURIComponent(farm.name)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
-  };
-
-  const embedUrl = getEmbedUrl();
-  const hasManualCoords = farm.latitude && farm.longitude;
-  const hasLocationInfo = farm.address || hasManualCoords || farm.google_maps_url;
-
-  const mapsUrl = farm.google_maps_url || 
-    (hasManualCoords 
-      ? `https://www.google.com/maps/search/?api=1&query=${farm.latitude},${farm.longitude}`
-      : null);
+  const hasLocationInfo = !!farm.address;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -122,7 +80,7 @@ const FarmDetail = () => {
           bucket="profile_pictures"
           alt={farm.name}
           className="w-full h-full object-cover"
-          coordinates={farm.latitude ? { lat: farm.latitude, lng: farm.longitude } : undefined}
+
           fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1200"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -211,128 +169,33 @@ const FarmDetail = () => {
               )}
             </div>
 
-            {/* Map Section */}
+            {/* Location Section */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                <MapIcon className="w-6 h-6 text-emerald-600" />
+                <MapPin className="w-6 h-6 text-emerald-600" />
                 Farm Location
               </h2>
               {hasLocationInfo ? (
-                <div className="space-y-6">
-                  {/* Priority 1: Google Maps URL Embed */}
-                  {farm.google_maps_url ? (
-                    <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0 bg-slate-100">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        scrolling="no"
-                        marginHeight={0}
-                        marginWidth={0}
-                        src={embedUrl || ""}
-                        title="Farm Location Map"
-                        className="grayscale-[0.2] contrast-[1.1]"
-                      />
-                    </div>
-                  ) : hasManualCoords ? (
-                    /* Priority 2: Manual Coordinates with Leaflet */
-                    <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0">
-                      <MapContainer 
-                        center={[farm.latitude!, farm.longitude!]} 
-                        zoom={13} 
-                        scrollWheelZoom={false} 
-                        className="h-full w-full"
-                      >
-                        <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                        <Marker position={[farm.latitude!, farm.longitude!]}>
-                          <Popup>
-                            <div className="p-1">
-                              <p className="font-bold text-emerald-900">{farm.name}</p>
-                              <p className="text-xs text-slate-500">{farm.address}</p>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      </MapContainer>
-                    </div>
-                  ) : (
-                    /* Fallback: Address Embed */
-                    <div className="h-[400px] w-full rounded-3xl overflow-hidden border-4 border-white shadow-xl relative z-0 bg-slate-100">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        scrolling="no"
-                        marginHeight={0}
-                        marginWidth={0}
-                        src={embedUrl || ""}
-                        title="Farm Location Map"
-                        className="grayscale-[0.2] contrast-[1.1]"
-                      />
-                    </div>
-                  )}
-
-                  {/* Explicit Location Details Card */}
-                  <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <MapPin className="w-3 h-3" /> Manual Address
-                          </p>
-                          <p className="text-slate-700 font-medium text-sm leading-relaxed">
-                            {farm.address || "No address provided"}
+                <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center shrink-0">
+                          <MapPin className="w-6 h-6 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Manual Address</p>
+                          <p className="text-slate-700 font-medium text-lg leading-relaxed">
+                            {farm.address}
                           </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <Navigation className="w-3 h-3" /> Coordinates
-                          </p>
-                          <div className="flex gap-4">
-                            <div className="flex flex-col">
-                              <span className="text-[10px] text-slate-400">Latitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.latitude || "N/A"}</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-[10px] text-slate-400">Longitude</span>
-                              <span className="text-slate-700 font-medium text-sm font-mono">{farm.longitude || "N/A"}</span>
-                            </div>
-                          </div>
-                        </div>
-                        {farm.google_maps_url && (
-                          <div className="space-y-1 md:col-span-2 pt-4 border-t border-slate-50">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                              <Globe className="w-3 h-3" /> Google Maps Link
-                            </p>
-                            <a 
-                              href={farm.google_maps_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-emerald-600 hover:text-emerald-700 hover:underline break-all text-xs font-medium flex items-center gap-1 mt-1"
-                            >
-                              {farm.google_maps_url} <ExternalLink className="w-3 h-3 shrink-0" />
-                            </a>
-                          </div>
-                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {mapsUrl && (
-                    <Button 
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 h-14 text-lg rounded-2xl shadow-lg shadow-emerald-100"
-                      onClick={() => window.open(mapsUrl, "_blank")}
-                    >
-                      <ExternalLink className="w-5 h-5 mr-2" />
-                      Open in Google Maps
-                    </Button>
-                  )}
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ) : (
                 <Card className="border-dashed border-2 border-slate-200 bg-transparent py-12 text-center rounded-[32px]">
-                  <p className="text-slate-400">No location information provided for this farm.</p>
+                  <p className="text-slate-400">No address information provided for this farm.</p>
                 </Card>
               )}
             </div>
