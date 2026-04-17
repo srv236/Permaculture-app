@@ -60,6 +60,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
         image_url = await uploadImage(imageFile, "produce_images", user.id);
       }
 
+      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
+
       await createProduce({
         farm_id: farmId,
         name: formData.name,

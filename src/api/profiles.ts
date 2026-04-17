@@ -66,3 +66,14 @@ export const deleteProfile = async (id: string) => {
 
   if (error) throw error;
 };
+
+export const isEmailRegistered = async (email: string) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email.trim())
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
+};

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { GraduationCap, AlertCircle, Loader2, Calendar, Facebook, Instagram, Youtube, Globe, Smartphone } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { signUp } from "@/api/auth";
-import { createProfile } from "@/api/profiles";
+import { createProfile, isEmailRegistered } from "@/api/profiles";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -44,6 +44,15 @@ const Register = () => {
 
     setLoading(true);
     try {
+      // 1. Check if profile already exists (User's primary requirement)
+      const exists = await isEmailRegistered(formData.email);
+      if (exists) {
+        showError("This email is already registered. Please login instead.");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Attempt Auth Sign Up
       const authData = await signUp(formData.email, formData.password);
 
       if (authData.user) {
@@ -70,7 +79,12 @@ const Register = () => {
         navigate("/dashboard");
       }
     } catch (error: any) {
-      showError(error.message || "An error occurred during registration.");
+      console.error("Registration error:", error);
+      if (error.message?.includes("already registered") || error.code === "user_already_exists") {
+        showError("This email is registered in our security system but has no active profile. Please try logging in or contact support.");
+      } else {
+        showError(error.message || "An error occurred during registration.");
+      }
     } finally {
       setLoading(false);
     }
