@@ -191,7 +191,7 @@ const Dashboard = () => {
                           bucket="profile_pictures"
                           alt={farm.name}
                           className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700"
-                          coordinates={farm.latitude ? { lat: farm.latitude, lng: farm.longitude } : undefined}
+
                           fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400"
                         />
                         <div className="absolute top-4 right-4 flex gap-2">

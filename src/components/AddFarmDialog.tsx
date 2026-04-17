@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Image as ImageIcon, Ruler, Tag } from "lucide-react";
+import { Plus, Loader2, Image as ImageIcon, Ruler, Tag, MapPin } from "lucide-react";
 import { createFarm } from "@/api/farms";
 import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";

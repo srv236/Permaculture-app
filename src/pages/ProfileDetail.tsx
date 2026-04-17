@@ -356,7 +356,7 @@ const ProfileDetail = () => {
                             bucket="profile_pictures"
                             alt={farm.name}
                             className="w-full h-full group-hover:scale-110 transition-transform duration-500"
-                            coordinates={farm.latitude ? { lat: farm.latitude, lng: farm.longitude } : undefined}
+
                             fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400"
                           />
                         </div>
