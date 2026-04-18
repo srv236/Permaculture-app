@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
-import { Search, MapPin, Loader2, Target } from "lucide-react";
+import { Search, MapPin, Loader2, Target, Navigation } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import L from "leaflet";
@@ -28,7 +28,6 @@ interface LocationPickerProps {
   initialAddress?: string;
 }
 
-// Sub-component to handle map centering and movement
 const MapController = ({ center }: { center: [number, number] }) => {
   const map = useMap();
   useEffect(() => {
@@ -37,7 +36,6 @@ const MapController = ({ center }: { center: [number, number] }) => {
   return null;
 };
 
-// Sub-component to track map movement
 const LocationTracker = ({ onMove }: { onMove: (lat: number, lng: number) => void }) => {
   useMapEvents({
     moveend: (e) => {
@@ -50,7 +48,7 @@ const LocationTracker = ({ onMove }: { onMove: (lat: number, lng: number) => voi
 
 export const LocationPicker = ({ 
   onLocationSelect, 
-  initialLat = 20.5937, // Default to India center
+  initialLat = 20.5937, 
   initialLng = 78.9629,
   initialAddress = "" 
 }: LocationPickerProps) => {
@@ -59,13 +57,16 @@ export const LocationPicker = ({
   const [currentPos, setCurrentPos] = useState({ lat: initialLat, lng: initialLng });
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [foundAddress, setFoundAddress] = useState<string | null>(null);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
+    setFoundAddress(null);
     try {
+      // Added addressdetails=1 and limit=1 for better precision
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(searchQuery)}&limit=1`
       );
       const data = await response.json();
       if (data && data.length > 0) {
@@ -74,7 +75,9 @@ export const LocationPicker = ({
         const newLng = parseFloat(lon);
         setMapCenter([newLat, newLng]);
         setCurrentPos({ lat: newLat, lng: newLng });
-        // We don't call onLocationSelect yet, user needs to confirm pin position
+        setFoundAddress(display_name);
+        // Automatically update the search query with the standardized address
+        setSearchQuery(display_name);
       }
     } catch (error) {
       console.error("Search error:", error);
@@ -83,10 +86,39 @@ export const LocationPicker = ({
     }
   };
 
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) return;
+    
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setMapCenter([latitude, longitude]);
+        setCurrentPos({ lat: latitude, lng: longitude });
+        
+        // Reverse geocode to get the address for current location
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          if (data.display_name) {
+            setSearchQuery(data.display_name);
+            setFoundAddress(data.display_name);
+          }
+        } catch (e) {}
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLoading(false);
+      }
+    );
+  };
+
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      // Reverse geocode to get a cleaner address for the pin position
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentPos.lat}&lon=${currentPos.lng}`
       );
@@ -126,13 +158,30 @@ export const LocationPicker = ({
         <Button 
           type="button" 
           variant="secondary" 
-          className="h-11 px-6 rounded-xl"
+          className="h-11 px-4 rounded-xl"
           onClick={handleSearch}
           disabled={isSearching}
         >
           {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
         </Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="h-11 px-4 rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+          onClick={handleUseMyLocation}
+        >
+          <Navigation className="w-4 h-4" />
+        </Button>
       </div>
+
+      {foundAddress && (
+        <div className="bg-blue-50 border border-blue-100 p-3 rounded-xl flex gap-2 items-start">
+          <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+          <div className="text-[10px] text-blue-800 leading-tight">
+            <span className="font-bold">Match Found:</span> {foundAddress}
+          </div>
+        </div>
+      )}
 
       <div className="relative h-64 w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
         <MapContainer 
@@ -149,7 +198,6 @@ export const LocationPicker = ({
           <LocationTracker onMove={(lat, lng) => setCurrentPos({ lat, lng })} />
         </MapContainer>
 
-        {/* Static Center Pin Overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[1000] mb-8">
           <div className="flex flex-col items-center">
             <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm mb-1 border border-slate-200">
@@ -160,7 +208,6 @@ export const LocationPicker = ({
           </div>
         </div>
 
-        {/* Current Coordinates Tag */}
         <div className="absolute bottom-3 right-3 z-[1000] bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm text-[10px] font-mono text-slate-500">
           {currentPos.lat.toFixed(6)}, {currentPos.lng.toFixed(6)}
         </div>
@@ -182,3 +229,6 @@ export const LocationPicker = ({
     </div>
   );
 };
+
+// Add Info icon to imports since it's used in the feedback box
+import { Info as LucideInfo } from "lucide-react";
