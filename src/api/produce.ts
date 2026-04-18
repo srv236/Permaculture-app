@@ -4,10 +4,16 @@ import { Produce } from "@/types/farm";
 export const getAllProduce = async () => {
   const { data, error } = await supabase
     .from('produce')
-    .select('*, farms(name)');
+    .select(`
+      *, 
+      farms(
+        name, 
+        profiles(is_hidden)
+      )
+    `);
 
   if (error) throw error;
-  return data as (Produce & { farms?: { name: string } })[];
+  return data as (Produce & { farms?: { name: string, profiles?: { is_hidden: boolean } } })[];
 };
 
 export const getProduceByFarm = async (farmId: string) => {
