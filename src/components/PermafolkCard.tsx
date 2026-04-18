@@ -1,6 +1,8 @@
+"use client";
+
 import { Producer } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { CheckCircle2, ArrowRight, User } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -21,7 +23,6 @@ export const PermafolkCard = ({ permafolk, layout = "grid" }: PermafolkCardProps
               bucket="profile_pictures"
               alt={permafolk.name}
               className="w-full h-full"
-              fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=200"
             />
           </div>
         </Link>
@@ -51,7 +52,6 @@ export const PermafolkCard = ({ permafolk, layout = "grid" }: PermafolkCardProps
               bucket="profile_pictures"
               alt={permafolk.name}
               className="w-full h-full"
-              fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=200"
             />
           </div>
           <span className="text-[10px] font-bold text-emerald-900 text-center truncate w-full">{permafolk.name}</span>
@@ -71,7 +71,6 @@ export const PermafolkCard = ({ permafolk, layout = "grid" }: PermafolkCardProps
                 bucket="profile_pictures"
                 alt={permafolk.name}
                 className="w-full h-full group-hover:scale-110 transition-transform duration-500"
-                fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=200"
               />
             </div>
             <div className="flex-1">

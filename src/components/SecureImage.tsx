@@ -4,22 +4,25 @@ import { useState, useEffect } from "react";
 import { getSignedUrl, getPublicUrl } from "@/api/upload";
 import { Skeleton } from "./ui/skeleton";
 import { cn } from "@/lib/utils";
+import { ImagePlaceholder } from "./ImagePlaceholder";
 
 interface SecureImageProps {
-  path?: string;
+  path?: string | null;
   bucket: "produce_images" | "profile_pictures" | "assets";
   alt: string;
   className?: string;
   fallback?: string;
-
 }
 
 export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureImageProps) => {
   const [url, setUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchUrl = async () => {
+      setError(false);
+      
       if (!path) {
         setUrl(fallback || "");
         setLoading(false);
@@ -57,6 +60,12 @@ export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureIm
     return <Skeleton className={cn("w-full h-full", className)} />;
   }
 
+  // If we have no URL and no fallback, show the text placeholder
+  if ((!url && !fallback) || error) {
+    const placeholderText = bucket === 'profile_pictures' ? 'Practitioner' : bucket === 'produce_images' ? 'Produce' : 'Image';
+    return <ImagePlaceholder text={placeholderText} className={className} />;
+  }
+
   return (
     <img 
       src={url || fallback} 
@@ -65,6 +74,8 @@ export const SecureImage = ({ path, bucket, alt, className, fallback }: SecureIm
       onError={() => {
         if (fallback && url !== fallback) {
           setUrl(fallback);
+        } else {
+          setError(true);
         }
       }}
     />

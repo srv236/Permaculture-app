@@ -64,7 +64,6 @@ const ProfileDetail = () => {
     
     setLoading(true);
     try {
-      // Using the validated and parameterized user lookup service
       const profileData = await getUserProfile(id);
       setProfile(profileData as any);
 
@@ -226,7 +225,6 @@ const ProfileDetail = () => {
                 bucket="profile_pictures"
                 alt={profile.name}
                 className="w-full h-full"
-                fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=400"
               />
             </div>
             <div className="text-center md:text-left flex-1">
@@ -356,8 +354,6 @@ const ProfileDetail = () => {
                             bucket="profile_pictures"
                             alt={farm.name}
                             className="w-full h-full group-hover:scale-110 transition-transform duration-500"
-
-                            fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400"
                           />
                         </div>
                         <div className="md:w-2/3 p-6 flex flex-col justify-between">

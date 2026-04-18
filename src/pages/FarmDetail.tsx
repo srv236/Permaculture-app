@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -14,16 +16,11 @@ import {
   ArrowLeft, 
   Loader2, 
   Sprout,
-  ExternalLink,
   Ruler,
-  Map as MapIcon,
   Info,
-  Tag,
-  Globe,
-  Navigation
+  Tag
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
 
 const FarmDetail = () => {
   const { id } = useParams();
@@ -80,8 +77,6 @@ const FarmDetail = () => {
           bucket="profile_pictures"
           alt={farm.name}
           className="w-full h-full object-cover"
-
-          fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1200"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 w-full p-8">

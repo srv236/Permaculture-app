@@ -16,7 +16,6 @@ interface ProduceCardProps {
 export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: ProduceCardProps) => {
   const displayPrice = `₹${produce.price_value || 0} per ${produce.price_unit || 'kg'}`;
 
-  // Helper for clickable wrapper to farm harvest page
   const CardWrapper = ({ children }: { children: React.ReactNode }) => (
     <Link to={`/farm/${produce.farm_id}`} className="block h-full">
       {children}
@@ -33,7 +32,6 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
               bucket="produce_images"
               alt={produce.name}
               className="object-cover w-full h-full transition-transform group-hover:scale-110 duration-700"
-              fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
             />
           </div>
           <CardContent className="p-4 flex-1 flex flex-col justify-between overflow-hidden">
@@ -76,7 +74,7 @@ export const ProduceCard = ({ produce, showFarm = false, layout = "grid" }: Prod
     );
   }
 
-if (layout === "compact") {
+  if (layout === "compact") {
     return (
       <CardWrapper>
         <Card className="overflow-hidden border-none shadow-sm bg-white rounded-xl group relative aspect-square hover:shadow-lg transition-all">
@@ -85,9 +83,7 @@ if (layout === "compact") {
             bucket="produce_images"
             alt={produce.name}
             className="object-cover w-full h-full transition-transform group-hover:scale-110 duration-700"
-            fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
           />
-          {/* Always visible overlay for compact view */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-2.5">
             <p className="text-white text-xs font-bold truncate leading-tight">{produce.name}</p>
             <div className="flex items-center justify-between mt-0.5">
@@ -97,7 +93,7 @@ if (layout === "compact") {
               </Badge>
             </div>
           </div>
-        </Card> {/* <--- FIXED: Closes the Card component */}
+        </Card>
       </CardWrapper>
     );
   }
@@ -111,7 +107,6 @@ if (layout === "compact") {
             bucket="produce_images"
             alt={produce.name}
             className="object-cover w-full h-full transition-transform group-hover:scale-110 duration-700"
-            fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400"
           />
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             <Badge className="bg-white/90 hover:bg-white text-emerald-900 border-none backdrop-blur-md px-2.5 py-1 text-[10px] font-bold shadow-sm">

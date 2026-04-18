@@ -1,6 +1,8 @@
+"use client";
+
 import { Producer, Produce } from "../types/farm";
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { MapPin, CheckCircle2, ArrowRight, User, Tag, Sprout } from "lucide-react";
+import { MapPin, CheckCircle2, ArrowRight, User, Tag } from "lucide-react";
 import { ProduceCard } from "./ProduceCard";
 import { SecureImage } from "./SecureImage";
 import { Link } from "react-router-dom";
@@ -10,7 +12,6 @@ import { Badge } from "./ui/badge";
 interface ExtendedProducer extends Producer {
   farm_name?: string;
   address?: string;
-
   produce?: Produce[];
 }
 
@@ -32,7 +33,6 @@ export const ProducerCard = ({ producer, layout = "grid" }: ProducerCardProps) =
               bucket="profile_pictures"
               alt={producer.name}
               className="w-full h-full"
-              fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=200"
             />
           </div>
         </Link>
@@ -70,7 +70,6 @@ export const ProducerCard = ({ producer, layout = "grid" }: ProducerCardProps) =
               bucket="profile_pictures"
               alt={producer.name}
               className="w-full h-full transition-transform group-hover:scale-110"
-              fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=200"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
               <h3 className="text-white font-bold text-sm truncate">{producer.farm_name}</h3>
@@ -95,7 +94,6 @@ export const ProducerCard = ({ producer, layout = "grid" }: ProducerCardProps) =
                 bucket="profile_pictures"
                 alt={producer.name}
                 className="w-full h-full group-hover:scale-110 transition-transform duration-500"
-                fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=200"
               />
             </div>
           </Link>

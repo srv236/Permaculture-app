@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { Farm, Producer } from "@/types/farm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, LayoutDashboard, CheckCircle2, Clock, MapPin, Ruler, GraduationCap, Calendar, Phone, Mail } from "lucide-react";
+import { Trash2, Loader2, LayoutDashboard, CheckCircle2, Clock, MapPin, Ruler, GraduationCap, Phone, Mail } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { useNavigate } from "react-router-dom";
 import { AddFarmDialog } from "@/components/AddFarmDialog";
@@ -125,7 +125,6 @@ const Dashboard = () => {
                       bucket="profile_pictures"
                       alt={profile?.name || "Permafolk"}
                       className="w-full h-full"
-                      fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=200"
                     />
                   </div>
                 </div>
@@ -191,8 +190,6 @@ const Dashboard = () => {
                           bucket="profile_pictures"
                           alt={farm.name}
                           className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700"
-
-                          fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400"
                         />
                         <div className="absolute top-4 right-4 flex gap-2">
                           <EditFarmDialog farm={farm} onSuccess={fetchData} />
@@ -240,7 +237,6 @@ const Dashboard = () => {
                                       bucket="produce_images"
                                       alt={item.name}
                                       className="w-full h-full object-cover"
-                                      fallback="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=100"
                                     />
                                   </div>
                                   <div className="flex-1 min-w-0">
