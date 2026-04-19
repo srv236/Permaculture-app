@@ -11,12 +11,12 @@ import { ContactButtons } from "@/components/ContactButtons";
 import { useSession } from "@/components/SessionProvider";
 import { getUserProfile, updateProfile, deleteProfile } from "@/api/profiles";
 import { getFarmsByUser } from "@/api/farms";
-import { 
-  MapPin, 
-  CheckCircle2, 
+import {
+  MapPin,
+  CheckCircle2,
   XCircle,
-  ArrowLeft, 
-  Loader2, 
+  ArrowLeft,
+  Loader2,
   GraduationCap,
   Award,
   Lock,
@@ -37,13 +37,13 @@ import {
   LogIn
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { showSuccess, showError } from "@/utils/toast";
 
@@ -61,9 +61,10 @@ const ProfileDetail = () => {
       setLoading(false);
       return;
     }
-    
+
     setLoading(true);
     try {
+      // Using the validated and parameterized user lookup service
       const profileData = await getUserProfile(id);
       setProfile(profileData as any);
 
@@ -95,7 +96,7 @@ const ProfileDetail = () => {
   const handleDeleteUser = async () => {
     if (!profile) return;
     if (!confirm("Are you sure? This will delete the user profile and all their associated data. This cannot be undone.")) return;
-    
+
     try {
       await deleteProfile(profile.id);
       showSuccess("Member deleted successfully.");
@@ -169,16 +170,16 @@ const ProfileDetail = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-      
+
       <div className="bg-emerald-900 text-white pt-20 pb-32 px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-400 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
         </div>
-        
+
         <div className="container mx-auto relative z-10">
           <div className="flex justify-between items-start mb-8">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="text-emerald-100 hover:bg-white/10 -ml-2"
               onClick={() => navigate(-1)}
             >
@@ -207,8 +208,8 @@ const ProfileDetail = () => {
                     {(profile as any).is_hidden ? <><Eye className="w-4 h-4 mr-2" /> Show Member</> : <><EyeOff className="w-4 h-4 mr-2" /> Suppress Member</>}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    className="text-red-600 focus:bg-red-50 focus:text-red-700" 
+                  <DropdownMenuItem
+                    className="text-red-600 focus:bg-red-50 focus:text-red-700"
                     onClick={handleDeleteUser}
                   >
                     <Trash2 className="w-4 h-4 mr-2" /> Delete Account
@@ -217,14 +218,15 @@ const ProfileDetail = () => {
               </DropdownMenu>
             )}
           </div>
-          
+
           <div className="flex flex-col md:flex-row items-center gap-8 md:items-end">
             <div className="w-40 h-40 rounded-[40px] overflow-hidden border-4 border-emerald-800 shadow-2xl bg-white shrink-0">
-              <SecureImage 
+              <SecureImage
                 path={profile.picture_url}
                 bucket="profile_pictures"
                 alt={profile.name}
                 className="w-full h-full"
+                fallback="https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&q=80&w=400"
               />
             </div>
             <div className="text-center md:text-left flex-1">
@@ -248,14 +250,14 @@ const ProfileDetail = () => {
                 )}
               </div>
               <p className="text-emerald-300 text-xl font-medium mb-4">Permaculture Practitioner</p>
-              
+
               {socialLinks.length > 0 && (
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4">
                   {socialLinks.map(link => (
-                    <a 
-                      key={link.id} 
-                      href={link.url?.startsWith('http') ? link.url : `https://${link.url}`} 
-                      target="_blank" 
+                    <a
+                      key={link.id}
+                      href={link.url?.startsWith('http') ? link.url : `https://${link.url}`}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all border border-white/10 flex items-center gap-2 text-sm"
                     >
@@ -268,10 +270,10 @@ const ProfileDetail = () => {
             </div>
             <div className="shrink-0 w-full md:w-auto">
               <div className="space-y-4">
-                <ContactButtons 
-                  phone={profile.phone} 
-                  email={profile.email} 
-                  name={profile.name} 
+                <ContactButtons
+                  phone={profile.phone}
+                  email={profile.email}
+                  name={profile.name}
                 />
                 {profile.alt_phone && (
                   <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 flex items-center gap-3">
@@ -349,11 +351,13 @@ const ProfileDetail = () => {
                     <Card className="group overflow-hidden border-slate-200 hover:border-emerald-300 hover:shadow-xl transition-all duration-300 rounded-3xl">
                       <div className="flex flex-col md:flex-row">
                         <div className="md:w-1/3 aspect-video md:aspect-auto relative overflow-hidden">
-                          <SecureImage 
+                          <SecureImage
                             path={farm.picture_url}
                             bucket="profile_pictures"
                             alt={farm.name}
                             className="w-full h-full group-hover:scale-110 transition-transform duration-500"
+
+                            fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=400"
                           />
                         </div>
                         <div className="md:w-2/3 p-6 flex flex-col justify-between">

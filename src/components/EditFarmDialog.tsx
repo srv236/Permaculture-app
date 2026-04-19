@@ -13,6 +13,7 @@ import { uploadImage } from "@/api/upload";
 import { showSuccess, showError } from "@/utils/toast";
 import { Farm } from "@/types/farm";
 import { useSession } from "./SessionProvider";
+import { LocationPicker } from "./LocationPicker";
 
 
 interface EditFarmDialogProps {
@@ -25,7 +26,8 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  
+  const [showMap, setShowMap] = useState(false);
+
   const initialValue = farm.size_value?.toString() || "";
   const initialUnit = farm.size_unit || "Hectare";
 
@@ -43,7 +45,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
+
     setLoading(true);
 
     try {
@@ -61,8 +63,8 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
         size_value: formData.sizeValue ? parseFloat(formData.sizeValue) : undefined,
         size_unit: formData.sizeUnit,
         address: formData.address,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : 0,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : 0,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
         picture_url: pictureUrl ? pictureUrl : undefined,
       });
 
@@ -97,22 +99,22 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="text-emerald-800 font-semibold ml-1">Farm Name</Label>
-              <Input 
-                id="edit-name" 
+              <Input
+                id="edit-name"
                 className="h-12 rounded-2xl border-slate-200 focus:ring-emerald-500"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-about" className="text-emerald-800 font-semibold ml-1">About the Farm</Label>
-              <Textarea 
-                id="edit-about" 
+              <Textarea
+                id="edit-about"
                 className="min-h-[120px] rounded-[24px] border-slate-200 focus:ring-emerald-500"
                 value={formData.about}
-                onChange={(e) => setFormData({...formData, about: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, about: e.target.value })}
               />
             </div>
           </div>
@@ -122,12 +124,12 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
               <Label htmlFor="edit-tags" className="text-emerald-800 font-semibold ml-1">Farm Tags</Label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input 
-                  id="edit-tags" 
+                <Input
+                  id="edit-tags"
                   className="pl-10 h-12 rounded-2xl border-slate-200"
-                  placeholder="Organic, Forest Garden..." 
+                  placeholder="Organic, Forest Garden..."
                   value={formData.tags}
-                  onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                 />
               </div>
             </div>
@@ -137,19 +139,19 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input 
-                    id="edit-size" 
+                  <Input
+                    id="edit-size"
                     type="number"
                     step="any"
                     className="pl-10 h-12 rounded-2xl border-slate-200"
                     value={formData.sizeValue}
-                    onChange={(e) => setFormData({...formData, sizeValue: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, sizeValue: e.target.value })}
                     required
                   />
                 </div>
-                <Select 
-                  value={formData.sizeUnit} 
-                  onValueChange={(value) => setFormData({...formData, sizeUnit: value})}
+                <Select
+                  value={formData.sizeUnit}
+                  onValueChange={(value) => setFormData({ ...formData, sizeUnit: value })}
                 >
                   <SelectTrigger className="w-[120px] h-12 rounded-2xl border-slate-200 shadow-none">
                     <SelectValue placeholder="Unit" />
@@ -168,30 +170,46 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
             <Label htmlFor="edit-address" className="text-emerald-800 font-semibold ml-1">Farm Address</Label>
             <div className="relative">
               <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <Textarea 
-                id="edit-address" 
-                placeholder="Enter the full address or landmark of your farm..." 
+              <Textarea
+                id="edit-address"
+                placeholder="Enter the full address or landmark of your farm..."
                 className="pl-10 min-h-[80px] rounded-2xl border-slate-200 focus:ring-emerald-500"
                 value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 required
               />
             </div>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full h-12 rounded-xl border-emerald-100 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 transition-all flex items-center justify-center gap-2"
+              onClick={() => setShowMap(true)}
+            >
+              <MapPin className="w-4 h-4" />
+              {formData.latitude ? "Change Location on Map" : "Pin Precisely on Map"}
+              {formData.latitude && (
+                <span className="ml-auto text-[10px] font-mono bg-emerald-100 px-2 py-0.5 rounded-full text-emerald-600">
+                  {parseFloat(formData.latitude).toFixed(4)}, {parseFloat(formData.longitude).toFixed(4)}
+                </span>
+              )}
+            </Button>
           </div>
+
+
 
           <div className="space-y-2 pt-2">
             <Label htmlFor="edit-image" className="text-emerald-800 font-semibold ml-1">Farm Picture</Label>
             <div className="flex items-center gap-4">
-              <Input 
-                id="edit-image" 
-                type="file" 
+              <Input
+                id="edit-image"
+                type="file"
                 accept="image/*"
                 className="hidden"
                 onChange={(e) => setImageFile(e.target.files?.[0] || null)}
               />
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="w-full h-14 rounded-2xl border-dashed border-2 hover:bg-slate-50 border-slate-200 text-slate-500"
                 onClick={() => document.getElementById('edit-image')?.click()}
               >
@@ -205,6 +223,20 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
           </Button>
         </form>
+        <LocationPicker 
+          open={showMap}
+          onOpenChange={setShowMap}
+          initialLat={formData.latitude ? parseFloat(formData.latitude) : undefined}
+          initialLng={formData.longitude ? parseFloat(formData.longitude) : undefined}
+          onConfirm={(lat, lng, address) => {
+            setFormData({
+              ...formData,
+              latitude: lat.toString(),
+              longitude: lng.toString(),
+              address: address || formData.address
+            });
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

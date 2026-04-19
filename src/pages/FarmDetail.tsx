@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -11,16 +9,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProduceCard } from "@/components/ProduceCard";
 import { ContactButtons } from "@/components/ContactButtons";
-import { 
-  MapPin, 
-  ArrowLeft, 
-  Loader2, 
+import {
+  MapPin,
+  ArrowLeft,
+  Loader2,
   Sprout,
+  ExternalLink,
   Ruler,
+  Map as MapIcon,
   Info,
-  Tag
+  Tag,
+  Globe,
+  Navigation
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+
 
 const FarmDetail = () => {
   const { id } = useParams();
@@ -70,19 +73,21 @@ const FarmDetail = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-      
+
       <div className="relative h-[40vh] min-h-[300px] overflow-hidden">
-        <SecureImage 
+        <SecureImage
           path={farm.picture_url}
           bucket="profile_pictures"
           alt={farm.name}
           className="w-full h-full object-cover"
+
+          fallback="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1200"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 w-full p-8">
           <div className="container mx-auto">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="text-white hover:bg-white/20 mb-4 -ml-2"
               onClick={() => navigate(-1)}
             >
@@ -185,6 +190,17 @@ const FarmDetail = () => {
                           </p>
                         </div>
                       </div>
+                      
+                      {farm.latitude && farm.longitude && (
+                        <Button 
+                          variant="outline" 
+                          className="w-full h-12 rounded-2xl border-emerald-100 bg-emerald-50/30 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 flex items-center justify-center gap-2 group transition-all"
+                          onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${farm.latitude},${farm.longitude}`, '_blank')}
+                        >
+                          <Navigation className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                          Open in Google Maps
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -201,7 +217,7 @@ const FarmDetail = () => {
               <CardContent className="p-6 space-y-6">
                 <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
-                    <SecureImage 
+                    <SecureImage
                       path={producer?.picture_url}
                       bucket="profile_pictures"
                       alt={producer?.name || "Producer"}
@@ -211,8 +227,8 @@ const FarmDetail = () => {
                   <div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Managed by</p>
                     <h3 className="text-lg font-bold text-emerald-900">{producer?.name}</h3>
-                    <Button 
-                      variant="link" 
+                    <Button
+                      variant="link"
                       className="p-0 h-auto text-emerald-600 text-xs font-bold"
                       onClick={() => navigate(`/profile/${producer?.id}`)}
                     >
@@ -222,10 +238,10 @@ const FarmDetail = () => {
                 </div>
 
                 {producer && (
-                  <ContactButtons 
-                    phone={producer.phone} 
-                    email={producer.email} 
-                    name={producer.name} 
+                  <ContactButtons
+                    phone={producer.phone}
+                    email={producer.email}
+                    name={producer.name}
                   />
                 )}
               </CardContent>
