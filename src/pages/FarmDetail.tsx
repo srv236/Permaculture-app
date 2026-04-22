@@ -23,7 +23,7 @@ import {
   Navigation
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
+import { Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 
 const FarmDetail = () => {
   const { id } = useParams();
@@ -184,22 +184,29 @@ const FarmDetail = () => {
                           <MapPin className="w-6 h-6 text-emerald-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Manual Address</p>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Address</p>
                           <p className="text-slate-700 font-medium text-lg leading-relaxed">
                             {farm.address}
                           </p>
                         </div>
                       </div>
-                      
+
                       {farm.latitude && farm.longitude && (
-                        <Button 
-                          variant="outline" 
-                          className="w-full h-12 rounded-2xl border-emerald-100 bg-emerald-50/30 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 flex items-center justify-center gap-2 group transition-all"
-                          onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${farm.latitude},${farm.longitude}`, '_blank')}
-                        >
-                          <Navigation className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                          Open in Google Maps
-                        </Button>
+                        <div className="w-full h-[300px] mt-6 rounded-[24px] overflow-hidden border border-slate-100">
+                          <Map
+                            defaultCenter={{ lat: Number(farm.latitude), lng: Number(farm.longitude) }}
+                            defaultZoom={15}
+                            disableDefaultUI={true}
+                            gestureHandling="cooperative"
+                            mapId="e8c5be880ebdaebd" // Optional map ID
+                          >
+                            <AdvancedMarker position={{ lat: Number(farm.latitude), lng: Number(farm.longitude) }}>
+                               <div className="w-8 h-8 bg-emerald-600 border-2 border-white rounded-full flex items-center justify-center text-white shadow-xl transform -translate-y-1/2">
+                                  <MapPin className="w-4 h-4" />
+                               </div>
+                            </AdvancedMarker>
+                          </Map>
+                        </div>
                       )}
                     </div>
                   </CardContent>

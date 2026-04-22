@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
 import { PermafolkCard } from "@/components/PermafolkCard";
 import { ProduceCard } from "@/components/ProduceCard";
+import { FarmsMap } from "@/components/FarmsMap";
 
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -71,20 +72,50 @@ const Index = () => {
 
   useEffect(() => {
     if (sessionLoading) return;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const farmsData = await getNetworkFarms();
+        let farmsData;
+        
+        if (!user) {
+          // Fetch from edge function by default for guests to avoid RLS errors
+          try {
+            const response = await fetch('https://jhvybduaojbotojvxgvs.supabase.co/functions/v1/get-public-map-farms');
+            if (response.ok) {
+              farmsData = await response.json();
+            } else {
+              console.error("Failed to fetch public map farms from edge function", response.status);
+            }
+          } catch (fnError) {
+            console.error("Error calling edge function:", fnError);
+          }
+        } else {
+          // Fetch full network farms for authenticated members
+          try {
+            farmsData = await getNetworkFarms();
+          } catch (error) {
+            console.error("Could not fetch full network farms:", error);
+          }
+        }
+        
         if (farmsData) setFarms(farmsData as any);
-        const profilesData = await getAllProfiles();
-        if (profilesData) setPermafolk(profilesData as any);
-        const produceData = await getAllProduce();
-        if (produceData) setProduce(produceData as any);
+        
+        try {
+          // Profiles and produce might be restricted for guests by RLS, 
+          // which is fine, we'll just get what's public.
+          const profilesData = await getAllProfiles();
+          if (profilesData) setPermafolk(profilesData as any);
+        } catch (error) {
+          console.warn("Profiles restricted", error);
+        }
+        
+        try {
+          const produceData = await getAllProduce();
+          if (produceData) setProduce(produceData as any);
+        } catch (error) {
+          console.warn("Produce restricted", error);
+        }
       } catch (error) {
         console.error("Error fetching network data:", error);
       } finally {
@@ -92,7 +123,7 @@ const Index = () => {
       }
     };
     fetchData();
-  }, [user, sessionLoading]);
+  }, [sessionLoading]);
 
   const filteredFarms = farms.filter(farm => {
     // Explicitly hide suppressed farms even for admins on the public index
@@ -177,7 +208,18 @@ const Index = () => {
           )}
         </div>
 
-        {!user ? (
+        <div className="space-y-12">
+          <div className="w-full">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-emerald-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">Global Permafolk Network</h2>
+            </div>
+            <FarmsMap farms={farms} isGuest={!user} />
+          </div>
+
+          {!user ? (
           <Card className="border-dashed border-2 border-emerald-200 bg-white py-20 text-center rounded-[40px]">
             <CardContent className="space-y-6">
               <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto"><LogIn className="w-10 h-10 text-emerald-600" /></div>
@@ -185,14 +227,14 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4"><Link to="/login"><Button className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 text-lg rounded-xl"><LogIn className="w-5 h-5 mr-2" />Sign In</Button></Link><Link to="/register"><Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-12 px-8 text-lg rounded-xl">Join the Network</Button></Link></div>
             </CardContent>
           </Card>
-        ) : (
-          <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
-            <div className="flex flex-col items-center mb-12">
-              <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-md border border-emerald-100 mb-8">
-                <TabsTrigger value="farms" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold"><MapIcon className="w-5 h-5 mr-2" />Featured Farms</TabsTrigger>
-                <TabsTrigger value="produce" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold"><ShoppingBasket className="w-5 h-5 mr-2" />Featured Produce</TabsTrigger>
-                <TabsTrigger value="permafolk" className="rounded-xl px-8 py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-base font-bold"><User className="w-5 h-5 mr-2" />Featured Permafolk</TabsTrigger>
-              </TabsList>
+          ) : (
+            <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
+              <div className="flex flex-col items-center mb-12">
+                <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-md border border-emerald-100 mb-8 flex-wrap justify-center gap-2">
+                  <TabsTrigger value="farms" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold"><MapIcon className="w-4 h-4 md:w-5 md:h-5 mr-2" />Featured Farms</TabsTrigger>
+                  <TabsTrigger value="produce" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold"><ShoppingBasket className="w-4 h-4 md:w-5 md:h-5 mr-2" />Produce</TabsTrigger>
+                  <TabsTrigger value="permafolk" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold"><User className="w-4 h-4 md:w-5 md:h-5 mr-2" />Permafolk</TabsTrigger>
+                </TabsList>
               
               <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-5xl gap-6 px-4">
                 <div className="flex flex-wrap justify-center md:justify-start gap-2 flex-1">
@@ -237,6 +279,7 @@ const Index = () => {
                   ) : <EmptyState message="No farms found matching your search." />}
                 </TabsContent>
 
+
                 <TabsContent value="produce" className="mt-0 focus-visible:ring-0">
                   {filteredProduce.length > 0 ? (
                     <div className={getGridClasses()}>
@@ -254,8 +297,9 @@ const Index = () => {
                 </TabsContent>
               </div>
             )}
-          </Tabs>
-        )}
+            </Tabs>
+          )}
+        </div>
       </main>
 
       <footer className="bg-white border-t py-20 mt-20">
