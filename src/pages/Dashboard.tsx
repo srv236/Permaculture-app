@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useSession } from "@/components/SessionProvider";
 import { Farm, Producer } from "@/types/farm";
@@ -27,6 +27,22 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (user?.id) {
+        const profileData = await getSessionProfile(user.id);
+        const farmsData = await getFarmsByUser(user.id);
+        setProfile(profileData as Producer);
+        setFarms(farmsData || []);
+      }
+    } catch (error) {
+      showError("Could not load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!sessionLoading && !user) {
       navigate("/login");
@@ -36,23 +52,7 @@ const Dashboard = () => {
     if (user) {
       fetchData();
     }
-  }, [user, sessionLoading]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      if (user?.id) {
-        const profileData = await getSessionProfile(user.id);
-        const farmsData = await getFarmsByUser(user.id);
-        setProfile(profileData as any);
-        setFarms(farmsData || []);
-      }
-    } catch (error) {
-      showError("Could not load dashboard data.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user, sessionLoading, navigate, fetchData]);
 
   const handleDeleteFarm = async (id: string) => {
     if (!confirm("Are you sure you want to remove this farm?")) return;

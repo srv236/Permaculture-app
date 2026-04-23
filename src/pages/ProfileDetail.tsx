@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Producer, Farm } from "@/types/farm";
@@ -55,7 +55,7 @@ const ProfileDetail = () => {
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     if (!id) return;
     if (!user) {
       setLoading(false);
@@ -66,30 +66,32 @@ const ProfileDetail = () => {
     try {
       // Using the validated and parameterized user lookup service
       const profileData = await getUserProfile(id);
-      setProfile(profileData as any);
+      setProfile(profileData as Producer);
 
       const farmsData = await getFarmsByUser(id);
       setFarms(farmsData || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching profile:", error);
-      showError(error.message || "Could not load profile.");
+      const message = error instanceof Error ? error.message : "Could not load profile.";
+      showError(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, user]);
 
   useEffect(() => {
     fetchProfileData();
-  }, [id, user]);
+  }, [id, user, fetchProfileData]);
 
-  const handleAdminAction = async (updates: any, actionName: string) => {
+  const handleAdminAction = async (updates: Partial<Producer>, actionName: string) => {
     if (!profile) return;
     try {
       await updateProfile(profile.id, updates);
       showSuccess(`${actionName} updated successfully.`);
       fetchProfileData();
-    } catch (err: any) {
-      showError(`Failed to update ${actionName}: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      showError(`Failed to update ${actionName}: ${message}`);
     }
   };
 
@@ -101,8 +103,9 @@ const ProfileDetail = () => {
       await deleteProfile(profile.id);
       showSuccess("Member deleted successfully.");
       navigate("/");
-    } catch (err: any) {
-      showError(`Failed to delete member: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      showError(`Failed to delete member: ${message}`);
     }
   };
 
@@ -204,8 +207,8 @@ const ProfileDetail = () => {
                   <DropdownMenuItem onClick={() => handleAdminAction({ is_admin: !profile.is_admin }, "Admin Rights")}>
                     {profile.is_admin ? <><ShieldAlert className="w-4 h-4 mr-2 text-amber-600" /> Remove Admin</> : <><ShieldCheck className="w-4 h-4 mr-2 text-emerald-600" /> Make Admin</>}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAdminAction({ is_hidden: !(profile as any).is_hidden }, "Visibility")}>
-                    {(profile as any).is_hidden ? <><Eye className="w-4 h-4 mr-2" /> Show Member</> : <><EyeOff className="w-4 h-4 mr-2" /> Suppress Member</>}
+                  <DropdownMenuItem onClick={() => handleAdminAction({ is_hidden: !profile.is_hidden }, "Visibility")}>
+                    {profile.is_hidden ? <><Eye className="w-4 h-4 mr-2" /> Show Member</> : <><EyeOff className="w-4 h-4 mr-2" /> Suppress Member</>}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -243,7 +246,7 @@ const ProfileDetail = () => {
                     Verification Pending
                   </Badge>
                 )}
-                {(profile as any).is_hidden && (
+                {profile.is_hidden && (
                   <Badge variant="destructive" className="bg-red-500 text-white border-none px-3 py-1">
                     Suppressed
                   </Badge>

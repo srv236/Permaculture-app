@@ -70,8 +70,9 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
       showSuccess("Farm updated successfully!");
       setOpen(false);
       onSuccess();
-    } catch (error: any) {
-      showError(error.message || "Failed to update farm.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update farm.";
+      showError(message);
     } finally {
       setLoading(false);
     }

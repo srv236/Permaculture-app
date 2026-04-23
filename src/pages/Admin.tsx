@@ -55,7 +55,7 @@ const Admin = () => {
       }
       fetchUsers();
     }
-  }, [adminProfile, sessionLoading]);
+  }, [adminProfile, sessionLoading, navigate]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -63,22 +63,24 @@ const Admin = () => {
     try {
       const data = await getAllProfiles();
       setUsers(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Admin fetch error:", err);
-      setError(err.message || "Failed to load users from the database.");
+      const message = err instanceof Error ? err.message : "Failed to load users from the database.";
+      setError(message);
       showError("Failed to load users.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateProfile = async (userId: string, updates: any, actionName: string) => {
+  const handleUpdateProfile = async (userId: string, updates: Partial<Profile>, actionName: string) => {
     try {
       await updateProfile(userId, updates);
       showSuccess(`${actionName} updated successfully.`);
       fetchUsers();
-    } catch (err: any) {
-      showError(`Failed to update ${actionName}: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      showError(`Failed to update ${actionName}: ${message}`);
     }
   };
 
@@ -89,8 +91,9 @@ const Admin = () => {
       await apiDeleteProfile(userId);
       showSuccess("Member deleted successfully.");
       fetchUsers();
-    } catch (err: any) {
-      showError(`Failed to delete member: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      showError(`Failed to delete member: ${message}`);
     }
   };
 

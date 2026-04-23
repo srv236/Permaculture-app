@@ -24,8 +24,9 @@ const Login = () => {
     try {
       await signIn(email, password);
       navigate("/dashboard");
-    } catch (error: any) {
-      showError(error.message || "Invalid login credentials.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Invalid login credentials.";
+      showError(message);
     } finally {
       setLoading(false);
     }
