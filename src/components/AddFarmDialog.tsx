@@ -78,8 +78,9 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
       });
       setImageFile(null);
       onSuccess();
-    } catch (error: any) {
-      showError(error.message || "Failed to add farm.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to add farm.";
+      showError(message);
     } finally {
       setLoading(false);
     }
@@ -164,7 +165,7 @@ export const AddFarmDialog = ({ onSuccess }: AddFarmDialogProps) => {
                 </div>
                 <Select 
                   value={formData.size_unit} 
-                  onValueChange={(value: any) => setFormData({...formData, size_unit: value})}
+                  onValueChange={(value) => setFormData({...formData, size_unit: value})}
                 >
                   <SelectTrigger className="w-[120px] h-12 rounded-2xl border-slate-200 shadow-none">
                     <SelectValue placeholder="Unit" />

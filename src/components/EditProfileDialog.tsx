@@ -65,8 +65,9 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
       showSuccess("Profile updated successfully!");
       setOpen(false);
       onSuccess();
-    } catch (error: any) {
-      showError(error.message || "Failed to update profile.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update profile.";
+      showError(message);
     } finally {
       setLoading(false);
     }

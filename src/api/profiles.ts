@@ -40,7 +40,7 @@ export const getAllProfiles = async () => {
   return data as Profile[];
 };
 
-export const createProfile = async (profileData: any) => {
+export const createProfile = async (profileData: Partial<Profile> & { id: string }) => {
   const { data, error } = await supabase
     .from('profiles')
     .insert(profileData);

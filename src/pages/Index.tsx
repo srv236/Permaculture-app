@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { SUPABASE_URL } from "@/integrations/supabase/client";
 
 const CATEGORIES = [
   "All",
@@ -56,7 +57,7 @@ const Index = () => {
     const fetchPublicStats = async () => {
       setStatsLoading(true);
       try {
-        const response = await fetch('https://jhvybduaojbotojvxgvs.supabase.co/functions/v1/get-public-stats');
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/get-public-stats`);
         if (response.ok) {
           const data = await response.json();
           setStats(data);
@@ -81,7 +82,7 @@ const Index = () => {
         if (!user) {
           // Fetch from edge function by default for guests to avoid RLS errors
           try {
-            const response = await fetch('https://jhvybduaojbotojvxgvs.supabase.co/functions/v1/get-public-map-farms');
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/get-public-map-farms`);
             if (response.ok) {
               farmsData = await response.json();
             } else {
@@ -99,20 +100,20 @@ const Index = () => {
           }
         }
         
-        if (farmsData) setFarms(farmsData as any);
+        if (farmsData) setFarms(farmsData as Farm[]);
         
         try {
           // Profiles and produce might be restricted for guests by RLS, 
           // which is fine, we'll just get what's public.
           const profilesData = await getAllProfiles();
-          if (profilesData) setPermafolk(profilesData as any);
+          if (profilesData) setPermafolk(profilesData as Producer[]);
         } catch (error) {
           console.warn("Profiles restricted", error);
         }
         
         try {
           const produceData = await getAllProduce();
-          if (produceData) setProduce(produceData as any);
+          if (produceData) setProduce(produceData as (Produce & { farms?: { name: string, profiles?: { is_hidden: boolean } } })[]);
         } catch (error) {
           console.warn("Produce restricted", error);
         }
@@ -123,11 +124,11 @@ const Index = () => {
       }
     };
     fetchData();
-  }, [sessionLoading]);
+  }, [sessionLoading, user]);
 
   const filteredFarms = farms.filter(farm => {
     // Explicitly hide suppressed farms even for admins on the public index
-    if ((farm as any).profiles?.is_hidden) return false;
+    if ((farm as Farm & { profiles?: { is_hidden: boolean } }).profiles?.is_hidden) return false;
 
     const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       farm.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,7 +145,7 @@ const Index = () => {
 
   const filteredProduce = produce.filter(p => {
     // Hide produce if farm owner is hidden
-    if ((p as any).farms?.profiles?.is_hidden) return false;
+    if ((p as Produce & { farms?: { profiles?: { is_hidden: boolean } } }).farms?.profiles?.is_hidden) return false;
 
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.variety?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
@@ -262,17 +263,17 @@ const Index = () => {
                           layout={viewMode}
                           producer={{
                             id: farm.id,
-                            name: (farm as any).profiles?.name || "Practitioner",
-                            phone: (farm as any).profiles?.phone || "",
-                            email: (farm as any).profiles?.email || "",
+                            name: (farm as Farm & { profiles?: { name: string } }).profiles?.name || "Practitioner",
+                            phone: (farm as Farm & { profiles?: { phone: string } }).profiles?.phone || "",
+                            email: (farm as Farm & { profiles?: { email: string } }).profiles?.email || "",
                             farm_name: farm.name,
                             picture_url: farm.picture_url,
-                            is_verified: (farm as any).profiles?.is_verified || false,
+                            is_verified: (farm as Farm & { profiles?: { is_verified: boolean } }).profiles?.is_verified || false,
                             has_completed_course: true,
                             produce: farm.produce,
                             address: farm.address,
                             tags: farm.tags
-                          } as any} 
+                          } as Producer} 
                         />
                       ))}
                     </div>

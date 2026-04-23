@@ -78,12 +78,13 @@ const Register = () => {
         showSuccess("Registration successful!");
         navigate("/dashboard");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Registration error:", error);
-      if (error.message?.includes("already registered") || error.code === "user_already_exists") {
+      const message = error instanceof Error ? error.message : "An error occurred";
+      if (message.includes("already registered")) {
         showError("This email is registered in our security system but has no active profile. Please try logging in or contact support.");
       } else {
-        showError(error.message || "An error occurred during registration.");
+        showError(message || "An error occurred during registration.");
       }
     } finally {
       setLoading(false);

@@ -42,7 +42,7 @@ const FarmDetail = () => {
 
         if (farmData.user_id) {
           const profileData = await getUserProfile(farmData.user_id);
-          setProducer(profileData as any);
+          setProducer(profileData as Producer);
         }
       } catch (error) {
         console.error("Error fetching farm:", error);
