@@ -80,8 +80,9 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
       showSuccess("Produce updated successfully!");
       setOpen(false);
       onSuccess();
-    } catch (error: any) {
-      showError(error.message || "Failed to update produce.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update produce.";
+      showError(message);
     } finally {
       setLoading(false);
     }

@@ -78,4 +78,5 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
-export const useSession = () => useContext(SessionContext);
+// eslint-disable-next-line react-refresh/only-export-components
+export const useSession = () => useContext(SessionContext);

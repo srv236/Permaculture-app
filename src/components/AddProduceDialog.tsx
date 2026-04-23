@@ -91,8 +91,9 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
       });
       setImageFile(null);
       onSuccess();
-    } catch (error: any) {
-      showError(error.message || "Failed to add produce.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to add produce.";
+      showError(message);
     } finally {
       setLoading(false);
     }
