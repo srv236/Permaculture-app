@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ProducerCard } from "@/components/ProducerCard";
 import { PermafolkCard } from "@/components/PermafolkCard";
@@ -38,6 +38,7 @@ type ViewMode = "grid" | "list" | "compact";
 const Index = () => {
   const { user, loading: sessionLoading } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
+  const resultsRef = useRef<HTMLDivElement>(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -52,6 +53,10 @@ const Index = () => {
     totalProduce: 0,
     totalFarmSize: "0"
   });
+
+  const scrollToResults = () => {
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   useEffect(() => {
     const fetchPublicStats = async () => {
@@ -161,7 +166,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navbar />
+      <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
       
       <header className="bg-emerald-900 text-white py-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -176,8 +181,40 @@ const Index = () => {
           <p className="text-emerald-100/80 text-lg md:text-xl mb-10 leading-relaxed">Discover sustainable farms, fresh local produce, and the passionate practitioners in your community.</p>
           <div className="relative max-w-xl mx-auto">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
-            <Input className="pl-14 h-16 bg-white text-slate-900 rounded-2xl border-none shadow-2xl text-lg focus-visible:ring-emerald-500" placeholder="Search farms, produce, or permafolk..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <Input 
+              id="main-search"
+              name="q"
+              autoComplete="off"
+              className="pl-14 h-16 bg-white text-slate-900 rounded-2xl border-none shadow-2xl text-lg focus-visible:ring-emerald-500" 
+              placeholder="Search farms, produce, or permafolk..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+            />
           </div>
+
+          {searchQuery && (
+            <div className="mt-8 flex justify-center animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="bg-emerald-800/40 backdrop-blur-md border border-emerald-700/50 rounded-2xl px-6 py-3 flex items-center gap-6 shadow-2xl">
+                <div className="flex items-center gap-4 text-emerald-50 text-sm md:text-base font-medium">
+                  <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-emerald-400" /> <strong>{filteredFarms.length}</strong> Farms</span>
+                  <span className="w-1 h-1 rounded-full bg-emerald-700" />
+                  <span className="flex items-center gap-1.5"><ShoppingBasket className="w-4 h-4 text-emerald-400" /> <strong>{filteredProduce.length}</strong> Products</span>
+                  <span className="w-1 h-1 rounded-full bg-emerald-700" />
+                  <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-emerald-400" /> <strong>{filteredPermafolk.length}</strong> Permafolk</span>
+                </div>
+                <div className="w-px h-6 bg-emerald-700/50 hidden sm:block" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-emerald-400 hover:text-white hover:bg-emerald-700/50 px-4 h-10 font-bold rounded-xl transition-all group"
+                  onClick={scrollToResults}
+                >
+                  View Results 
+                  <Search className="w-4 h-4 ml-2 group-hover:scale-110 transition-transform" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -230,12 +267,36 @@ const Index = () => {
             </CardContent>
           </Card>
           ) : (
-            <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab}>
+            <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab} ref={resultsRef}>
               <div className="flex flex-col items-center mb-12">
                 <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-md border border-emerald-100 mb-8 flex-wrap justify-center gap-2">
-                  <TabsTrigger value="farms" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold"><MapIcon className="w-4 h-4 md:w-5 md:h-5 mr-2" />Featured Farms</TabsTrigger>
-                  <TabsTrigger value="produce" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold"><ShoppingBasket className="w-4 h-4 md:w-5 md:h-5 mr-2" />Produce</TabsTrigger>
-                  <TabsTrigger value="permafolk" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold"><User className="w-4 h-4 md:w-5 md:h-5 mr-2" />Permafolk</TabsTrigger>
+                  <TabsTrigger value="farms" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold transition-all">
+                    <MapIcon className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                    Featured Farms
+                    {searchQuery && (
+                      <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 data-[state=active]:bg-emerald-500 data-[state=active]:text-white rounded-full text-xs">
+                        {filteredFarms.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="produce" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold transition-all">
+                    <ShoppingBasket className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                    Produce
+                    {searchQuery && (
+                      <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs">
+                        {filteredProduce.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="permafolk" className="rounded-xl px-4 md:px-8 py-3 md:py-4 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-sm md:text-base font-bold transition-all">
+                    <User className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                    Permafolk
+                    {searchQuery && (
+                      <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs">
+                        {filteredPermafolk.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
                 </TabsList>
               
               <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-5xl gap-6 px-4">

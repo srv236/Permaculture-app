@@ -1,13 +1,30 @@
 "use client";
 
-import { PlusCircle, LayoutDashboard, LogOut, LogIn, ShieldCheck } from "lucide-react";
+import { PlusCircle, LayoutDashboard, LogOut, LogIn, ShieldCheck, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useSession } from "./SessionProvider";
 import { SecureImage } from "./SecureImage";
 
-export const Navbar = () => {
+interface NavbarProps {
+  searchQuery?: string;
+  onSearchChange?: (val: string) => void;
+}
+
+export const Navbar = ({ searchQuery = "", onSearchChange }: NavbarProps) => {
   const { user, profile, signOut } = useSession();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 400);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
@@ -26,6 +43,24 @@ export const Navbar = () => {
             AoL<span className="text-emerald-600">Permaculture</span>
           </span>
         </Link>
+
+        {onSearchChange && (
+          <div className={cn(
+            "flex-1 max-w-md mx-4 md:mx-8 transition-all duration-300 hidden md:block",
+            isScrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+          )}>
+            <div className="relative">
+              <input 
+                type="text"
+                placeholder="Search farms, produce..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="w-full pl-10 pr-4 h-11 bg-white border-2 border-emerald-500/20 hover:border-emerald-500/40 focus:border-emerald-500 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-lg shadow-emerald-900/5 focus:shadow-emerald-900/10 placeholder:text-slate-400"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 w-4 h-4" />
+            </div>
+          </div>
+        )}
         
         <div className="flex items-center gap-2 sm:gap-4">
           {user ? (

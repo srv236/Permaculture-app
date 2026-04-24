@@ -107,6 +107,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
             <Label htmlFor="edit-produce-name">Produce Name</Label>
             <Input 
               id="edit-produce-name" 
+              name="produce_name"
               required 
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -119,6 +120,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
               <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input 
                 id="edit-produce-variety" 
+                name="variety"
                 className="pl-10"
                 placeholder="e.g. Heirloom" 
                 value={formData.variety}
@@ -148,6 +150,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
             <Label htmlFor="edit-produce-description">Description</Label>
             <Textarea 
               id="edit-produce-description" 
+              name="description"
               className="min-h-[80px] rounded-xl"
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -158,6 +161,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
             <Label htmlFor="edit-produce-tags">Produce Tags (comma separated)</Label>
             <Input 
               id="edit-produce-tags" 
+              name="tags"
               value={formData.tags}
               onChange={(e) => setFormData({...formData, tags: e.target.value})}
             />
@@ -169,6 +173,7 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
                 <Input 
+                  name="price"
                   type="number"
                   step="any"
                   className="pl-7"
@@ -197,6 +202,8 @@ export const EditProduceDialog = ({ produce, onSuccess }: EditProduceDialogProps
             <Label>Quantity Available</Label>
             <div className="flex gap-2">
               <Input 
+                id="edit-quantity"
+                name="quantity"
                 type="number"
                 step="any"
                 className="flex-1"

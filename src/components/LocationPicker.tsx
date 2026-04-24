@@ -63,6 +63,8 @@ export const LocationPicker = ({
     const autocompleteElement = new AutocompleteConstructor({
       includedRegionCodes: ["in"],
     });
+    autocompleteElement.setAttribute('id', 'location-search');
+    autocompleteElement.setAttribute('name', 'location-search');
 
     const handleSelect = async (event: Event) => {
       try {

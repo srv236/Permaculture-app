@@ -217,6 +217,8 @@ const Admin = () => {
           <div className="relative w-full md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
+              id="admin-search"
+              name="admin-search"
               placeholder="Search by name or email..." 
               className="pl-10"
               value={searchQuery}

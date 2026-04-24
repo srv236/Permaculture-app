@@ -52,8 +52,10 @@ const Login = () => {
                 <Label htmlFor="email">Email Address</Label>
                 <Input 
                   id="email" 
+                  name="email"
                   type="email" 
                   placeholder="john@example.com" 
+                  autoComplete="email"
                   required 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -63,8 +65,10 @@ const Login = () => {
                 <Label htmlFor="password">Password</Label>
                 <Input 
                   id="password" 
+                  name="password"
                   type="password" 
                   placeholder="••••••••" 
+                  autoComplete="current-password"
                   required 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

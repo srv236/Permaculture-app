@@ -119,6 +119,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
             <Label htmlFor="name">Produce Name</Label>
             <Input 
               id="name" 
+              name="produce_name"
               placeholder="e.g. Tomatoes" 
               required 
               value={formData.name}
@@ -132,6 +133,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
               <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input 
                 id="variety" 
+                name="variety"
                 className="pl-10"
                 placeholder="e.g. Heirloom Cherokee Purple" 
                 value={formData.variety}
@@ -161,6 +163,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
             <Label htmlFor="description">Description</Label>
             <Textarea 
               id="description" 
+              name="description"
               placeholder="Flavor profile, nutrition, or growth details..." 
               className="min-h-[80px] rounded-xl"
               value={formData.description}
@@ -172,6 +175,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
             <Label htmlFor="tags">Produce Tags (comma separated)</Label>
             <Input 
               id="tags" 
+              name="tags"
               placeholder="e.g. Organic, Freshly Picked, Local" 
               value={formData.tags}
               onChange={(e) => setFormData({...formData, tags: e.target.value})}
@@ -184,6 +188,7 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
                 <Input 
+                  name="price"
                   type="number"
                   step="any"
                   className="pl-7"
@@ -213,6 +218,8 @@ export const AddProduceDialog = ({ farmId, onSuccess }: AddProduceDialogProps) =
             <Label>Quantity Available</Label>
             <div className="flex gap-2">
               <Input 
+                id="quantity"
+                name="quantity"
                 type="number"
                 step="any"
                 className="flex-1"

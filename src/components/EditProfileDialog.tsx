@@ -91,7 +91,9 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
               <Label htmlFor="name">Full Name</Label>
               <Input 
                 id="name" 
+                name="name"
                 value={formData.name}
+                autoComplete="name"
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 required
               />
@@ -101,7 +103,9 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
               <Label htmlFor="phone">Phone Number</Label>
               <Input 
                 id="phone" 
+                name="phone"
                 value={formData.phone}
+                autoComplete="tel"
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 required
               />
@@ -113,8 +117,10 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
                 <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
                   id="alt_phone" 
+                  name="alt_phone"
                   className="pl-10"
                   value={formData.alt_phone}
+                  autoComplete="tel"
                   onChange={(e) => setFormData({...formData, alt_phone: e.target.value})}
                 />
               </div>
@@ -147,6 +153,7 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
             <Label htmlFor="about">About You</Label>
             <Textarea 
               id="about" 
+              name="about"
               className="min-h-[100px] rounded-xl"
               value={formData.about}
               onChange={(e) => setFormData({...formData, about: e.target.value})}
@@ -162,6 +169,7 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
                   <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
                   <Input 
                     id="facebook" 
+                    name="facebook"
                     className="pl-10"
                     value={formData.facebook_url}
                     onChange={(e) => setFormData({...formData, facebook_url: e.target.value})}
@@ -174,6 +182,7 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
                   <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-600" />
                   <Input 
                     id="instagram" 
+                    name="instagram"
                     className="pl-10"
                     value={formData.instagram_url}
                     onChange={(e) => setFormData({...formData, instagram_url: e.target.value})}
@@ -186,6 +195,7 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
                   <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
                   <Input 
                     id="youtube" 
+                    name="youtube"
                     className="pl-10"
                     value={formData.youtube_url}
                     onChange={(e) => setFormData({...formData, youtube_url: e.target.value})}
@@ -198,6 +208,7 @@ export const EditProfileDialog = ({ profile, onSuccess }: EditProfileDialogProps
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
                   <Input 
                     id="website" 
+                    name="website"
                     className="pl-10"
                     value={formData.website_url}
                     onChange={(e) => setFormData({...formData, website_url: e.target.value})}

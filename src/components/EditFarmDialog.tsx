@@ -101,7 +101,9 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
               <Label htmlFor="edit-name" className="text-emerald-800 font-semibold ml-1">Farm Name</Label>
               <Input 
                 id="edit-name" 
+                name="farm_name"
                 className="h-12 rounded-2xl border-slate-200 focus:ring-emerald-500"
+                autoComplete="organization"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 required
@@ -112,6 +114,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
               <Label htmlFor="edit-about" className="text-emerald-800 font-semibold ml-1">About the Farm</Label>
               <Textarea 
                 id="edit-about" 
+                name="about"
                 className="min-h-[120px] rounded-[24px] border-slate-200 focus:ring-emerald-500"
                 value={formData.about}
                 onChange={(e) => setFormData({...formData, about: e.target.value})}
@@ -126,6 +129,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
                   id="edit-tags" 
+                  name="tags"
                   className="pl-10 h-12 rounded-2xl border-slate-200"
                   placeholder="Organic, Forest Garden..." 
                   value={formData.tags}
@@ -141,6 +145,7 @@ export const EditFarmDialog = ({ farm, onSuccess }: EditFarmDialogProps) => {
                   <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input 
                     id="edit-size" 
+                    name="size"
                     type="number"
                     step="any"
                     className="pl-10 h-12 rounded-2xl border-slate-200"

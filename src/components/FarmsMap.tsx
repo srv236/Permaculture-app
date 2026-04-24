@@ -80,6 +80,7 @@ export const FarmsMap = ({ farms, isGuest = false }: FarmsMapProps) => {
               setSelectedFarm(farm);
               setShowMainInfo(false);
             }}
+            zIndex={selectedFarm?.id === farm.id ? 50 : 10}
           >
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-xl transform -translate-y-1/2 transition-transform ${!isGuest ? 'hover:scale-110 cursor-pointer' : 'opacity-80'} ${selectedFarm?.id === farm.id ? 'bg-emerald-800 scale-125 z-50' : 'bg-emerald-600'}`}>
               <Sprout className="w-4 h-4" />

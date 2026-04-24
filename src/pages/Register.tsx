@@ -122,7 +122,9 @@ const Register = () => {
                   <Label htmlFor="name">Full Name</Label>
                   <Input 
                     id="name" 
+                    name="name"
                     placeholder="John Doe" 
+                    autoComplete="name"
                     required 
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -133,6 +135,7 @@ const Register = () => {
                   <Label htmlFor="about">About Your Journey</Label>
                   <Textarea 
                     id="about" 
+                    name="about"
                     placeholder="Tell us about your farm and permaculture practice..." 
                     className="min-h-[100px] rounded-xl"
                     value={formData.about}
@@ -145,8 +148,10 @@ const Register = () => {
                     <Label htmlFor="email">Email Address</Label>
                     <Input 
                       id="email" 
+                      name="email"
                       type="email" 
                       placeholder="john@example.com" 
+                      autoComplete="email"
                       required 
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -156,8 +161,10 @@ const Register = () => {
                     <Label htmlFor="password">Password</Label>
                     <Input 
                       id="password" 
+                      name="password"
                       type="password" 
                       placeholder="••••••••" 
+                      autoComplete="new-password"
                       required 
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -170,8 +177,10 @@ const Register = () => {
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input 
                       id="phone" 
+                      name="phone"
                       type="tel" 
                       placeholder="+91 00000 00000" 
+                      autoComplete="tel"
                       required 
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
@@ -183,9 +192,11 @@ const Register = () => {
                       <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input 
                         id="alt_phone" 
+                        name="alt_phone"
                         type="tel" 
                         className="pl-10"
                         placeholder="+91 00000 00000" 
+                        autoComplete="tel"
                         value={formData.alt_phone}
                         onChange={(e) => setFormData({...formData, alt_phone: e.target.value})}
                       />
@@ -204,6 +215,7 @@ const Register = () => {
                       <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
                       <Input 
                         id="facebook" 
+                        name="facebook"
                         className="pl-10"
                         placeholder="facebook.com/yourprofile" 
                         value={formData.facebook_url}
@@ -217,6 +229,7 @@ const Register = () => {
                       <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-600" />
                       <Input 
                         id="instagram" 
+                        name="instagram"
                         className="pl-10"
                         placeholder="instagram.com/yourprofile" 
                         value={formData.instagram_url}
@@ -230,6 +243,7 @@ const Register = () => {
                       <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
                       <Input 
                         id="youtube" 
+                        name="youtube"
                         className="pl-10"
                         placeholder="youtube.com/@yourchannel" 
                         value={formData.youtube_url}
@@ -243,6 +257,7 @@ const Register = () => {
                       <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
                       <Input 
                         id="website" 
+                        name="website"
                         className="pl-10"
                         placeholder="www.yourfarm.com" 
                         value={formData.website_url}
