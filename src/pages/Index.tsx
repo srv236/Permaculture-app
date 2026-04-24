@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { SUPABASE_URL } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 const CATEGORIES = [
   "All",
@@ -57,13 +57,14 @@ const Index = () => {
     const fetchPublicStats = async () => {
       setStatsLoading(true);
       try {
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/get-public-stats`);
-        if (response.ok) {
-          const data = await response.json();
+        const { data, error } = await supabase.functions.invoke('get-public-stats');
+        if (!error && data) {
           setStats(data);
+        } else if (error) {
+          console.error("Error fetching public stats from edge function:", error);
         }
       } catch (error) {
-        console.error("Error fetching public stats:", error);
+        console.error("Error in public stats execution:", error);
       } finally {
         setStatsLoading(false);
       }
@@ -82,11 +83,11 @@ const Index = () => {
         if (!user) {
           // Fetch from edge function by default for guests to avoid RLS errors
           try {
-            const response = await fetch(`${SUPABASE_URL}/functions/v1/get-public-map-farms`);
-            if (response.ok) {
-              farmsData = await response.json();
-            } else {
-              console.error("Failed to fetch public map farms from edge function", response.status);
+            const { data, error } = await supabase.functions.invoke('get-public-map-farms');
+            if (!error && data) {
+              farmsData = data;
+            } else if (error) {
+              console.error("Failed to fetch public map farms from edge function", error);
             }
           } catch (fnError) {
             console.error("Error calling edge function:", fnError);
