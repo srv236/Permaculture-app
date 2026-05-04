@@ -57,10 +57,6 @@ const ProfileDetail = () => {
 
   const fetchProfileData = useCallback(async () => {
     if (!id) return;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
 
     setLoading(true);
     try {
@@ -121,37 +117,6 @@ const ProfileDetail = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <Navbar />
-        <main className="container mx-auto px-4 py-20 flex justify-center">
-          <Card className="max-w-md w-full border-dashed border-2 border-emerald-200 bg-white py-12 text-center rounded-[40px]">
-            <CardContent className="space-y-6">
-              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
-                <Lock className="w-10 h-10 text-emerald-600" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-slate-900">Access Restricted</h2>
-                <p className="text-slate-500 text-sm">
-                  Practitioner profiles and contact details are only visible to registered members of the network.
-                </p>
-              </div>
-              <div className="flex flex-col gap-3 pt-4">
-                <Link to="/login">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 rounded-xl">
-                    <LogIn className="w-5 h-5 mr-2" />
-                    Sign In to View
-                  </Button>
-                </Link>
-                <Button variant="ghost" onClick={() => navigate(-1)}>Go Back</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    );
-  }
 
   if (!profile) return (
     <div className="min-h-screen bg-slate-50">

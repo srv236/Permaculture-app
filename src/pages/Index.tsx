@@ -84,26 +84,10 @@ const Index = () => {
       setLoading(true);
       try {
         let farmsData;
-        
-        if (!user) {
-          // Fetch from edge function by default for guests to avoid RLS errors
-          try {
-            const { data, error } = await supabase.functions.invoke('get-public-map-farms');
-            if (!error && data) {
-              farmsData = data;
-            } else if (error) {
-              console.error("Failed to fetch public map farms from edge function", error);
-            }
-          } catch (fnError) {
-            console.error("Error calling edge function:", fnError);
-          }
-        } else {
-          // Fetch full network farms for authenticated members
-          try {
-            farmsData = await getNetworkFarms();
-          } catch (error) {
-            console.error("Could not fetch full network farms:", error);
-          }
+        try {
+          farmsData = await getNetworkFarms();
+        } catch (error) {
+          console.error("Could not fetch network farms:", error);
         }
         
         if (farmsData) setFarms(farmsData as Farm[]);
@@ -255,18 +239,9 @@ const Index = () => {
               </div>
               <h2 className="text-2xl font-bold text-slate-900">Global Permafolk Network</h2>
             </div>
-            <FarmsMap farms={farms} isGuest={!user} />
+            <FarmsMap farms={farms} />
           </div>
 
-          {!user ? (
-          <Card className="border-dashed border-2 border-emerald-200 bg-white py-20 text-center rounded-[40px]">
-            <CardContent className="space-y-6">
-              <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto"><LogIn className="w-10 h-10 text-emerald-600" /></div>
-              <div className="space-y-2"><h2 className="text-3xl font-bold text-slate-900">View Full Listings</h2><p className="text-slate-500 max-w-md mx-auto text-lg">Detailed farm listings, produce availability, and practitioner profiles are only visible to registered members.</p></div>
-              <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4"><Link to="/login"><Button className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 text-lg rounded-xl"><LogIn className="w-5 h-5 mr-2" />Sign In</Button></Link><Link to="/register"><Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 h-12 px-8 text-lg rounded-xl">Join the Network</Button></Link></div>
-            </CardContent>
-          </Card>
-          ) : (
             <Tabs defaultValue="farms" className="w-full" onValueChange={setActiveTab} ref={resultsRef}>
               <div className="flex flex-col items-center mb-12">
                 <TabsList className="bg-white p-1.5 h-auto rounded-2xl shadow-md border border-emerald-100 mb-8 flex-wrap justify-center gap-2">
@@ -361,7 +336,6 @@ const Index = () => {
               </div>
             )}
             </Tabs>
-          )}
         </div>
       </main>
 

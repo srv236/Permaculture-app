@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 
 interface FarmsMapProps {
   farms: Farm[];
-  isGuest?: boolean;
 }
 
 const MAIN_LOCATION = {
@@ -19,7 +18,7 @@ const MAIN_LOCATION = {
   address: "Art of Living International Center, Bengaluru, India",
 };
 
-export const FarmsMap = ({ farms, isGuest = false }: FarmsMapProps) => {
+export const FarmsMap = ({ farms }: FarmsMapProps) => {
   const navigate = useNavigate();
   const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
   const [showMainInfo, setShowMainInfo] = useState(false);
@@ -76,19 +75,18 @@ export const FarmsMap = ({ farms, isGuest = false }: FarmsMapProps) => {
             key={farm.id}
             position={{ lat: Number(farm.latitude), lng: Number(farm.longitude) }}
             onClick={() => {
-              if (isGuest) return; // Prevent clicking for guests
               setSelectedFarm(farm);
               setShowMainInfo(false);
             }}
             zIndex={selectedFarm?.id === farm.id ? 50 : 10}
           >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-xl transform -translate-y-1/2 transition-transform ${!isGuest ? 'hover:scale-110 cursor-pointer' : 'opacity-80'} ${selectedFarm?.id === farm.id ? 'bg-emerald-800 scale-125 z-50' : 'bg-emerald-600'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-xl transform -translate-y-1/2 transition-transform hover:scale-110 cursor-pointer ${selectedFarm?.id === farm.id ? 'bg-emerald-800 scale-125 z-50' : 'bg-emerald-600'}`}>
               <Sprout className="w-4 h-4" />
             </div>
           </AdvancedMarker>
         ))}
 
-        {selectedFarm && !isGuest && (
+        {selectedFarm && (
           <InfoWindow
             position={{ lat: Number(selectedFarm.latitude), lng: Number(selectedFarm.longitude) }}
             onCloseClick={() => setSelectedFarm(null)}
